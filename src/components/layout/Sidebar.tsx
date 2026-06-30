@@ -10,6 +10,12 @@ export function Sidebar() {
   const collapsed = useUiStore((s) => s.sidebarCollapsed);
   const toggle = useUiStore((s) => s.toggleSidebar);
   const pathname = useRouterState({ select: (r) => r.location.pathname });
+  const navigate = useNavigate();
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    navigate({ to: "/login", replace: true });
+  };
 
   const isActive = (to: string) => (to === "/" ? pathname === "/" : pathname.startsWith(to));
 
@@ -98,9 +104,30 @@ export function Sidebar() {
               <div className="text-[13px] font-medium truncate">Avery Kim</div>
               <div className="text-[11px] text-[var(--text-muted)] truncate">Platform admin</div>
             </div>
-            <SettingsIcon className="h-4 w-4 text-[var(--text-muted)] hover:text-[var(--text-primary)] cursor-pointer" />
+            <button
+              onClick={signOut}
+              aria-label="Sign out"
+              title="Sign out"
+              className="grid h-7 w-7 place-items-center rounded-md text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
           </>
         )}
+        {collapsed && (
+          <button
+            onClick={signOut}
+            aria-label="Sign out"
+            title="Sign out"
+            className="grid h-7 w-7 place-items-center rounded-md text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+    </aside>
+  );
+}
       </div>
     </aside>
   );
