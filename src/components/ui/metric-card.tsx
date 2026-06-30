@@ -11,9 +11,10 @@ interface Props {
   trend: number;
   trendTone?: "green" | "amber" | "red";
   series: number[];
+  index?: number;
 }
 
-export function MetricCard({ label, value, display, trend, trendTone = "green", series }: Props) {
+export function MetricCard({ label, value, display, trend, trendTone = "green", series, index = 0 }: Props) {
   const mv = useMotionValue(0);
   const rounded = useTransform(mv, (latest) => (display ? display(latest) : Math.round(latest).toLocaleString()));
   const [text, setText] = useState(display ? display(0) : "0");
