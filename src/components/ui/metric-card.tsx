@@ -20,10 +20,10 @@ export function MetricCard({ label, value, display, trend, trendTone = "green", 
   const [text, setText] = useState(display ? display(0) : "0");
 
   useEffect(() => {
-    const controls = animate(mv, value, { duration: 1.2, ease: [0.16, 1, 0.32, 1] });
+    const controls = animate(mv, value, { duration: 1.2, delay: index * 0.04, ease: [0.16, 1, 0.32, 1] });
     const unsub = rounded.on("change", (v) => setText(String(v)));
     return () => { controls.stop(); unsub(); };
-  }, [value, mv, rounded]);
+  }, [value, mv, rounded, index]);
 
   const data = series.map((y, x) => ({ x, y }));
   const positive = trend >= 0;
