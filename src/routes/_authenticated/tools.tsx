@@ -12,7 +12,7 @@ const catColor: Record<string, string> = {
   retrieval: "var(--accent)", execution: "var(--amber)", memory: "var(--violet)", io: "var(--teal)",
 };
 
-export const Route = createFileRoute("/tools")({
+export const Route = createFileRoute("/_authenticated/tools")({
   head: () => ({ meta: [{ title: "Tools — Harness" }] }),
   component: () => (
     <>

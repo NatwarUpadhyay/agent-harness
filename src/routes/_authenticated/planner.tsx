@@ -14,7 +14,7 @@ const tasks = [
   { id: "t6", title: "Triage GitHub issues",         agent: "Capella",  status: "pending",   steps: 2, eta: "00:08" },
 ];
 
-export const Route = createFileRoute("/planner")({
+export const Route = createFileRoute("/_authenticated/planner")({
   head: () => ({ meta: [{ title: "Planner — Harness" }] }),
   component: PlannerPage,
 });

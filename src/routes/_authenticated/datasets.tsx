@@ -11,7 +11,7 @@ const datasets = [
   { id: "d6", name: "compliance_corpus.parquet",       type: "parquet", rows: 3_188,   size: "31 MB",   created: "2025-04-15", icon: FileSpreadsheet },
 ];
 
-export const Route = createFileRoute("/datasets")({
+export const Route = createFileRoute("/_authenticated/datasets")({
   head: () => ({ meta: [{ title: "Datasets — Harness" }] }),
   component: () => (
     <>

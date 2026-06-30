@@ -10,7 +10,7 @@ const providers = [
   { id: "meta",      name: "Meta",      color: "#0866FF", models: ["llama-3.3-70b", "llama-3.1-8b"],            status: "idle" },
 ];
 
-export const Route = createFileRoute("/models")({
+export const Route = createFileRoute("/_authenticated/models")({
   head: () => ({ meta: [{ title: "Models — Harness" }] }),
   component: () => (
     <>

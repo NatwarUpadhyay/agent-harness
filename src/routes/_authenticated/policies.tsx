@@ -16,7 +16,7 @@ const catColor: Record<string, string> = {
   safety: "var(--danger)", cost: "var(--warning)", latency: "var(--accent)",
 };
 
-export const Route = createFileRoute("/policies")({
+export const Route = createFileRoute("/_authenticated/policies")({
   head: () => ({ meta: [{ title: "Policies — Harness" }] }),
   component: PoliciesPage,
 });

@@ -15,7 +15,7 @@ const sourceColor: Record<string, string> = {
   arXiv: "var(--accent)", Internal: "var(--violet)", Anthropic: "var(--amber)",
 };
 
-export const Route = createFileRoute("/research")({
+export const Route = createFileRoute("/_authenticated/research")({
   head: () => ({ meta: [{ title: "Research — Harness" }] }),
   component: () => (
     <>

@@ -25,7 +25,7 @@ const cols: Column<Namespace>[] = [
   { key: "lastWrite", header: "Last write", render: (r) => <span className="text-[12px] text-[var(--text-muted)]">{r.lastWrite}</span> },
 ];
 
-export const Route = createFileRoute("/memory")({
+export const Route = createFileRoute("/_authenticated/memory")({
   head: () => ({ meta: [{ title: "Memory — Harness" }] }),
   component: () => (
     <>

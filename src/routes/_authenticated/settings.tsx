@@ -13,7 +13,7 @@ const fieldsByTab: Record<Tab, Array<[string, string]>> = {
   Integrations:  [["Slack", "Connected · #ai-ops"], ["PagerDuty", "Not connected"], ["Datadog", "Connected"]],
 };
 
-export const Route = createFileRoute("/settings")({
+export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Settings — Harness" }] }),
   component: SettingsPage,
 });
