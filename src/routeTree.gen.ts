@@ -9,7 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedRetrieverRouteImport } from './routes/_authenticated/retriever'
@@ -30,11 +29,6 @@ import { Route as AuthenticatedDatasetsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedContextRouteImport } from './routes/_authenticated/context'
 import { Route as AuthenticatedAgentsRouteImport } from './routes/_authenticated/agents'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedToolsRoute = AuthenticatedToolsRouteImport.update({
   id: '/_authenticated/tools',
   path: '/tools',
@@ -136,7 +130,6 @@ const AuthenticatedAgentsRoute = AuthenticatedAgentsRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
   '/agents': typeof AuthenticatedAgentsRoute
   '/context': typeof AuthenticatedContextRoute
   '/datasets': typeof AuthenticatedDatasetsRoute
@@ -158,7 +151,6 @@ export interface FileRoutesByFullPath {
   '/tools': typeof AuthenticatedToolsRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
   '/agents': typeof AuthenticatedAgentsRoute
   '/context': typeof AuthenticatedContextRoute
   '/datasets': typeof AuthenticatedDatasetsRoute
@@ -181,7 +173,6 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
   '/_authenticated/agents': typeof AuthenticatedAgentsRoute
   '/_authenticated/context': typeof AuthenticatedContextRoute
   '/_authenticated/datasets': typeof AuthenticatedDatasetsRoute
@@ -205,7 +196,6 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
     | '/agents'
     | '/context'
     | '/datasets'
@@ -227,7 +217,6 @@ export interface FileRouteTypes {
     | '/tools'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/agents'
     | '/context'
     | '/datasets'
@@ -249,7 +238,6 @@ export interface FileRouteTypes {
     | '/tools'
   id:
     | '__root__'
-    | '/'
     | '/_authenticated/agents'
     | '/_authenticated/context'
     | '/_authenticated/datasets'
@@ -272,7 +260,6 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
   AuthenticatedAgentsRoute: typeof AuthenticatedAgentsRoute
   AuthenticatedContextRoute: typeof AuthenticatedContextRoute
   AuthenticatedDatasetsRoute: typeof AuthenticatedDatasetsRoute
@@ -296,13 +283,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated/tools': {
       id: '/_authenticated/tools'
       path: '/tools'
@@ -440,7 +420,6 @@ declare module '@tanstack/react-router' {
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   AuthenticatedAgentsRoute: AuthenticatedAgentsRoute,
   AuthenticatedContextRoute: AuthenticatedContextRoute,
   AuthenticatedDatasetsRoute: AuthenticatedDatasetsRoute,
