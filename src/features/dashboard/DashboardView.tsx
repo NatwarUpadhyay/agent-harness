@@ -70,7 +70,7 @@ export function DashboardView() {
       </div>
 
       {/* 60/40 split */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mt-6">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mt-8">
         <motion.div
           initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
           className="lg:col-span-3 rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-5"
@@ -81,14 +81,19 @@ export function DashboardView() {
               <AreaChart data={timeseries} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
                 <defs>
                   <linearGradient id="callsFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%"   stopColor="#4F7AFF" stopOpacity={0.30} />
-                    <stop offset="100%" stopColor="#8B5CF6" stopOpacity={0.0} />
+                    <stop offset="0%"   stopColor="rgba(79,122,255,0.25)" />
+                    <stop offset="100%" stopColor="rgba(79,122,255,0)" />
                   </linearGradient>
                 </defs>
                 <CartesianGrid stroke="var(--border-subtle)" vertical={false} />
                 <XAxis dataKey="date" stroke="var(--text-muted)" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(d) => d.slice(5)} />
                 <YAxis stroke="var(--text-muted)" fontSize={11} tickLine={false} axisLine={false} />
-                <Tooltip contentStyle={tooltipStyle} cursor={{ stroke: "var(--accent-border)" }} />
+                <Tooltip
+                  contentStyle={tooltipStyle}
+                  cursor={{ stroke: "var(--accent-border)" }}
+                  labelFormatter={(d) => `Date: ${d}`}
+                  formatter={(v: number) => [v.toLocaleString(), "Agent calls"]}
+                />
                 <Area type="monotone" dataKey="agentCalls" stroke="#4F7AFF" strokeWidth={2} fill="url(#callsFill)" />
               </AreaChart>
             </ResponsiveContainer>
@@ -116,7 +121,14 @@ export function DashboardView() {
                   </div>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-[var(--accent-muted)] text-[var(--text-accent)] font-mono-tabular">{a.model}</span>
-                    <div className="flex-1"><InlineBarStat value={a.successRate} /></div>
+                    <div className="h-1 w-20 rounded-full bg-[var(--bg-elevated)] overflow-hidden shrink-0">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${Math.min(100, a.successRate)}%` }}
+                        transition={{ duration: 0.9, delay: 0.25 + i * 0.05, ease: [0.16, 1, 0.32, 1] }}
+                        className="h-full rounded-full bg-[var(--accent)]"
+                      />
+                    </div>
                   </div>
                 </div>
               </motion.li>
@@ -125,8 +137,7 @@ export function DashboardView() {
         </motion.div>
       </div>
 
-      {/* Three column */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-8">
         <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
           <SectionHeader title="Tool call distribution" />
           <div className="relative h-[200px]">
