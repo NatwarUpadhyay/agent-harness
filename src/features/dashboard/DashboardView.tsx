@@ -2,13 +2,12 @@ import { motion } from "framer-motion";
 import { useMemo } from "react";
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer,
-  PieChart, Pie, Cell, RadialBarChart, RadialBar, BarChart, Bar, Legend,
+  PieChart, Pie, Cell, BarChart, Bar, Legend,
 } from "recharts";
 import { Calendar, Download } from "lucide-react";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { MetricCard } from "@/components/ui/metric-card";
 import { StatusDot } from "@/components/ui/status-badge";
-import { InlineBarStat } from "@/components/ui/inline-bar-stat";
 import { agents, tools, timeseries, evaluations, experiments, relativeTime } from "@/lib/data/synthetic";
 
 const tooltipStyle = {
@@ -64,14 +63,14 @@ export function DashboardView() {
 
       {/* KPI Strip */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard label="Active agents" value={47} trend={12} trendTone="green" series={[30,32,35,40,47]} />
-        <MetricCard label="Avg latency" value={284} display={(v) => `${Math.round(v)}ms`} trend={-8} trendTone="green" series={[340,322,310,295,284]} />
-        <MetricCard label="Eval score" value={94.2} display={(v) => `${v.toFixed(1)}%`} trend={2.1} trendTone="green" series={[91,92,92.5,93.6,94.2]} />
-        <MetricCard label="Monthly cost" value={2847} display={(v) => `$${Math.round(v).toLocaleString()}`} trend={5} trendTone="amber" series={[2500,2620,2700,2780,2847]} />
+        <MetricCard index={0} label="Active agents" value={47} trend={12} trendTone="green" series={[30,32,35,40,47]} />
+        <MetricCard index={1} label="Avg latency" value={284} display={(v) => `${Math.round(v)}ms`} trend={-8} trendTone="green" series={[340,322,310,295,284]} />
+        <MetricCard index={2} label="Eval score" value={94.2} display={(v) => `${v.toFixed(1)}%`} trend={2.1} trendTone="green" series={[91,92,92.5,93.6,94.2]} />
+        <MetricCard index={3} label="Monthly cost" value={2847} display={(v) => `$${Math.round(v).toLocaleString()}`} trend={5} trendTone="amber" series={[2500,2620,2700,2780,2847]} />
       </div>
 
       {/* 60/40 split */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mt-6">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mt-8">
         <motion.div
           initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
           className="lg:col-span-3 rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-5"
@@ -82,14 +81,19 @@ export function DashboardView() {
               <AreaChart data={timeseries} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
                 <defs>
                   <linearGradient id="callsFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%"   stopColor="#4F7AFF" stopOpacity={0.30} />
-                    <stop offset="100%" stopColor="#8B5CF6" stopOpacity={0.0} />
+                    <stop offset="0%"   stopColor="rgba(79,122,255,0.25)" />
+                    <stop offset="100%" stopColor="rgba(79,122,255,0)" />
                   </linearGradient>
                 </defs>
                 <CartesianGrid stroke="var(--border-subtle)" vertical={false} />
                 <XAxis dataKey="date" stroke="var(--text-muted)" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(d) => d.slice(5)} />
                 <YAxis stroke="var(--text-muted)" fontSize={11} tickLine={false} axisLine={false} />
-                <Tooltip contentStyle={tooltipStyle} cursor={{ stroke: "var(--accent-border)" }} />
+                <Tooltip
+                  contentStyle={tooltipStyle}
+                  cursor={{ stroke: "var(--accent-border)" }}
+                  labelFormatter={(d) => `Date: ${d}`}
+                  formatter={(v: number) => [v.toLocaleString(), "Agent calls"]}
+                />
                 <Area type="monotone" dataKey="agentCalls" stroke="#4F7AFF" strokeWidth={2} fill="url(#callsFill)" />
               </AreaChart>
             </ResponsiveContainer>
@@ -117,7 +121,14 @@ export function DashboardView() {
                   </div>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-[var(--accent-muted)] text-[var(--text-accent)] font-mono-tabular">{a.model}</span>
-                    <div className="flex-1"><InlineBarStat value={a.successRate} /></div>
+                    <div className="h-1 w-20 rounded-full bg-[var(--bg-elevated)] overflow-hidden shrink-0">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${Math.min(100, a.successRate)}%` }}
+                        transition={{ duration: 0.9, delay: 0.25 + i * 0.05, ease: [0.16, 1, 0.32, 1] }}
+                        className="h-full rounded-full bg-[var(--accent)]"
+                      />
+                    </div>
                   </div>
                 </div>
               </motion.li>
@@ -126,8 +137,7 @@ export function DashboardView() {
         </motion.div>
       </div>
 
-      {/* Three column */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-8">
         <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
           <SectionHeader title="Tool call distribution" />
           <div className="relative h-[200px]">
@@ -158,12 +168,26 @@ export function DashboardView() {
 
         <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
           <SectionHeader title="Context health" />
-          <div className="relative h-[200px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <RadialBarChart innerRadius="70%" outerRadius="100%" data={[{ name: "Health", value: 73, fill: "#4F7AFF" }]} startAngle={210} endAngle={-30}>
-                <RadialBar background={{ fill: "var(--bg-elevated)" }} dataKey="value" cornerRadius={8} />
-              </RadialBarChart>
-            </ResponsiveContainer>
+          <div className="relative h-[200px] flex items-center justify-center">
+            <svg width="180" height="180" viewBox="0 0 180 180" className="-rotate-90">
+              <circle
+                cx="90" cy="90" r="70"
+                fill="none"
+                stroke="var(--bg-elevated)"
+                strokeWidth="10"
+              />
+              <motion.circle
+                cx="90" cy="90" r="70"
+                fill="none"
+                stroke="var(--accent)"
+                strokeWidth="10"
+                strokeLinecap="round"
+                strokeDasharray={2 * Math.PI * 70}
+                initial={{ strokeDashoffset: 2 * Math.PI * 70 }}
+                animate={{ strokeDashoffset: 2 * Math.PI * 70 * (1 - 0.73) }}
+                transition={{ duration: 1, ease: [0.16, 1, 0.32, 1] }}
+              />
+            </svg>
             <div className="absolute inset-0 grid place-items-center pointer-events-none">
               <div className="text-center">
                 <div className="text-[28px] font-semibold font-mono-tabular text-[var(--text-primary)]">73%</div>
@@ -204,7 +228,7 @@ export function DashboardView() {
       </div>
 
       {/* Experiment comparison */}
-      <div className="mt-6 rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
+      <div className="mt-8 rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
         <SectionHeader title="Experiment comparison" />
         <div className="h-[260px]">
           <ResponsiveContainer width="100%" height="100%">

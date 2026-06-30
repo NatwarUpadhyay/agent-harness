@@ -11,18 +11,19 @@ interface Props {
   trend: number;
   trendTone?: "green" | "amber" | "red";
   series: number[];
+  index?: number;
 }
 
-export function MetricCard({ label, value, display, trend, trendTone = "green", series }: Props) {
+export function MetricCard({ label, value, display, trend, trendTone = "green", series, index = 0 }: Props) {
   const mv = useMotionValue(0);
   const rounded = useTransform(mv, (latest) => (display ? display(latest) : Math.round(latest).toLocaleString()));
   const [text, setText] = useState(display ? display(0) : "0");
 
   useEffect(() => {
-    const controls = animate(mv, value, { duration: 1.2, ease: [0.16, 1, 0.32, 1] });
+    const controls = animate(mv, value, { duration: 1.2, delay: index * 0.04, ease: [0.16, 1, 0.32, 1] });
     const unsub = rounded.on("change", (v) => setText(String(v)));
     return () => { controls.stop(); unsub(); };
-  }, [value, mv, rounded]);
+  }, [value, mv, rounded, index]);
 
   const data = series.map((y, x) => ({ x, y }));
   const positive = trend >= 0;
@@ -35,7 +36,7 @@ export function MetricCard({ label, value, display, trend, trendTone = "green", 
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: [0.16, 1, 0.32, 1] }}
+      transition={{ duration: 0.4, delay: index * 0.04, ease: [0.16, 1, 0.32, 1] }}
       className="rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-5 hover:border-[var(--border-strong)] transition-colors"
     >
       <div className="flex items-start justify-between mb-2">
