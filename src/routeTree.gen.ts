@@ -9,194 +9,198 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ToolsRouteImport } from './routes/tools'
-import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as RetrieverRouteImport } from './routes/retriever'
-import { Route as ResearchRouteImport } from './routes/research'
-import { Route as PromptsRouteImport } from './routes/prompts'
-import { Route as ProjectsRouteImport } from './routes/projects'
-import { Route as PoliciesRouteImport } from './routes/policies'
-import { Route as PlannerRouteImport } from './routes/planner'
-import { Route as ObservabilityRouteImport } from './routes/observability'
-import { Route as ModelsRouteImport } from './routes/models'
-import { Route as MemoryRouteImport } from './routes/memory'
-import { Route as McpRouteImport } from './routes/mcp'
-import { Route as HarnessRouteImport } from './routes/harness'
-import { Route as ExperimentsRouteImport } from './routes/experiments'
-import { Route as EvaluationsRouteImport } from './routes/evaluations'
-import { Route as DeploymentsRouteImport } from './routes/deployments'
-import { Route as DatasetsRouteImport } from './routes/datasets'
-import { Route as ContextRouteImport } from './routes/context'
-import { Route as AgentsRouteImport } from './routes/agents'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedRetrieverRouteImport } from './routes/_authenticated/retriever'
+import { Route as AuthenticatedResearchRouteImport } from './routes/_authenticated/research'
+import { Route as AuthenticatedPromptsRouteImport } from './routes/_authenticated/prompts'
+import { Route as AuthenticatedProjectsRouteImport } from './routes/_authenticated/projects'
+import { Route as AuthenticatedPoliciesRouteImport } from './routes/_authenticated/policies'
+import { Route as AuthenticatedPlannerRouteImport } from './routes/_authenticated/planner'
+import { Route as AuthenticatedObservabilityRouteImport } from './routes/_authenticated/observability'
+import { Route as AuthenticatedModelsRouteImport } from './routes/_authenticated/models'
+import { Route as AuthenticatedMemoryRouteImport } from './routes/_authenticated/memory'
+import { Route as AuthenticatedMcpRouteImport } from './routes/_authenticated/mcp'
+import { Route as AuthenticatedHarnessRouteImport } from './routes/_authenticated/harness'
+import { Route as AuthenticatedExperimentsRouteImport } from './routes/_authenticated/experiments'
+import { Route as AuthenticatedEvaluationsRouteImport } from './routes/_authenticated/evaluations'
+import { Route as AuthenticatedDeploymentsRouteImport } from './routes/_authenticated/deployments'
+import { Route as AuthenticatedDatasetsRouteImport } from './routes/_authenticated/datasets'
+import { Route as AuthenticatedContextRouteImport } from './routes/_authenticated/context'
+import { Route as AuthenticatedAgentsRouteImport } from './routes/_authenticated/agents'
 
-const ToolsRoute = ToolsRouteImport.update({
-  id: '/tools',
-  path: '/tools',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SettingsRoute = SettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RetrieverRoute = RetrieverRouteImport.update({
-  id: '/retriever',
-  path: '/retriever',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ResearchRoute = ResearchRouteImport.update({
-  id: '/research',
-  path: '/research',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PromptsRoute = PromptsRouteImport.update({
-  id: '/prompts',
-  path: '/prompts',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProjectsRoute = ProjectsRouteImport.update({
-  id: '/projects',
-  path: '/projects',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PoliciesRoute = PoliciesRouteImport.update({
-  id: '/policies',
-  path: '/policies',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PlannerRoute = PlannerRouteImport.update({
-  id: '/planner',
-  path: '/planner',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ObservabilityRoute = ObservabilityRouteImport.update({
-  id: '/observability',
-  path: '/observability',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ModelsRoute = ModelsRouteImport.update({
-  id: '/models',
-  path: '/models',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MemoryRoute = MemoryRouteImport.update({
-  id: '/memory',
-  path: '/memory',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const McpRoute = McpRouteImport.update({
-  id: '/mcp',
-  path: '/mcp',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HarnessRoute = HarnessRouteImport.update({
-  id: '/harness',
-  path: '/harness',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ExperimentsRoute = ExperimentsRouteImport.update({
-  id: '/experiments',
-  path: '/experiments',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EvaluationsRoute = EvaluationsRouteImport.update({
-  id: '/evaluations',
-  path: '/evaluations',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DeploymentsRoute = DeploymentsRouteImport.update({
-  id: '/deployments',
-  path: '/deployments',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DatasetsRoute = DatasetsRouteImport.update({
-  id: '/datasets',
-  path: '/datasets',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ContextRoute = ContextRouteImport.update({
-  id: '/context',
-  path: '/context',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AgentsRoute = AgentsRouteImport.update({
-  id: '/agents',
-  path: '/agents',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedToolsRoute = AuthenticatedToolsRouteImport.update({
+  id: '/_authenticated/tools',
+  path: '/tools',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/_authenticated/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRetrieverRoute = AuthenticatedRetrieverRouteImport.update({
+  id: '/_authenticated/retriever',
+  path: '/retriever',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedResearchRoute = AuthenticatedResearchRouteImport.update({
+  id: '/_authenticated/research',
+  path: '/research',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedPromptsRoute = AuthenticatedPromptsRouteImport.update({
+  id: '/_authenticated/prompts',
+  path: '/prompts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedProjectsRoute = AuthenticatedProjectsRouteImport.update({
+  id: '/_authenticated/projects',
+  path: '/projects',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedPoliciesRoute = AuthenticatedPoliciesRouteImport.update({
+  id: '/_authenticated/policies',
+  path: '/policies',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedPlannerRoute = AuthenticatedPlannerRouteImport.update({
+  id: '/_authenticated/planner',
+  path: '/planner',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedObservabilityRoute =
+  AuthenticatedObservabilityRouteImport.update({
+    id: '/_authenticated/observability',
+    path: '/observability',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedModelsRoute = AuthenticatedModelsRouteImport.update({
+  id: '/_authenticated/models',
+  path: '/models',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedMemoryRoute = AuthenticatedMemoryRouteImport.update({
+  id: '/_authenticated/memory',
+  path: '/memory',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedMcpRoute = AuthenticatedMcpRouteImport.update({
+  id: '/_authenticated/mcp',
+  path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedHarnessRoute = AuthenticatedHarnessRouteImport.update({
+  id: '/_authenticated/harness',
+  path: '/harness',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedExperimentsRoute =
+  AuthenticatedExperimentsRouteImport.update({
+    id: '/_authenticated/experiments',
+    path: '/experiments',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedEvaluationsRoute =
+  AuthenticatedEvaluationsRouteImport.update({
+    id: '/_authenticated/evaluations',
+    path: '/evaluations',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedDeploymentsRoute =
+  AuthenticatedDeploymentsRouteImport.update({
+    id: '/_authenticated/deployments',
+    path: '/deployments',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedDatasetsRoute = AuthenticatedDatasetsRouteImport.update({
+  id: '/_authenticated/datasets',
+  path: '/datasets',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedContextRoute = AuthenticatedContextRouteImport.update({
+  id: '/_authenticated/context',
+  path: '/context',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAgentsRoute = AuthenticatedAgentsRouteImport.update({
+  id: '/_authenticated/agents',
+  path: '/agents',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/agents': typeof AgentsRoute
-  '/context': typeof ContextRoute
-  '/datasets': typeof DatasetsRoute
-  '/deployments': typeof DeploymentsRoute
-  '/evaluations': typeof EvaluationsRoute
-  '/experiments': typeof ExperimentsRoute
-  '/harness': typeof HarnessRoute
-  '/mcp': typeof McpRoute
-  '/memory': typeof MemoryRoute
-  '/models': typeof ModelsRoute
-  '/observability': typeof ObservabilityRoute
-  '/planner': typeof PlannerRoute
-  '/policies': typeof PoliciesRoute
-  '/projects': typeof ProjectsRoute
-  '/prompts': typeof PromptsRoute
-  '/research': typeof ResearchRoute
-  '/retriever': typeof RetrieverRoute
-  '/settings': typeof SettingsRoute
-  '/tools': typeof ToolsRoute
+  '/agents': typeof AuthenticatedAgentsRoute
+  '/context': typeof AuthenticatedContextRoute
+  '/datasets': typeof AuthenticatedDatasetsRoute
+  '/deployments': typeof AuthenticatedDeploymentsRoute
+  '/evaluations': typeof AuthenticatedEvaluationsRoute
+  '/experiments': typeof AuthenticatedExperimentsRoute
+  '/harness': typeof AuthenticatedHarnessRoute
+  '/mcp': typeof AuthenticatedMcpRoute
+  '/memory': typeof AuthenticatedMemoryRoute
+  '/models': typeof AuthenticatedModelsRoute
+  '/observability': typeof AuthenticatedObservabilityRoute
+  '/planner': typeof AuthenticatedPlannerRoute
+  '/policies': typeof AuthenticatedPoliciesRoute
+  '/projects': typeof AuthenticatedProjectsRoute
+  '/prompts': typeof AuthenticatedPromptsRoute
+  '/research': typeof AuthenticatedResearchRoute
+  '/retriever': typeof AuthenticatedRetrieverRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/tools': typeof AuthenticatedToolsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/agents': typeof AgentsRoute
-  '/context': typeof ContextRoute
-  '/datasets': typeof DatasetsRoute
-  '/deployments': typeof DeploymentsRoute
-  '/evaluations': typeof EvaluationsRoute
-  '/experiments': typeof ExperimentsRoute
-  '/harness': typeof HarnessRoute
-  '/mcp': typeof McpRoute
-  '/memory': typeof MemoryRoute
-  '/models': typeof ModelsRoute
-  '/observability': typeof ObservabilityRoute
-  '/planner': typeof PlannerRoute
-  '/policies': typeof PoliciesRoute
-  '/projects': typeof ProjectsRoute
-  '/prompts': typeof PromptsRoute
-  '/research': typeof ResearchRoute
-  '/retriever': typeof RetrieverRoute
-  '/settings': typeof SettingsRoute
-  '/tools': typeof ToolsRoute
+  '/agents': typeof AuthenticatedAgentsRoute
+  '/context': typeof AuthenticatedContextRoute
+  '/datasets': typeof AuthenticatedDatasetsRoute
+  '/deployments': typeof AuthenticatedDeploymentsRoute
+  '/evaluations': typeof AuthenticatedEvaluationsRoute
+  '/experiments': typeof AuthenticatedExperimentsRoute
+  '/harness': typeof AuthenticatedHarnessRoute
+  '/mcp': typeof AuthenticatedMcpRoute
+  '/memory': typeof AuthenticatedMemoryRoute
+  '/models': typeof AuthenticatedModelsRoute
+  '/observability': typeof AuthenticatedObservabilityRoute
+  '/planner': typeof AuthenticatedPlannerRoute
+  '/policies': typeof AuthenticatedPoliciesRoute
+  '/projects': typeof AuthenticatedProjectsRoute
+  '/prompts': typeof AuthenticatedPromptsRoute
+  '/research': typeof AuthenticatedResearchRoute
+  '/retriever': typeof AuthenticatedRetrieverRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/tools': typeof AuthenticatedToolsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/agents': typeof AgentsRoute
-  '/context': typeof ContextRoute
-  '/datasets': typeof DatasetsRoute
-  '/deployments': typeof DeploymentsRoute
-  '/evaluations': typeof EvaluationsRoute
-  '/experiments': typeof ExperimentsRoute
-  '/harness': typeof HarnessRoute
-  '/mcp': typeof McpRoute
-  '/memory': typeof MemoryRoute
-  '/models': typeof ModelsRoute
-  '/observability': typeof ObservabilityRoute
-  '/planner': typeof PlannerRoute
-  '/policies': typeof PoliciesRoute
-  '/projects': typeof ProjectsRoute
-  '/prompts': typeof PromptsRoute
-  '/research': typeof ResearchRoute
-  '/retriever': typeof RetrieverRoute
-  '/settings': typeof SettingsRoute
-  '/tools': typeof ToolsRoute
+  '/_authenticated/agents': typeof AuthenticatedAgentsRoute
+  '/_authenticated/context': typeof AuthenticatedContextRoute
+  '/_authenticated/datasets': typeof AuthenticatedDatasetsRoute
+  '/_authenticated/deployments': typeof AuthenticatedDeploymentsRoute
+  '/_authenticated/evaluations': typeof AuthenticatedEvaluationsRoute
+  '/_authenticated/experiments': typeof AuthenticatedExperimentsRoute
+  '/_authenticated/harness': typeof AuthenticatedHarnessRoute
+  '/_authenticated/mcp': typeof AuthenticatedMcpRoute
+  '/_authenticated/memory': typeof AuthenticatedMemoryRoute
+  '/_authenticated/models': typeof AuthenticatedModelsRoute
+  '/_authenticated/observability': typeof AuthenticatedObservabilityRoute
+  '/_authenticated/planner': typeof AuthenticatedPlannerRoute
+  '/_authenticated/policies': typeof AuthenticatedPoliciesRoute
+  '/_authenticated/projects': typeof AuthenticatedProjectsRoute
+  '/_authenticated/prompts': typeof AuthenticatedPromptsRoute
+  '/_authenticated/research': typeof AuthenticatedResearchRoute
+  '/_authenticated/retriever': typeof AuthenticatedRetrieverRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/tools': typeof AuthenticatedToolsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -246,185 +250,52 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/agents'
-    | '/context'
-    | '/datasets'
-    | '/deployments'
-    | '/evaluations'
-    | '/experiments'
-    | '/harness'
-    | '/mcp'
-    | '/memory'
-    | '/models'
-    | '/observability'
-    | '/planner'
-    | '/policies'
-    | '/projects'
-    | '/prompts'
-    | '/research'
-    | '/retriever'
-    | '/settings'
-    | '/tools'
+    | '/_authenticated/agents'
+    | '/_authenticated/context'
+    | '/_authenticated/datasets'
+    | '/_authenticated/deployments'
+    | '/_authenticated/evaluations'
+    | '/_authenticated/experiments'
+    | '/_authenticated/harness'
+    | '/_authenticated/mcp'
+    | '/_authenticated/memory'
+    | '/_authenticated/models'
+    | '/_authenticated/observability'
+    | '/_authenticated/planner'
+    | '/_authenticated/policies'
+    | '/_authenticated/projects'
+    | '/_authenticated/prompts'
+    | '/_authenticated/research'
+    | '/_authenticated/retriever'
+    | '/_authenticated/settings'
+    | '/_authenticated/tools'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AgentsRoute: typeof AgentsRoute
-  ContextRoute: typeof ContextRoute
-  DatasetsRoute: typeof DatasetsRoute
-  DeploymentsRoute: typeof DeploymentsRoute
-  EvaluationsRoute: typeof EvaluationsRoute
-  ExperimentsRoute: typeof ExperimentsRoute
-  HarnessRoute: typeof HarnessRoute
-  McpRoute: typeof McpRoute
-  MemoryRoute: typeof MemoryRoute
-  ModelsRoute: typeof ModelsRoute
-  ObservabilityRoute: typeof ObservabilityRoute
-  PlannerRoute: typeof PlannerRoute
-  PoliciesRoute: typeof PoliciesRoute
-  ProjectsRoute: typeof ProjectsRoute
-  PromptsRoute: typeof PromptsRoute
-  ResearchRoute: typeof ResearchRoute
-  RetrieverRoute: typeof RetrieverRoute
-  SettingsRoute: typeof SettingsRoute
-  ToolsRoute: typeof ToolsRoute
+  AuthenticatedAgentsRoute: typeof AuthenticatedAgentsRoute
+  AuthenticatedContextRoute: typeof AuthenticatedContextRoute
+  AuthenticatedDatasetsRoute: typeof AuthenticatedDatasetsRoute
+  AuthenticatedDeploymentsRoute: typeof AuthenticatedDeploymentsRoute
+  AuthenticatedEvaluationsRoute: typeof AuthenticatedEvaluationsRoute
+  AuthenticatedExperimentsRoute: typeof AuthenticatedExperimentsRoute
+  AuthenticatedHarnessRoute: typeof AuthenticatedHarnessRoute
+  AuthenticatedMcpRoute: typeof AuthenticatedMcpRoute
+  AuthenticatedMemoryRoute: typeof AuthenticatedMemoryRoute
+  AuthenticatedModelsRoute: typeof AuthenticatedModelsRoute
+  AuthenticatedObservabilityRoute: typeof AuthenticatedObservabilityRoute
+  AuthenticatedPlannerRoute: typeof AuthenticatedPlannerRoute
+  AuthenticatedPoliciesRoute: typeof AuthenticatedPoliciesRoute
+  AuthenticatedProjectsRoute: typeof AuthenticatedProjectsRoute
+  AuthenticatedPromptsRoute: typeof AuthenticatedPromptsRoute
+  AuthenticatedResearchRoute: typeof AuthenticatedResearchRoute
+  AuthenticatedRetrieverRoute: typeof AuthenticatedRetrieverRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedToolsRoute: typeof AuthenticatedToolsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/tools': {
-      id: '/tools'
-      path: '/tools'
-      fullPath: '/tools'
-      preLoaderRoute: typeof ToolsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/retriever': {
-      id: '/retriever'
-      path: '/retriever'
-      fullPath: '/retriever'
-      preLoaderRoute: typeof RetrieverRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/research': {
-      id: '/research'
-      path: '/research'
-      fullPath: '/research'
-      preLoaderRoute: typeof ResearchRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/prompts': {
-      id: '/prompts'
-      path: '/prompts'
-      fullPath: '/prompts'
-      preLoaderRoute: typeof PromptsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/projects': {
-      id: '/projects'
-      path: '/projects'
-      fullPath: '/projects'
-      preLoaderRoute: typeof ProjectsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/policies': {
-      id: '/policies'
-      path: '/policies'
-      fullPath: '/policies'
-      preLoaderRoute: typeof PoliciesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/planner': {
-      id: '/planner'
-      path: '/planner'
-      fullPath: '/planner'
-      preLoaderRoute: typeof PlannerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/observability': {
-      id: '/observability'
-      path: '/observability'
-      fullPath: '/observability'
-      preLoaderRoute: typeof ObservabilityRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/models': {
-      id: '/models'
-      path: '/models'
-      fullPath: '/models'
-      preLoaderRoute: typeof ModelsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/memory': {
-      id: '/memory'
-      path: '/memory'
-      fullPath: '/memory'
-      preLoaderRoute: typeof MemoryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mcp': {
-      id: '/mcp'
-      path: '/mcp'
-      fullPath: '/mcp'
-      preLoaderRoute: typeof McpRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/harness': {
-      id: '/harness'
-      path: '/harness'
-      fullPath: '/harness'
-      preLoaderRoute: typeof HarnessRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/experiments': {
-      id: '/experiments'
-      path: '/experiments'
-      fullPath: '/experiments'
-      preLoaderRoute: typeof ExperimentsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/evaluations': {
-      id: '/evaluations'
-      path: '/evaluations'
-      fullPath: '/evaluations'
-      preLoaderRoute: typeof EvaluationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/deployments': {
-      id: '/deployments'
-      path: '/deployments'
-      fullPath: '/deployments'
-      preLoaderRoute: typeof DeploymentsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/datasets': {
-      id: '/datasets'
-      path: '/datasets'
-      fullPath: '/datasets'
-      preLoaderRoute: typeof DatasetsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/context': {
-      id: '/context'
-      path: '/context'
-      fullPath: '/context'
-      preLoaderRoute: typeof ContextRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/agents': {
-      id: '/agents'
-      path: '/agents'
-      fullPath: '/agents'
-      preLoaderRoute: typeof AgentsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -432,30 +303,163 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/tools': {
+      id: '/_authenticated/tools'
+      path: '/tools'
+      fullPath: '/tools'
+      preLoaderRoute: typeof AuthenticatedToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/retriever': {
+      id: '/_authenticated/retriever'
+      path: '/retriever'
+      fullPath: '/retriever'
+      preLoaderRoute: typeof AuthenticatedRetrieverRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/research': {
+      id: '/_authenticated/research'
+      path: '/research'
+      fullPath: '/research'
+      preLoaderRoute: typeof AuthenticatedResearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/prompts': {
+      id: '/_authenticated/prompts'
+      path: '/prompts'
+      fullPath: '/prompts'
+      preLoaderRoute: typeof AuthenticatedPromptsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/projects': {
+      id: '/_authenticated/projects'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof AuthenticatedProjectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/policies': {
+      id: '/_authenticated/policies'
+      path: '/policies'
+      fullPath: '/policies'
+      preLoaderRoute: typeof AuthenticatedPoliciesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/planner': {
+      id: '/_authenticated/planner'
+      path: '/planner'
+      fullPath: '/planner'
+      preLoaderRoute: typeof AuthenticatedPlannerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/observability': {
+      id: '/_authenticated/observability'
+      path: '/observability'
+      fullPath: '/observability'
+      preLoaderRoute: typeof AuthenticatedObservabilityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/models': {
+      id: '/_authenticated/models'
+      path: '/models'
+      fullPath: '/models'
+      preLoaderRoute: typeof AuthenticatedModelsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/memory': {
+      id: '/_authenticated/memory'
+      path: '/memory'
+      fullPath: '/memory'
+      preLoaderRoute: typeof AuthenticatedMemoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/mcp': {
+      id: '/_authenticated/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof AuthenticatedMcpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/harness': {
+      id: '/_authenticated/harness'
+      path: '/harness'
+      fullPath: '/harness'
+      preLoaderRoute: typeof AuthenticatedHarnessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/experiments': {
+      id: '/_authenticated/experiments'
+      path: '/experiments'
+      fullPath: '/experiments'
+      preLoaderRoute: typeof AuthenticatedExperimentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/evaluations': {
+      id: '/_authenticated/evaluations'
+      path: '/evaluations'
+      fullPath: '/evaluations'
+      preLoaderRoute: typeof AuthenticatedEvaluationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/deployments': {
+      id: '/_authenticated/deployments'
+      path: '/deployments'
+      fullPath: '/deployments'
+      preLoaderRoute: typeof AuthenticatedDeploymentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/datasets': {
+      id: '/_authenticated/datasets'
+      path: '/datasets'
+      fullPath: '/datasets'
+      preLoaderRoute: typeof AuthenticatedDatasetsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/context': {
+      id: '/_authenticated/context'
+      path: '/context'
+      fullPath: '/context'
+      preLoaderRoute: typeof AuthenticatedContextRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/agents': {
+      id: '/_authenticated/agents'
+      path: '/agents'
+      fullPath: '/agents'
+      preLoaderRoute: typeof AuthenticatedAgentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AgentsRoute: AgentsRoute,
-  ContextRoute: ContextRoute,
-  DatasetsRoute: DatasetsRoute,
-  DeploymentsRoute: DeploymentsRoute,
-  EvaluationsRoute: EvaluationsRoute,
-  ExperimentsRoute: ExperimentsRoute,
-  HarnessRoute: HarnessRoute,
-  McpRoute: McpRoute,
-  MemoryRoute: MemoryRoute,
-  ModelsRoute: ModelsRoute,
-  ObservabilityRoute: ObservabilityRoute,
-  PlannerRoute: PlannerRoute,
-  PoliciesRoute: PoliciesRoute,
-  ProjectsRoute: ProjectsRoute,
-  PromptsRoute: PromptsRoute,
-  ResearchRoute: ResearchRoute,
-  RetrieverRoute: RetrieverRoute,
-  SettingsRoute: SettingsRoute,
-  ToolsRoute: ToolsRoute,
+  AuthenticatedAgentsRoute: AuthenticatedAgentsRoute,
+  AuthenticatedContextRoute: AuthenticatedContextRoute,
+  AuthenticatedDatasetsRoute: AuthenticatedDatasetsRoute,
+  AuthenticatedDeploymentsRoute: AuthenticatedDeploymentsRoute,
+  AuthenticatedEvaluationsRoute: AuthenticatedEvaluationsRoute,
+  AuthenticatedExperimentsRoute: AuthenticatedExperimentsRoute,
+  AuthenticatedHarnessRoute: AuthenticatedHarnessRoute,
+  AuthenticatedMcpRoute: AuthenticatedMcpRoute,
+  AuthenticatedMemoryRoute: AuthenticatedMemoryRoute,
+  AuthenticatedModelsRoute: AuthenticatedModelsRoute,
+  AuthenticatedObservabilityRoute: AuthenticatedObservabilityRoute,
+  AuthenticatedPlannerRoute: AuthenticatedPlannerRoute,
+  AuthenticatedPoliciesRoute: AuthenticatedPoliciesRoute,
+  AuthenticatedProjectsRoute: AuthenticatedProjectsRoute,
+  AuthenticatedPromptsRoute: AuthenticatedPromptsRoute,
+  AuthenticatedResearchRoute: AuthenticatedResearchRoute,
+  AuthenticatedRetrieverRoute: AuthenticatedRetrieverRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedToolsRoute: AuthenticatedToolsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
