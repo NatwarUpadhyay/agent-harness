@@ -9,6 +9,9 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedRetrieverRouteImport } from './routes/_authenticated/retriever'
@@ -26,112 +29,135 @@ import { Route as AuthenticatedExperimentsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedEvaluationsRouteImport } from './routes/_authenticated/evaluations'
 import { Route as AuthenticatedDeploymentsRouteImport } from './routes/_authenticated/deployments'
 import { Route as AuthenticatedDatasetsRouteImport } from './routes/_authenticated/datasets'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedContextRouteImport } from './routes/_authenticated/context'
 import { Route as AuthenticatedAgentsRouteImport } from './routes/_authenticated/agents'
 
-const AuthenticatedToolsRoute = AuthenticatedToolsRouteImport.update({
-  id: '/_authenticated/tools',
-  path: '/tools',
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedToolsRoute = AuthenticatedToolsRouteImport.update({
+  id: '/tools',
+  path: '/tools',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
-  id: '/_authenticated/settings',
+  id: '/settings',
   path: '/settings',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedRetrieverRoute = AuthenticatedRetrieverRouteImport.update({
-  id: '/_authenticated/retriever',
+  id: '/retriever',
   path: '/retriever',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedResearchRoute = AuthenticatedResearchRouteImport.update({
-  id: '/_authenticated/research',
+  id: '/research',
   path: '/research',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedPromptsRoute = AuthenticatedPromptsRouteImport.update({
-  id: '/_authenticated/prompts',
+  id: '/prompts',
   path: '/prompts',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedProjectsRoute = AuthenticatedProjectsRouteImport.update({
-  id: '/_authenticated/projects',
+  id: '/projects',
   path: '/projects',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedPoliciesRoute = AuthenticatedPoliciesRouteImport.update({
-  id: '/_authenticated/policies',
+  id: '/policies',
   path: '/policies',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedPlannerRoute = AuthenticatedPlannerRouteImport.update({
-  id: '/_authenticated/planner',
+  id: '/planner',
   path: '/planner',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedObservabilityRoute =
   AuthenticatedObservabilityRouteImport.update({
-    id: '/_authenticated/observability',
+    id: '/observability',
     path: '/observability',
-    getParentRoute: () => rootRouteImport,
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedModelsRoute = AuthenticatedModelsRouteImport.update({
-  id: '/_authenticated/models',
+  id: '/models',
   path: '/models',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedMemoryRoute = AuthenticatedMemoryRouteImport.update({
-  id: '/_authenticated/memory',
+  id: '/memory',
   path: '/memory',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedMcpRoute = AuthenticatedMcpRouteImport.update({
-  id: '/_authenticated/mcp',
+  id: '/mcp',
   path: '/mcp',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedHarnessRoute = AuthenticatedHarnessRouteImport.update({
-  id: '/_authenticated/harness',
+  id: '/harness',
   path: '/harness',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedExperimentsRoute =
   AuthenticatedExperimentsRouteImport.update({
-    id: '/_authenticated/experiments',
+    id: '/experiments',
     path: '/experiments',
-    getParentRoute: () => rootRouteImport,
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedEvaluationsRoute =
   AuthenticatedEvaluationsRouteImport.update({
-    id: '/_authenticated/evaluations',
+    id: '/evaluations',
     path: '/evaluations',
-    getParentRoute: () => rootRouteImport,
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedDeploymentsRoute =
   AuthenticatedDeploymentsRouteImport.update({
-    id: '/_authenticated/deployments',
+    id: '/deployments',
     path: '/deployments',
-    getParentRoute: () => rootRouteImport,
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedDatasetsRoute = AuthenticatedDatasetsRouteImport.update({
-  id: '/_authenticated/datasets',
+  id: '/datasets',
   path: '/datasets',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedContextRoute = AuthenticatedContextRouteImport.update({
-  id: '/_authenticated/context',
+  id: '/context',
   path: '/context',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAgentsRoute = AuthenticatedAgentsRouteImport.update({
-  id: '/_authenticated/agents',
+  id: '/agents',
   path: '/agents',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof AuthenticatedIndexRoute
+  '/login': typeof LoginRoute
   '/agents': typeof AuthenticatedAgentsRoute
   '/context': typeof AuthenticatedContextRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
   '/datasets': typeof AuthenticatedDatasetsRoute
   '/deployments': typeof AuthenticatedDeploymentsRoute
   '/evaluations': typeof AuthenticatedEvaluationsRoute
@@ -151,8 +177,10 @@ export interface FileRoutesByFullPath {
   '/tools': typeof AuthenticatedToolsRoute
 }
 export interface FileRoutesByTo {
+  '/login': typeof LoginRoute
   '/agents': typeof AuthenticatedAgentsRoute
   '/context': typeof AuthenticatedContextRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
   '/datasets': typeof AuthenticatedDatasetsRoute
   '/deployments': typeof AuthenticatedDeploymentsRoute
   '/evaluations': typeof AuthenticatedEvaluationsRoute
@@ -170,11 +198,15 @@ export interface FileRoutesByTo {
   '/retriever': typeof AuthenticatedRetrieverRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/tools': typeof AuthenticatedToolsRoute
+  '/': typeof AuthenticatedIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/login': typeof LoginRoute
   '/_authenticated/agents': typeof AuthenticatedAgentsRoute
   '/_authenticated/context': typeof AuthenticatedContextRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/datasets': typeof AuthenticatedDatasetsRoute
   '/_authenticated/deployments': typeof AuthenticatedDeploymentsRoute
   '/_authenticated/evaluations': typeof AuthenticatedEvaluationsRoute
@@ -192,12 +224,16 @@ export interface FileRoutesById {
   '/_authenticated/retriever': typeof AuthenticatedRetrieverRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/tools': typeof AuthenticatedToolsRoute
+  '/_authenticated/': typeof AuthenticatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
+    | '/login'
     | '/agents'
     | '/context'
+    | '/dashboard'
     | '/datasets'
     | '/deployments'
     | '/evaluations'
@@ -217,8 +253,10 @@ export interface FileRouteTypes {
     | '/tools'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/login'
     | '/agents'
     | '/context'
+    | '/dashboard'
     | '/datasets'
     | '/deployments'
     | '/evaluations'
@@ -236,10 +274,14 @@ export interface FileRouteTypes {
     | '/retriever'
     | '/settings'
     | '/tools'
+    | '/'
   id:
     | '__root__'
+    | '/_authenticated'
+    | '/login'
     | '/_authenticated/agents'
     | '/_authenticated/context'
+    | '/_authenticated/dashboard'
     | '/_authenticated/datasets'
     | '/_authenticated/deployments'
     | '/_authenticated/evaluations'
@@ -257,11 +299,184 @@ export interface FileRouteTypes {
     | '/_authenticated/retriever'
     | '/_authenticated/settings'
     | '/_authenticated/tools'
+    | '/_authenticated/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  LoginRoute: typeof LoginRoute
+}
+
+declare module '@tanstack/react-router' {
+  interface FileRoutesByPath {
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/': {
+      id: '/_authenticated/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/tools': {
+      id: '/_authenticated/tools'
+      path: '/tools'
+      fullPath: '/tools'
+      preLoaderRoute: typeof AuthenticatedToolsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/retriever': {
+      id: '/_authenticated/retriever'
+      path: '/retriever'
+      fullPath: '/retriever'
+      preLoaderRoute: typeof AuthenticatedRetrieverRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/research': {
+      id: '/_authenticated/research'
+      path: '/research'
+      fullPath: '/research'
+      preLoaderRoute: typeof AuthenticatedResearchRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/prompts': {
+      id: '/_authenticated/prompts'
+      path: '/prompts'
+      fullPath: '/prompts'
+      preLoaderRoute: typeof AuthenticatedPromptsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/projects': {
+      id: '/_authenticated/projects'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof AuthenticatedProjectsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/policies': {
+      id: '/_authenticated/policies'
+      path: '/policies'
+      fullPath: '/policies'
+      preLoaderRoute: typeof AuthenticatedPoliciesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/planner': {
+      id: '/_authenticated/planner'
+      path: '/planner'
+      fullPath: '/planner'
+      preLoaderRoute: typeof AuthenticatedPlannerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/observability': {
+      id: '/_authenticated/observability'
+      path: '/observability'
+      fullPath: '/observability'
+      preLoaderRoute: typeof AuthenticatedObservabilityRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/models': {
+      id: '/_authenticated/models'
+      path: '/models'
+      fullPath: '/models'
+      preLoaderRoute: typeof AuthenticatedModelsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/memory': {
+      id: '/_authenticated/memory'
+      path: '/memory'
+      fullPath: '/memory'
+      preLoaderRoute: typeof AuthenticatedMemoryRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/mcp': {
+      id: '/_authenticated/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof AuthenticatedMcpRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/harness': {
+      id: '/_authenticated/harness'
+      path: '/harness'
+      fullPath: '/harness'
+      preLoaderRoute: typeof AuthenticatedHarnessRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/experiments': {
+      id: '/_authenticated/experiments'
+      path: '/experiments'
+      fullPath: '/experiments'
+      preLoaderRoute: typeof AuthenticatedExperimentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/evaluations': {
+      id: '/_authenticated/evaluations'
+      path: '/evaluations'
+      fullPath: '/evaluations'
+      preLoaderRoute: typeof AuthenticatedEvaluationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/deployments': {
+      id: '/_authenticated/deployments'
+      path: '/deployments'
+      fullPath: '/deployments'
+      preLoaderRoute: typeof AuthenticatedDeploymentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/datasets': {
+      id: '/_authenticated/datasets'
+      path: '/datasets'
+      fullPath: '/datasets'
+      preLoaderRoute: typeof AuthenticatedDatasetsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/context': {
+      id: '/_authenticated/context'
+      path: '/context'
+      fullPath: '/context'
+      preLoaderRoute: typeof AuthenticatedContextRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/agents': {
+      id: '/_authenticated/agents'
+      path: '/agents'
+      fullPath: '/agents'
+      preLoaderRoute: typeof AuthenticatedAgentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+  }
+}
+
+interface AuthenticatedRouteRouteChildren {
   AuthenticatedAgentsRoute: typeof AuthenticatedAgentsRoute
   AuthenticatedContextRoute: typeof AuthenticatedContextRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDatasetsRoute: typeof AuthenticatedDatasetsRoute
   AuthenticatedDeploymentsRoute: typeof AuthenticatedDeploymentsRoute
   AuthenticatedEvaluationsRoute: typeof AuthenticatedEvaluationsRoute
@@ -279,149 +494,13 @@ export interface RootRouteChildren {
   AuthenticatedRetrieverRoute: typeof AuthenticatedRetrieverRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedToolsRoute: typeof AuthenticatedToolsRoute
+  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
 
-declare module '@tanstack/react-router' {
-  interface FileRoutesByPath {
-    '/_authenticated/tools': {
-      id: '/_authenticated/tools'
-      path: '/tools'
-      fullPath: '/tools'
-      preLoaderRoute: typeof AuthenticatedToolsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/settings': {
-      id: '/_authenticated/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/retriever': {
-      id: '/_authenticated/retriever'
-      path: '/retriever'
-      fullPath: '/retriever'
-      preLoaderRoute: typeof AuthenticatedRetrieverRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/research': {
-      id: '/_authenticated/research'
-      path: '/research'
-      fullPath: '/research'
-      preLoaderRoute: typeof AuthenticatedResearchRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/prompts': {
-      id: '/_authenticated/prompts'
-      path: '/prompts'
-      fullPath: '/prompts'
-      preLoaderRoute: typeof AuthenticatedPromptsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/projects': {
-      id: '/_authenticated/projects'
-      path: '/projects'
-      fullPath: '/projects'
-      preLoaderRoute: typeof AuthenticatedProjectsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/policies': {
-      id: '/_authenticated/policies'
-      path: '/policies'
-      fullPath: '/policies'
-      preLoaderRoute: typeof AuthenticatedPoliciesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/planner': {
-      id: '/_authenticated/planner'
-      path: '/planner'
-      fullPath: '/planner'
-      preLoaderRoute: typeof AuthenticatedPlannerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/observability': {
-      id: '/_authenticated/observability'
-      path: '/observability'
-      fullPath: '/observability'
-      preLoaderRoute: typeof AuthenticatedObservabilityRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/models': {
-      id: '/_authenticated/models'
-      path: '/models'
-      fullPath: '/models'
-      preLoaderRoute: typeof AuthenticatedModelsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/memory': {
-      id: '/_authenticated/memory'
-      path: '/memory'
-      fullPath: '/memory'
-      preLoaderRoute: typeof AuthenticatedMemoryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/mcp': {
-      id: '/_authenticated/mcp'
-      path: '/mcp'
-      fullPath: '/mcp'
-      preLoaderRoute: typeof AuthenticatedMcpRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/harness': {
-      id: '/_authenticated/harness'
-      path: '/harness'
-      fullPath: '/harness'
-      preLoaderRoute: typeof AuthenticatedHarnessRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/experiments': {
-      id: '/_authenticated/experiments'
-      path: '/experiments'
-      fullPath: '/experiments'
-      preLoaderRoute: typeof AuthenticatedExperimentsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/evaluations': {
-      id: '/_authenticated/evaluations'
-      path: '/evaluations'
-      fullPath: '/evaluations'
-      preLoaderRoute: typeof AuthenticatedEvaluationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/deployments': {
-      id: '/_authenticated/deployments'
-      path: '/deployments'
-      fullPath: '/deployments'
-      preLoaderRoute: typeof AuthenticatedDeploymentsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/datasets': {
-      id: '/_authenticated/datasets'
-      path: '/datasets'
-      fullPath: '/datasets'
-      preLoaderRoute: typeof AuthenticatedDatasetsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/context': {
-      id: '/_authenticated/context'
-      path: '/context'
-      fullPath: '/context'
-      preLoaderRoute: typeof AuthenticatedContextRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/agents': {
-      id: '/_authenticated/agents'
-      path: '/agents'
-      fullPath: '/agents'
-      preLoaderRoute: typeof AuthenticatedAgentsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-  }
-}
-
-const rootRouteChildren: RootRouteChildren = {
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAgentsRoute: AuthenticatedAgentsRoute,
   AuthenticatedContextRoute: AuthenticatedContextRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDatasetsRoute: AuthenticatedDatasetsRoute,
   AuthenticatedDeploymentsRoute: AuthenticatedDeploymentsRoute,
   AuthenticatedEvaluationsRoute: AuthenticatedEvaluationsRoute,
@@ -439,6 +518,15 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRetrieverRoute: AuthenticatedRetrieverRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedToolsRoute: AuthenticatedToolsRoute,
+  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
+const rootRouteChildren: RootRouteChildren = {
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

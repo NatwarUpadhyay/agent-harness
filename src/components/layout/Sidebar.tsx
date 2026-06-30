@@ -1,5 +1,6 @@
-import { Link, useRouterState } from "@tanstack/react-router";
-import { Hexagon, ChevronsLeft, ChevronsRight, Settings as SettingsIcon } from "lucide-react";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { Hexagon, ChevronsLeft, ChevronsRight, LogOut } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { useUiStore } from "@/stores/ui";
 import { navGroups } from "./nav-config";
