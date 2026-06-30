@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { AgentCard } from "@/components/ui/agent-card";
 import { agents } from "@/lib/data/synthetic";
 
-export const Route = createFileRoute("/agents")({
+export const Route = createFileRoute("/_authenticated/agents")({
   head: () => ({ meta: [{ title: "Agents — Harness" }] }),
   component: () => (
     <>

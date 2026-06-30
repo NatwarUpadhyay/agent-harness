@@ -25,7 +25,7 @@ const cols: Column<Project>[] = [
   ) },
 ];
 
-export const Route = createFileRoute("/projects")({
+export const Route = createFileRoute("/_authenticated/projects")({
   head: () => ({ meta: [{ title: "Projects — Harness" }] }),
   component: () => (
     <>

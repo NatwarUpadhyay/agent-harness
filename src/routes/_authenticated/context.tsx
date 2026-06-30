@@ -8,7 +8,7 @@ const windows = agents.slice(0, 8).map((a, i) => ({
   max: 128000,
 }));
 
-export const Route = createFileRoute("/context")({
+export const Route = createFileRoute("/_authenticated/context")({
   head: () => ({ meta: [{ title: "Context — Harness" }] }),
   component: () => (
     <>

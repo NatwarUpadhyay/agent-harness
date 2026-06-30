@@ -7,7 +7,7 @@ import { Rocket } from "lucide-react";
 const envs = ["production", "staging", "dev"] as const;
 const envLabel: Record<string, string> = { production: "Production", staging: "Staging", dev: "Development" };
 
-export const Route = createFileRoute("/deployments")({
+export const Route = createFileRoute("/_authenticated/deployments")({
   head: () => ({ meta: [{ title: "Deployments — Harness" }] }),
   component: () => (
     <>

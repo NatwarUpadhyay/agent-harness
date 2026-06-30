@@ -11,7 +11,7 @@ const servers = [
   { id: "m6", name: "shopify-mcp",   url: "mcp://shopify.proxy:5116",       status: "active", tools: 14 },
 ];
 
-export const Route = createFileRoute("/mcp")({
+export const Route = createFileRoute("/_authenticated/mcp")({
   head: () => ({ meta: [{ title: "MCP — Harness" }] }),
   component: () => (
     <>

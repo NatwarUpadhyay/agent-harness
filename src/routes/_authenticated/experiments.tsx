@@ -21,7 +21,7 @@ const cols: Column<Experiment>[] = [
   { key: "start", header: "Started", render: (r) => <span className="text-[12px] text-[var(--text-muted)] font-mono-tabular">{r.startDate}</span> },
 ];
 
-export const Route = createFileRoute("/experiments")({
+export const Route = createFileRoute("/_authenticated/experiments")({
   head: () => ({ meta: [{ title: "Experiments — Harness" }] }),
   component: () => (
     <>

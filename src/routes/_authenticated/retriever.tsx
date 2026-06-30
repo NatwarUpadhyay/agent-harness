@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 
-export const Route = createFileRoute("/retriever")({
+export const Route = createFileRoute("/_authenticated/retriever")({
   head: () => ({ meta: [{ title: "Retriever — Harness" }] }),
   component: () => (
     <>

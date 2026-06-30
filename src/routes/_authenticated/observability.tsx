@@ -17,7 +17,7 @@ const spans = Array.from({ length: 10 }).map((_, i) => ({
 }));
 const maxDur = Math.max(...spans.map((s) => s.duration));
 
-export const Route = createFileRoute("/observability")({
+export const Route = createFileRoute("/_authenticated/observability")({
   head: () => ({ meta: [{ title: "Observability — Harness" }] }),
   component: () => (
     <>

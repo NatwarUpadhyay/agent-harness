@@ -31,7 +31,7 @@ const cols: Column<Row>[] = [
   { key: "duration", header: "Duration", align: "right", render: (r) => <span className="font-mono-tabular text-[12px]">{r.duration}</span> },
 ];
 
-export const Route = createFileRoute("/evaluations")({
+export const Route = createFileRoute("/_authenticated/evaluations")({
   head: () => ({ meta: [{ title: "Evaluations — Harness" }] }),
   component: () => {
     const pass = (evaluations as Evaluation[]).filter((e) => e.passed).length;

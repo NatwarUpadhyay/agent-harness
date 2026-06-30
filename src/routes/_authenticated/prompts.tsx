@@ -23,7 +23,7 @@ const cols: Column<Prompt>[] = [
   { key: "edited", header: "Last edited", render: (r) => <span className="text-[12px] text-[var(--text-muted)]">{r.edited}</span> },
 ];
 
-export const Route = createFileRoute("/prompts")({
+export const Route = createFileRoute("/_authenticated/prompts")({
   head: () => ({ meta: [{ title: "Prompt library — Harness" }] }),
   component: () => (
     <>

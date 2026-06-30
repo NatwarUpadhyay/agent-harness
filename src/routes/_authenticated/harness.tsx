@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "@/components/ui/page-header";
 import { HarnessCanvas } from "@/features/harness/HarnessCanvas";
 
-export const Route = createFileRoute("/harness")({
+export const Route = createFileRoute("/_authenticated/harness")({
   head: () => ({ meta: [{ title: "Harness — Workflow canvas" }] }),
   component: () => (
     <>
