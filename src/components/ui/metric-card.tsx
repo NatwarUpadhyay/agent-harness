@@ -36,7 +36,7 @@ export function MetricCard({ label, value, display, trend, trendTone = "green", 
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: [0.16, 1, 0.32, 1] }}
+      transition={{ duration: 0.4, delay: index * 0.04, ease: [0.16, 1, 0.32, 1] }}
       className="rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-5 hover:border-[var(--border-strong)] transition-colors"
     >
       <div className="flex items-start justify-between mb-2">
