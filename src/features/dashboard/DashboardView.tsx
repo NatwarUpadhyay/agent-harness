@@ -63,10 +63,10 @@ export function DashboardView() {
 
       {/* KPI Strip */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard label="Active agents" value={47} trend={12} trendTone="green" series={[30,32,35,40,47]} />
-        <MetricCard label="Avg latency" value={284} display={(v) => `${Math.round(v)}ms`} trend={-8} trendTone="green" series={[340,322,310,295,284]} />
-        <MetricCard label="Eval score" value={94.2} display={(v) => `${v.toFixed(1)}%`} trend={2.1} trendTone="green" series={[91,92,92.5,93.6,94.2]} />
-        <MetricCard label="Monthly cost" value={2847} display={(v) => `$${Math.round(v).toLocaleString()}`} trend={5} trendTone="amber" series={[2500,2620,2700,2780,2847]} />
+        <MetricCard index={0} label="Active agents" value={47} trend={12} trendTone="green" series={[30,32,35,40,47]} />
+        <MetricCard index={1} label="Avg latency" value={284} display={(v) => `${Math.round(v)}ms`} trend={-8} trendTone="green" series={[340,322,310,295,284]} />
+        <MetricCard index={2} label="Eval score" value={94.2} display={(v) => `${v.toFixed(1)}%`} trend={2.1} trendTone="green" series={[91,92,92.5,93.6,94.2]} />
+        <MetricCard index={3} label="Monthly cost" value={2847} display={(v) => `$${Math.round(v).toLocaleString()}`} trend={5} trendTone="amber" series={[2500,2620,2700,2780,2847]} />
       </div>
 
       {/* 60/40 split */}
