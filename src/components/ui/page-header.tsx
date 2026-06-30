@@ -23,7 +23,9 @@ export function PageHeader({ title, subtitle, actions }: Props) {
 export function SectionHeader({ title, action }: { title: string; action?: ReactNode }) {
   return (
     <div className="flex items-center justify-between mb-4">
-      <h2 className="text-[15px] font-semibold tracking-tight">{title}</h2>
+      <h2 className="text-[11px] uppercase tracking-widest text-[var(--text-muted)] font-normal">
+        {title}
+      </h2>
       {action}
     </div>
   );
