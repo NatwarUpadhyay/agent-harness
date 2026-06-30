@@ -128,7 +128,3 @@ export function Sidebar() {
     </aside>
   );
 }
-      </div>
-    </aside>
-  );
-}
