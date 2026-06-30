@@ -228,7 +228,7 @@ export function DashboardView() {
       </div>
 
       {/* Experiment comparison */}
-      <div className="mt-6 rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
+      <div className="mt-8 rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
         <SectionHeader title="Experiment comparison" />
         <div className="h-[260px]">
           <ResponsiveContainer width="100%" height="100%">
