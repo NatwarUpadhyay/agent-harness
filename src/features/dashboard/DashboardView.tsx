@@ -168,12 +168,26 @@ export function DashboardView() {
 
         <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
           <SectionHeader title="Context health" />
-          <div className="relative h-[200px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <RadialBarChart innerRadius="70%" outerRadius="100%" data={[{ name: "Health", value: 73, fill: "#4F7AFF" }]} startAngle={210} endAngle={-30}>
-                <RadialBar background={{ fill: "var(--bg-elevated)" }} dataKey="value" cornerRadius={8} />
-              </RadialBarChart>
-            </ResponsiveContainer>
+          <div className="relative h-[200px] flex items-center justify-center">
+            <svg width="180" height="180" viewBox="0 0 180 180" className="-rotate-90">
+              <circle
+                cx="90" cy="90" r="70"
+                fill="none"
+                stroke="var(--bg-elevated)"
+                strokeWidth="10"
+              />
+              <motion.circle
+                cx="90" cy="90" r="70"
+                fill="none"
+                stroke="var(--accent)"
+                strokeWidth="10"
+                strokeLinecap="round"
+                strokeDasharray={2 * Math.PI * 70}
+                initial={{ strokeDashoffset: 2 * Math.PI * 70 }}
+                animate={{ strokeDashoffset: 2 * Math.PI * 70 * (1 - 0.73) }}
+                transition={{ duration: 1, ease: [0.16, 1, 0.32, 1] }}
+              />
+            </svg>
             <div className="absolute inset-0 grid place-items-center pointer-events-none">
               <div className="text-center">
                 <div className="text-[28px] font-semibold font-mono-tabular text-[var(--text-primary)]">73%</div>
