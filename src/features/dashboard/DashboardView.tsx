@@ -2,13 +2,12 @@ import { motion } from "framer-motion";
 import { useMemo } from "react";
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer,
-  PieChart, Pie, Cell, RadialBarChart, RadialBar, BarChart, Bar, Legend,
+  PieChart, Pie, Cell, BarChart, Bar, Legend,
 } from "recharts";
 import { Calendar, Download } from "lucide-react";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { MetricCard } from "@/components/ui/metric-card";
 import { StatusDot } from "@/components/ui/status-badge";
-import { InlineBarStat } from "@/components/ui/inline-bar-stat";
 import { agents, tools, timeseries, evaluations, experiments, relativeTime } from "@/lib/data/synthetic";
 
 const tooltipStyle = {
