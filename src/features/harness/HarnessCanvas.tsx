@@ -110,8 +110,14 @@ export function HarnessCanvas() {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [addMenuOpen, setAddMenuOpen] = useState(false);
+  const [loadMenuOpen, setLoadMenuOpen] = useState(false);
+  const [currentWorkflowId, setCurrentWorkflowId] = useState<string | null>(null);
+  const [workflowName, setWorkflowName] = useState<string>("Untitled workflow");
   const addBtnRef = useRef<HTMLDivElement>(null);
+  const loadBtnRef = useRef<HTMLDivElement>(null);
   const idCounter = useRef(initialNodes.length);
+  const { data: savedWorkflows = [] } = useWorkflows();
+  const saveWorkflow = useSaveWorkflow();
 
   const selectedNode = useMemo(
     () => nodes.find((n) => n.id === selectedId) ?? null,
@@ -152,15 +158,58 @@ export function HarnessCanvas() {
     setAddMenuOpen(false);
   }, [setNodes]);
 
-  // Close add menu on outside click
+  // Close popovers on outside click
   useEffect(() => {
-    if (!addMenuOpen) return;
     const onClick = (e: MouseEvent) => {
-      if (!addBtnRef.current?.contains(e.target as unknown as globalThis.Node)) setAddMenuOpen(false);
+      const t = e.target as unknown as globalThis.Node;
+      if (addMenuOpen && !addBtnRef.current?.contains(t)) setAddMenuOpen(false);
+      if (loadMenuOpen && !loadBtnRef.current?.contains(t)) setLoadMenuOpen(false);
     };
-    window.addEventListener("mousedown", onClick);
-    return () => window.removeEventListener("mousedown", onClick);
-  }, [addMenuOpen]);
+    if (addMenuOpen || loadMenuOpen) {
+      window.addEventListener("mousedown", onClick);
+      return () => window.removeEventListener("mousedown", onClick);
+    }
+  }, [addMenuOpen, loadMenuOpen]);
+
+  const handleSave = useCallback(async () => {
+    const name = prompt("Workflow name", workflowName) ?? workflowName;
+    try {
+      const result = await saveWorkflow.mutateAsync({
+        id: currentWorkflowId ?? undefined,
+        name,
+        nodes: nodes as unknown as WorkflowRow["nodes"],
+        edges: edges as unknown as WorkflowRow["edges"],
+      });
+      setCurrentWorkflowId(result.id);
+      setWorkflowName(result.name);
+      toast.success(`Workflow “${name}” saved`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Save failed");
+    }
+  }, [saveWorkflow, currentWorkflowId, workflowName, nodes, edges]);
+
+  const handleLoad = useCallback((wf: WorkflowRow) => {
+    const loadedNodes = (wf.nodes as unknown as Node<NodeData>[]) ?? [];
+    const loadedEdges = (wf.edges as unknown as Edge[]) ?? [];
+    setNodes(loadedNodes);
+    setEdges(loadedEdges);
+    setCurrentWorkflowId(wf.id);
+    setWorkflowName(wf.name);
+    setLoadMenuOpen(false);
+    idCounter.current = loadedNodes.length + 1;
+    toast.success(`Loaded “${wf.name}”`);
+  }, [setNodes, setEdges]);
+
+  const handleExport = useCallback(() => {
+    const json = JSON.stringify({ name: workflowName, nodes, edges }, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${workflowName.replace(/\s+/g, "-").toLowerCase()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [workflowName, nodes, edges]);
 
   return (
     <div className="relative h-[calc(100vh-180px)] min-h-[520px] rounded-[10px] border border-[var(--border-default)] overflow-hidden">
