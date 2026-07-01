@@ -8,8 +8,10 @@ import "reactflow/dist/style.css";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Brain, Database, Search, Wrench, ShieldCheck, RefreshCcw, ArrowRightCircle,
-  Plus, Layout, Download, Trash2, X,
+  Plus, Layout, Download, Trash2, X, Save, FolderOpen,
 } from "lucide-react";
+import { useWorkflows, useSaveWorkflow, type WorkflowRow } from "@/lib/hooks/use-entities";
+import { toast } from "sonner";
 
 interface NodeData {
   label: string;
