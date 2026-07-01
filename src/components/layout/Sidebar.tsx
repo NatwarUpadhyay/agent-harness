@@ -5,12 +5,21 @@ import { motion } from "framer-motion";
 import { useUiStore } from "@/stores/ui";
 import { navGroups } from "./nav-config";
 import { cn } from "@/lib/utils";
+import { useEntityCounts } from "@/lib/hooks/use-entities";
+
+const COUNT_ROUTES: Record<string, "agents" | "tools" | "workflows" | "experiments"> = {
+  "/agents": "agents",
+  "/tools": "tools",
+  "/harness": "workflows",
+  "/experiments": "experiments",
+};
 
 export function Sidebar() {
   const collapsed = useUiStore((s) => s.sidebarCollapsed);
   const toggle = useUiStore((s) => s.toggleSidebar);
   const pathname = useRouterState({ select: (r) => r.location.pathname });
   const navigate = useNavigate();
+  const counts = useEntityCounts();
 
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -30,7 +39,6 @@ export function Sidebar() {
           "radial-gradient(circle at 0% 100%, rgba(79,122,255,0.18), transparent 55%)",
       }}
     >
-      {/* Logo + collapse */}
       <div className="flex h-14 items-center justify-between px-4 border-b border-[var(--border-subtle)]">
         <Link to="/" className="flex items-center gap-2 overflow-hidden">
           <div className="grid h-7 w-7 place-items-center rounded-md bg-[var(--accent-muted)] text-[var(--text-accent)] shrink-0">
@@ -49,7 +57,6 @@ export function Sidebar() {
         </button>
       </div>
 
-      {/* Nav */}
       <nav className="flex-1 overflow-y-auto py-3 px-2">
         {navGroups.map((group) => (
           <div key={group.label} className="mb-4">
@@ -62,6 +69,8 @@ export function Sidebar() {
               {group.items.map((item) => {
                 const active = isActive(item.to);
                 const Icon = item.icon;
+                const countKey = COUNT_ROUTES[item.to];
+                const count = countKey ? counts[countKey] : undefined;
                 return (
                   <li key={item.to}>
                     <Link
@@ -80,7 +89,16 @@ export function Sidebar() {
                         )}
                       />
                       <Icon className="h-4 w-4 shrink-0" strokeWidth={1.8} />
-                      {!collapsed && <span className="truncate">{item.label}</span>}
+                      {!collapsed && (
+                        <>
+                          <span className="truncate flex-1">{item.label}</span>
+                          {typeof count === "number" && count > 0 && (
+                            <span className="text-[10px] font-mono-tabular text-[var(--text-muted)] tabular-nums shrink-0">
+                              {count}
+                            </span>
+                          )}
+                        </>
+                      )}
                     </Link>
                   </li>
                 );
@@ -90,7 +108,6 @@ export function Sidebar() {
         ))}
       </nav>
 
-      {/* User */}
       <div className="border-t border-[var(--border-subtle)] px-3 py-3 flex items-center gap-2">
         <motion.div
           whileHover={{ scale: 1.04 }}

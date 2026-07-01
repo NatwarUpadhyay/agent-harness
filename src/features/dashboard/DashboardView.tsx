@@ -8,7 +8,8 @@ import { Calendar, Download } from "lucide-react";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { MetricCard } from "@/components/ui/metric-card";
 import { StatusDot } from "@/components/ui/status-badge";
-import { agents, tools, timeseries, evaluations, experiments, relativeTime } from "@/lib/data/synthetic";
+import { agents as fallbackAgents, tools, timeseries, evaluations, experiments, relativeTime } from "@/lib/data/synthetic";
+import { useAgents } from "@/lib/hooks/use-entities";
 
 const tooltipStyle = {
   background: "var(--bg-elevated)",
@@ -19,11 +20,27 @@ const tooltipStyle = {
 };
 
 export function DashboardView() {
+  const { data: liveAgents } = useAgents();
+  const agents = useMemo(
+    () => (liveAgents && liveAgents.length > 0
+      ? liveAgents.map((a) => ({
+          id: a.id, name: a.name, model: a.model as "gpt-4o" | "claude-3-5-sonnet" | "gemini-1.5-pro",
+          status: a.status as "active" | "idle" | "error",
+          successRate: Number(a.success_rate), totalCalls: Number(a.total_calls),
+          avgLatency: a.avg_latency, lastActive: a.last_active,
+        }))
+      : fallbackAgents),
+    [liveAgents],
+  );
   const trendSpark = timeseries.map((t) => t.agentCalls);
+
+  const activeCount = agents.filter((a) => a.status === "active").length;
+  const avgLatency = Math.round(agents.reduce((s, a) => s + a.avgLatency, 0) / Math.max(1, agents.length));
+  const avgSuccess = agents.reduce((s, a) => s + a.successRate, 0) / Math.max(1, agents.length);
 
   const topAgents = useMemo(
     () => [...agents].sort((a, b) => b.totalCalls - a.totalCalls).slice(0, 5),
-    [],
+    [agents],
   );
 
   const toolDist = useMemo(() => {
@@ -63,9 +80,9 @@ export function DashboardView() {
 
       {/* KPI Strip */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard index={0} label="Active agents" value={47} trend={12} trendTone="green" series={[30,32,35,40,47]} />
-        <MetricCard index={1} label="Avg latency" value={284} display={(v) => `${Math.round(v)}ms`} trend={-8} trendTone="green" series={[340,322,310,295,284]} />
-        <MetricCard index={2} label="Eval score" value={94.2} display={(v) => `${v.toFixed(1)}%`} trend={2.1} trendTone="green" series={[91,92,92.5,93.6,94.2]} />
+        <MetricCard index={0} label="Active agents" value={activeCount} trend={12} trendTone="green" series={[30,32,35,40,activeCount]} />
+        <MetricCard index={1} label="Avg latency" value={avgLatency} display={(v) => `${Math.round(v)}ms`} trend={-8} trendTone="green" series={[340,322,310,295,avgLatency]} />
+        <MetricCard index={2} label="Eval score" value={avgSuccess} display={(v) => `${v.toFixed(1)}%`} trend={2.1} trendTone="green" series={[91,92,92.5,93.6,avgSuccess]} />
         <MetricCard index={3} label="Monthly cost" value={2847} display={(v) => `$${Math.round(v).toLocaleString()}`} trend={5} trendTone="amber" series={[2500,2620,2700,2780,2847]} />
       </div>
 

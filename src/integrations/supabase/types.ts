@@ -14,7 +14,192 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      agents: {
+        Row: {
+          avg_latency: number
+          created_at: string
+          id: string
+          last_active: string
+          model: string
+          name: string
+          status: string
+          success_rate: number
+          total_calls: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avg_latency?: number
+          created_at?: string
+          id?: string
+          last_active?: string
+          model?: string
+          name: string
+          status?: string
+          success_rate?: number
+          total_calls?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avg_latency?: number
+          created_at?: string
+          id?: string
+          last_active?: string
+          model?: string
+          name?: string
+          status?: string
+          success_rate?: number
+          total_calls?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      experiments: {
+        Row: {
+          avg_latency: number
+          cost_per_call: number
+          created_at: string
+          id: string
+          name: string
+          start_date: string
+          status: string
+          success_rate: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avg_latency?: number
+          cost_per_call?: number
+          created_at?: string
+          id?: string
+          name: string
+          start_date?: string
+          status?: string
+          success_rate?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avg_latency?: number
+          cost_per_call?: number
+          created_at?: string
+          id?: string
+          name?: string
+          start_date?: string
+          status?: string
+          success_rate?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tools: {
+        Row: {
+          call_count: number
+          category: string
+          created_at: string
+          enabled: boolean
+          id: string
+          name: string
+          success_rate: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          call_count?: number
+          category?: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          name: string
+          success_rate?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          call_count?: number
+          category?: string
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          name?: string
+          success_rate?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          created_at: string
+          default_model: string
+          id: string
+          sidebar_collapsed: boolean
+          theme: string
+          ui_settings: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          default_model?: string
+          id?: string
+          sidebar_collapsed?: boolean
+          theme?: string
+          ui_settings?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          default_model?: string
+          id?: string
+          sidebar_collapsed?: boolean
+          theme?: string
+          ui_settings?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      workflows: {
+        Row: {
+          created_at: string
+          description: string | null
+          edges: Json
+          id: string
+          is_template: boolean
+          name: string
+          nodes: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          edges?: Json
+          id?: string
+          is_template?: boolean
+          name: string
+          nodes?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          edges?: Json
+          id?: string
+          is_template?: boolean
+          name?: string
+          nodes?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
