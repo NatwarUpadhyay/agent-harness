@@ -255,14 +255,63 @@ export function HarnessCanvas() {
             )}
           </AnimatePresence>
         </div>
-        <button className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/5">
-          <ArrowRightCircle className="h-3.5 w-3.5" /> Add edge
+        <div className="mx-1 h-4 w-px bg-[var(--border-default)]" />
+        <div className="flex items-center gap-1.5 px-2 text-[11px] text-[var(--text-muted)] font-mono-tabular max-w-[160px] truncate">
+          {workflowName}
+        </div>
+        <div className="mx-1 h-4 w-px bg-[var(--border-default)]" />
+        <button
+          onClick={handleSave}
+          disabled={saveWorkflow.isPending}
+          className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/5 disabled:opacity-50"
+        >
+          <Save className="h-3.5 w-3.5" /> Save
+        </button>
+        <div ref={loadBtnRef} className="relative">
+          <button
+            onClick={() => setLoadMenuOpen((v) => !v)}
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/5"
+          >
+            <FolderOpen className="h-3.5 w-3.5" /> Load
+          </button>
+          <AnimatePresence>
+            {loadMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.15 }}
+                className="absolute top-10 right-0 w-64 max-h-80 overflow-y-auto rounded-md border border-[var(--border-default)] bg-[var(--bg-surface)] py-1 shadow-lg z-20"
+              >
+                {savedWorkflows.length === 0 ? (
+                  <div className="px-3 py-4 text-center text-[12px] text-[var(--text-muted)]">
+                    No saved workflows yet
+                  </div>
+                ) : (
+                  savedWorkflows.map((wf) => (
+                    <button
+                      key={wf.id}
+                      onClick={() => handleLoad(wf)}
+                      className="w-full flex flex-col items-start gap-0.5 px-3 py-2 hover:bg-white/5 text-left"
+                    >
+                      <span className="text-[13px] text-[var(--text-primary)] truncate w-full">{wf.name}</span>
+                      <span className="text-[10px] text-[var(--text-muted)] font-mono-tabular">
+                        {Array.isArray(wf.nodes) ? wf.nodes.length : 0} nodes ·{" "}
+                        {new Date(wf.updated_at).toLocaleDateString()}
+                      </span>
+                    </button>
+                  ))
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+        <button
+          onClick={handleExport}
+          className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/5"
+        >
+          <Download className="h-3.5 w-3.5" /> Export
         </button>
         <button className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/5">
           <Layout className="h-3.5 w-3.5" /> Auto layout
-        </button>
-        <button className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/5">
-          <Download className="h-3.5 w-3.5" /> Export
         </button>
       </div>
 
