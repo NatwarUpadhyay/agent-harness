@@ -154,7 +154,7 @@ export function HarnessCanvas() {
   useEffect(() => {
     if (!addMenuOpen) return;
     const onClick = (e: MouseEvent) => {
-      if (!addBtnRef.current?.contains(e.target as Node)) setAddMenuOpen(false);
+      if (!addBtnRef.current?.contains(e.target as unknown as globalThis.Node)) setAddMenuOpen(false);
     };
     window.addEventListener("mousedown", onClick);
     return () => window.removeEventListener("mousedown", onClick);
