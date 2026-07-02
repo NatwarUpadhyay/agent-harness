@@ -30,7 +30,7 @@ interface NodeData {
 
 type IconKey = "planner" | "memory" | "retriever" | "tools" | "evaluator" | "reflection" | "output";
 
-const iconMap: Record<IconKey, React.ComponentType<{ className?: string }>> = {
+const iconMap: Record<IconKey, React.ComponentType<{ className?: string; style?: React.CSSProperties }>> = {
   planner: Brain, memory: Database, retriever: Search, tools: Wrench,
   evaluator: ShieldCheck, reflection: RefreshCcw, output: ArrowRightCircle,
 };
