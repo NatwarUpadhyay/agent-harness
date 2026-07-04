@@ -427,8 +427,49 @@ function HarnessCanvasInner() {
 
   useEffect(() => () => { if (simTimerRef.current) clearTimeout(simTimerRef.current); }, []);
 
+  // ---------- Auto layout (layered by topological rank) ----------
+  const autoLayout = useCallback(() => {
+    if (nodes.length === 0) { toast.error("Nothing to lay out"); return; }
+    const incoming = new Map<string, number>();
+    nodes.forEach(n => incoming.set(n.id, 0));
+    edges.forEach(e => incoming.set(e.target, (incoming.get(e.target) ?? 0) + 1));
+    const rank = new Map<string, number>();
+    const queue: string[] = nodes.filter(n => (incoming.get(n.id) ?? 0) === 0).map(n => n.id);
+    queue.forEach(id => rank.set(id, 0));
+    const remaining = new Map(incoming);
+    while (queue.length) {
+      const id = queue.shift()!;
+      const r = rank.get(id) ?? 0;
+      edges.filter(e => e.source === id).forEach(e => {
+        rank.set(e.target, Math.max(rank.get(e.target) ?? 0, r + 1));
+        remaining.set(e.target, (remaining.get(e.target) ?? 0) - 1);
+        if ((remaining.get(e.target) ?? 0) === 0) queue.push(e.target);
+      });
+    }
+    // Any leftover (cycles) get rank 0
+    nodes.forEach(n => { if (!rank.has(n.id)) rank.set(n.id, 0); });
+    const byRank = new Map<number, string[]>();
+    nodes.forEach(n => {
+      const r = rank.get(n.id) ?? 0;
+      if (!byRank.has(r)) byRank.set(r, []);
+      byRank.get(r)!.push(n.id);
+    });
+    const COL_W = 240, ROW_H = 130, X0 = 60, Y0 = 80;
+    const next = nodes.map(n => {
+      const r = rank.get(n.id) ?? 0;
+      const col = byRank.get(r)!;
+      const idxInCol = col.indexOf(n.id);
+      const colHeight = (col.length - 1) * ROW_H;
+      return { ...n, position: { x: X0 + r * COL_W, y: Y0 + idxInCol * ROW_H - colHeight / 2 + 240 } };
+    });
+    setNodes(next);
+    pushHistory(next, edges);
+    toast.success("Auto layout applied");
+  }, [nodes, edges, setNodes, pushHistory]);
+
   const canUndo = historyIdxRef.current > 0;
   const canRedo = historyIdxRef.current < historyRef.current.length - 1;
+
 
   return (
     <div className="relative h-[calc(100vh-180px)] min-h-[560px] rounded-[10px] border border-[var(--border-default)] overflow-hidden flex">
