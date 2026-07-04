@@ -264,13 +264,14 @@ function HarnessCanvasInner() {
     const typeName = ev.dataTransfer.getData("application/harness-node");
     const def = TYPE_BY_NAME[typeName];
     if (!def) return;
-    const bounds = (ev.currentTarget as HTMLDivElement).getBoundingClientRect();
-    const position = { x: ev.clientX - bounds.left - 90, y: ev.clientY - bounds.top - 45 };
-    const newNode = makeNode(def, nodes.length, position.x, position.y);
+    // Convert screen coords -> flow coords so panning/zooming don't offset the drop.
+    const position = screenToFlowPosition({ x: ev.clientX, y: ev.clientY });
+    // Center the 180x90 node under the cursor.
+    const newNode = makeNode(def, nodes.length, position.x - 90, position.y - 45);
     const next = [...nodes, newNode];
     setNodes(next);
     pushHistory(next, edges);
-  }, [nodes, edges, setNodes, pushHistory]);
+  }, [nodes, edges, setNodes, pushHistory, screenToFlowPosition]);
   const onDragOver = (ev: React.DragEvent) => { ev.preventDefault(); ev.dataTransfer.dropEffect = "move"; };
 
   // ---------- Close popovers ----------
