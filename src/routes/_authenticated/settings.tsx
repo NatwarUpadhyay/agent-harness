@@ -51,7 +51,7 @@ function SettingsPage() {
         </div>
         <div className="mt-6 flex items-center justify-end gap-2">
           <button className="h-9 px-3 rounded-md text-[13px] text-[var(--text-secondary)]">Cancel</button>
-          <button className="h-9 px-3 rounded-md bg-[var(--accent)] text-white text-[13px] font-medium hover:bg-[var(--accent-hover)]">Save changes</button>
+          <button className="h-9 px-3 rounded-md bg-[var(--accent)] text-[var(--bg-base)] text-[13px] font-medium hover:bg-[var(--accent-hover)]">Save changes</button>
         </div>
       </div>
     </>

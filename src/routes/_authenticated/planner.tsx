@@ -68,7 +68,7 @@ function PlannerPage() {
                 {Array.from({ length: task.steps }).map((_, i) => (
                   <li key={i} className="flex gap-3">
                     <div className="flex flex-col items-center">
-                      <div className={`h-6 w-6 rounded-full grid place-items-center text-[11px] font-mono-tabular ${i < 2 ? "bg-[var(--accent)] text-white" : "bg-[var(--bg-elevated)] text-[var(--text-muted)]"}`}>{i + 1}</div>
+                      <div className={`h-6 w-6 rounded-full grid place-items-center text-[11px] font-mono-tabular ${i < 2 ? "bg-[var(--accent)] text-[var(--bg-base)]" : "bg-[var(--bg-elevated)] text-[var(--text-muted)]"}`}>{i + 1}</div>
                       {i < task.steps - 1 && <div className="flex-1 w-px bg-[var(--border-subtle)] my-1" />}
                     </div>
                     <div className="pb-3">

@@ -46,7 +46,7 @@ export function DashboardView() {
   const toolDist = useMemo(() => {
     const byCat: Record<string, number> = {};
     tools.forEach((t) => { byCat[t.category] = (byCat[t.category] ?? 0) + t.callCount; });
-    const palette = ["#4F7AFF", "#6B91FF", "#8B5CF6", "#A78BFA", "#14B8A6"];
+    const palette = ["#C7C7CC", "#8E8E93", "#8B5CF6", "#A78BFA", "#14B8A6"];
     return Object.entries(byCat).map(([name, value], i) => ({ name, value, color: palette[i % palette.length] }));
   }, []);
 
@@ -70,7 +70,7 @@ export function DashboardView() {
               <Calendar className="h-3.5 w-3.5" />
               Last 7 days
             </button>
-            <button className="inline-flex items-center gap-2 h-9 px-3 rounded-md bg-[var(--accent)] text-white text-[13px] font-medium hover:bg-[var(--accent-hover)]">
+            <button className="inline-flex items-center gap-2 h-9 px-3 rounded-md bg-[var(--accent)] text-[var(--bg-base)] text-[13px] font-medium hover:bg-[var(--accent-hover)]">
               <Download className="h-3.5 w-3.5" />
               Export
             </button>
@@ -111,7 +111,7 @@ export function DashboardView() {
                   labelFormatter={(d) => `Date: ${d}`}
                   formatter={(v: number) => [v.toLocaleString(), "Agent calls"]}
                 />
-                <Area type="monotone" dataKey="agentCalls" stroke="#4F7AFF" strokeWidth={2} fill="url(#callsFill)" />
+                <Area type="monotone" dataKey="agentCalls" stroke="#C7C7CC" strokeWidth={2} fill="url(#callsFill)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -255,8 +255,8 @@ export function DashboardView() {
               <YAxis type="category" dataKey="name" stroke="var(--text-muted)" fontSize={11} tickLine={false} axisLine={false} width={140} />
               <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "var(--accent-muted)" }} />
               <Legend wrapperStyle={{ fontSize: 11, color: "var(--text-secondary)" }} />
-              <Bar dataKey="Success" fill="#4F7AFF" radius={[0, 4, 4, 0]} />
-              <Bar dataKey="Speed"   fill="#6B91FF" radius={[0, 4, 4, 0]} />
+              <Bar dataKey="Success" fill="#C7C7CC" radius={[0, 4, 4, 0]} />
+              <Bar dataKey="Speed"   fill="#8E8E93" radius={[0, 4, 4, 0]} />
               <Bar dataKey="Cost"    fill="#A78BFA" radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>

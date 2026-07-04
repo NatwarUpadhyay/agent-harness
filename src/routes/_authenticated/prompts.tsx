@@ -30,7 +30,7 @@ export const Route = createFileRoute("/_authenticated/prompts")({
       <PageHeader
         title="Prompt library"
         subtitle="Versioned prompts with diffable history and tagged provenance"
-        actions={<button className="inline-flex items-center gap-1.5 h-9 px-3 rounded-md bg-[var(--accent)] text-white text-[13px] font-medium"><Plus className="h-3.5 w-3.5" /> New prompt</button>}
+        actions={<button className="inline-flex items-center gap-1.5 h-9 px-3 rounded-md bg-[var(--accent)] text-[var(--bg-base)] text-[13px] font-medium"><Plus className="h-3.5 w-3.5" /> New prompt</button>}
       />
       <div className="flex flex-wrap items-center gap-1.5 mb-4">
         {tags.map((t, i) => (

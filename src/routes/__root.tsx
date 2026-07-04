@@ -23,7 +23,7 @@ function NotFoundComponent() {
           The route you're looking for doesn't exist in the harness.
         </p>
         <div className="mt-6">
-          <Link to="/" className="inline-flex items-center justify-center rounded-md bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--accent-hover)]">
+          <Link to="/" className="inline-flex items-center justify-center rounded-md bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--bg-base)] hover:bg-[var(--accent-hover)]">
             Back to dashboard
           </Link>
         </div>
