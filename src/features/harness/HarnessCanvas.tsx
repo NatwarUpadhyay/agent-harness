@@ -627,7 +627,10 @@ function HarnessCanvasInner() {
             ref={fileInputRef} type="file" accept="application/json" className="hidden"
             onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImport(f); e.target.value = ""; }}
           />
-          <button className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/5">
+          <button
+            onClick={autoLayout}
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/5"
+          >
             <Layout className="h-3.5 w-3.5" /> Auto layout
           </button>
         </div>
