@@ -46,7 +46,7 @@ export function DashboardView() {
   const toolDist = useMemo(() => {
     const byCat: Record<string, number> = {};
     tools.forEach((t) => { byCat[t.category] = (byCat[t.category] ?? 0) + t.callCount; });
-    const palette = ["#C7C7CC", "#8E8E93", "#8B5CF6", "#A78BFA", "#14B8A6"];
+    const palette = ["#E6E6E6", "#A0A0A5", "#6E6E73", "#48484D", "#2C2C30"];
     return Object.entries(byCat).map(([name, value], i) => ({ name, value, color: palette[i % palette.length] }));
   }, []);
 
@@ -257,7 +257,7 @@ export function DashboardView() {
               <Legend wrapperStyle={{ fontSize: 11, color: "var(--text-secondary)" }} />
               <Bar dataKey="Success" fill="#C7C7CC" radius={[0, 4, 4, 0]} />
               <Bar dataKey="Speed"   fill="#8E8E93" radius={[0, 4, 4, 0]} />
-              <Bar dataKey="Cost"    fill="#A78BFA" radius={[0, 4, 4, 0]} />
+              <Bar dataKey="Cost"    fill="#5A5A5F" radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
