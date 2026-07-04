@@ -155,6 +155,18 @@ function HarnessCanvasInner() {
   const [templateMenuOpen, setTemplateMenuOpen] = useState(false);
   const [currentWorkflowId, setCurrentWorkflowId] = useState<string | null>(null);
   const [workflowName, setWorkflowName] = useState<string>("Untitled workflow");
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  useEffect(() => {
+    try {
+      if (typeof window !== "undefined" && !window.localStorage.getItem("harness.onboarded.v1")) {
+        setShowOnboarding(true);
+      }
+    } catch { /* ignore */ }
+  }, []);
+  const dismissOnboarding = useCallback(() => {
+    setShowOnboarding(false);
+    try { window.localStorage.setItem("harness.onboarded.v1", "1"); } catch { /* ignore */ }
+  }, []);
   const [simulating, setSimulating] = useState(false);
   const [simStep, setSimStep] = useState(0);
   const [simLatency, setSimLatency] = useState(0);
