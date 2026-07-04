@@ -1,6 +1,13 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
+@import "@fontsource/jetbrains-mono/400.css";
+@import "@fontsource/jetbrains-mono/500.css";
+@import "@fontsource/jetbrains-mono/600.css";
+@import "@fontsource/work-sans/400.css";
+@import "@fontsource/work-sans/500.css";
+@import "@fontsource/work-sans/600.css";
+@import "@fontsource/work-sans/700.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -18,7 +25,7 @@
   --color-popover: var(--bg-elevated);
   --color-popover-foreground: var(--text-primary);
   --color-primary: var(--accent);
-  --color-primary-foreground: #ffffff;
+  --color-primary-foreground: #0A0A0B;
   --color-secondary: var(--bg-elevated);
   --color-secondary-foreground: var(--text-primary);
   --color-muted: var(--bg-surface);
@@ -52,37 +59,40 @@
   --color-teal: var(--teal);
   --color-amber: var(--amber);
 
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Work Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-display: "JetBrains Mono", ui-monospace, monospace;
 }
 
 :root {
-  --bg-base: #09090F;
-  --bg-surface: #0E0F18;
-  --bg-elevated: #13141F;
-  --bg-overlay: #18192A;
+  /* Onyx Graphite — deep charcoal, warm off-white, single cool accent */
+  --bg-base: #0A0A0B;
+  --bg-surface: #141416;
+  --bg-elevated: #1F1F22;
+  --bg-overlay: #26262A;
 
-  --border-subtle: rgba(255, 255, 255, 0.05);
-  --border-default: rgba(255, 255, 255, 0.09);
-  --border-strong: rgba(255, 255, 255, 0.16);
+  --border-subtle: rgba(255, 255, 255, 0.04);
+  --border-default: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
 
-  --accent: #4F7AFF;
-  --accent-hover: #6B91FF;
-  --accent-muted: rgba(79, 122, 255, 0.10);
-  --accent-border: rgba(79, 122, 255, 0.22);
+  /* Restrained cool accent — used on CTAs, focus rings, active state, charts */
+  --accent: #C7C7CC;
+  --accent-hover: #E6E6E6;
+  --accent-muted: rgba(199, 199, 204, 0.08);
+  --accent-border: rgba(199, 199, 204, 0.18);
 
-  --text-primary: #EEF0F8;
-  --text-secondary: #888E9F;
-  --text-muted: #52566A;
-  --text-accent: #7B9EFF;
+  --text-primary: #E6E6E6;
+  --text-secondary: #8E8E93;
+  --text-muted: #5A5A5F;
+  --text-accent: #F2F2F4;
 
-  --success: #22C55E;
-  --warning: #F59E0B;
-  --danger: #EF4444;
+  --success: #30D158;
+  --warning: #FF9F0A;
+  --danger: #FF453A;
 
-  --violet: #8B5CF6;
-  --teal: #14B8A6;
-  --amber: #F59E0B;
+  --violet: #BF5AF2;
+  --teal: #64D2FF;
+  --amber: #FFD60A;
 
   color-scheme: dark;
 }
@@ -97,24 +107,28 @@
     background-color: var(--bg-base);
     color: var(--text-primary);
     font-family: var(--font-sans);
-    font-feature-settings: "cv11", "ss01", "ss03";
+    font-feature-settings: "ss01", "cv11";
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
-    line-height: 1.6;
+    line-height: 1.55;
   }
 
   h1, h2, h3, h4, h5 {
-    letter-spacing: -0.02em;
-    font-weight: 600;
-    line-height: 1.2;
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+    font-weight: 500;
+    line-height: 1.15;
+  }
+
+  code, kbd, pre, .font-mono {
+    font-family: var(--font-mono);
   }
 
   ::selection {
-    background: var(--accent-muted);
+    background: rgba(230, 230, 230, 0.18);
     color: var(--text-primary);
   }
 
-  /* Scrollbars */
   ::-webkit-scrollbar { width: 10px; height: 10px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb {
@@ -132,7 +146,7 @@
 
 /* React Flow dark theme overrides */
 .react-flow__background {
-  background-color: #0A0B13;
+  background-color: var(--bg-base);
 }
 .react-flow__controls {
   background: var(--bg-surface);
@@ -155,10 +169,11 @@
   border-radius: 8px;
 }
 .react-flow__edge-path {
-  stroke: var(--accent-border);
+  stroke: var(--border-strong);
   stroke-width: 1.5;
 }
 .react-flow__edge.animated .react-flow__edge-path {
+  stroke: var(--accent);
   stroke-dasharray: 6 4;
   animation: dashdraw 0.6s linear infinite;
 }
@@ -166,7 +181,7 @@
   to { stroke-dashoffset: -10; }
 }
 .react-flow__handle {
-  background: var(--accent);
+  background: var(--text-secondary);
   border: 2px solid var(--bg-base);
   width: 8px;
   height: 8px;
