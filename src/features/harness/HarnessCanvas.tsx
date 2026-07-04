@@ -660,7 +660,7 @@ function HarnessCanvasInner() {
         >
           <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="rgba(255,255,255,0.07)" />
           <Controls position="bottom-left" showInteractive={false} />
-          <MiniMap pannable zoomable maskColor="rgba(9,9,15,0.85)" nodeColor={() => "#C7C7CC"} style={{ width: 160, height: 100 }} />
+          <MiniMap pannable zoomable maskColor="rgba(10,10,11,0.85)" nodeColor={() => "#C7C7CC"} style={{ width: 160, height: 100 }} />
         </ReactFlow>
 
         {/* Selection panel */}
