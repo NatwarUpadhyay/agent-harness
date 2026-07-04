@@ -45,7 +45,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
         <h1 className="text-xl font-semibold">This page didn't load</h1>
         <p className="mt-2 text-sm text-[var(--text-secondary)]">Something went wrong. Try again or head home.</p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <button onClick={() => { router.invalidate(); reset(); }} className="rounded-md bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white">
+          <button onClick={() => { router.invalidate(); reset(); }} className="rounded-md bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--bg-base)]">
             Try again
           </button>
           <a href="/" className="rounded-md border border-[var(--border-default)] px-4 py-2 text-sm">Go home</a>
