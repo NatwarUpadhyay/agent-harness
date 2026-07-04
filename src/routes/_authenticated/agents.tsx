@@ -110,7 +110,7 @@ function AgentDialog({ open, onClose }: { open: boolean; onClose: () => void }) 
                 Cancel
               </button>
               <button type="submit" disabled={create.isPending || !name.trim()}
-                className="h-9 px-3 rounded-md bg-[var(--accent)] text-white text-[13px] font-medium hover:bg-[var(--accent-hover)] disabled:opacity-50 inline-flex items-center gap-1.5">
+                className="h-9 px-3 rounded-md bg-[var(--accent)] text-[var(--bg-base)] text-[13px] font-medium hover:bg-[var(--accent-hover)] disabled:opacity-50 inline-flex items-center gap-1.5">
                 {create.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                 Deploy
               </button>
@@ -179,7 +179,7 @@ function AgentsView() {
         actions={
           <button
             onClick={() => setDialogOpen(true)}
-            className="inline-flex items-center gap-1.5 h-9 px-3 rounded-md bg-[var(--accent)] text-white text-[13px] font-medium hover:bg-[var(--accent-hover)]"
+            className="inline-flex items-center gap-1.5 h-9 px-3 rounded-md bg-[var(--accent)] text-[var(--bg-base)] text-[13px] font-medium hover:bg-[var(--accent-hover)]"
           >
             <Plus className="h-3.5 w-3.5" /> Deploy agent
           </button>
@@ -207,7 +207,7 @@ function AgentsView() {
         <div className="rounded-[10px] border border-dashed border-[var(--border-default)] p-12 text-center">
           <p className="text-[13px] text-[var(--text-secondary)]">No agents match this filter.</p>
           <button onClick={() => setDialogOpen(true)}
-            className="mt-3 inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-[var(--accent)] text-white text-[12px] font-medium">
+            className="mt-3 inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-[var(--accent)] text-[var(--bg-base)] text-[12px] font-medium">
             <Plus className="h-3 w-3" /> Deploy your first agent
           </button>
         </div>

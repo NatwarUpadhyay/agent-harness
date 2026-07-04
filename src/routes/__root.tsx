@@ -23,7 +23,7 @@ function NotFoundComponent() {
           The route you're looking for doesn't exist in the harness.
         </p>
         <div className="mt-6">
-          <Link to="/" className="inline-flex items-center justify-center rounded-md bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--accent-hover)]">
+          <Link to="/" className="inline-flex items-center justify-center rounded-md bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--bg-base)] hover:bg-[var(--accent-hover)]">
             Back to dashboard
           </Link>
         </div>
@@ -45,7 +45,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
         <h1 className="text-xl font-semibold">This page didn't load</h1>
         <p className="mt-2 text-sm text-[var(--text-secondary)]">Something went wrong. Try again or head home.</p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <button onClick={() => { router.invalidate(); reset(); }} className="rounded-md bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white">
+          <button onClick={() => { router.invalidate(); reset(); }} className="rounded-md bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--bg-base)]">
             Try again
           </button>
           <a href="/" className="rounded-md border border-[var(--border-default)] px-4 py-2 text-sm">Go home</a>
@@ -62,13 +62,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Harness — Enterprise AI control plane" },
       { name: "description", content: "Operating system for enterprise AI agents." },
-      { name: "theme-color", content: "#09090F" },
+      { name: "theme-color", content: "#0A0A0B" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" },
     ],
   }),
   shellComponent: RootShell,

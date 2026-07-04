@@ -111,7 +111,7 @@ export function Sidebar() {
       <div className="border-t border-[var(--border-subtle)] px-3 py-3 flex items-center gap-2">
         <motion.div
           whileHover={{ scale: 1.04 }}
-          className="grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--violet)] text-[12px] font-semibold text-white"
+          className="grid h-8 w-8 place-items-center rounded-full bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[12px] font-semibold text-[var(--text-primary)]"
         >
           AK
         </motion.div>

@@ -36,8 +36,8 @@ export const Route = createFileRoute("/_authenticated/experiments")({
               <YAxis stroke="var(--text-muted)" fontSize={11} tickLine={false} axisLine={false} />
               <Tooltip contentStyle={{ background: "var(--bg-elevated)", border: "1px solid var(--border-default)", borderRadius: 8, fontSize: 12 }} cursor={{ fill: "var(--accent-muted)" }} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Bar dataKey="Success" fill="#4F7AFF" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="Speed"   fill="#A78BFA" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Success" fill="#C7C7CC" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Speed"   fill="#5A5A5F" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

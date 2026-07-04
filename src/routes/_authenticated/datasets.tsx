@@ -19,7 +19,7 @@ export const Route = createFileRoute("/_authenticated/datasets")({
         title="Datasets"
         subtitle="Training, eval, and red-team corpora powering your agents"
         actions={
-          <button className="inline-flex items-center gap-1.5 h-9 px-3 rounded-md bg-[var(--accent)] text-white text-[13px] font-medium">
+          <button className="inline-flex items-center gap-1.5 h-9 px-3 rounded-md bg-[var(--accent)] text-[var(--bg-base)] text-[13px] font-medium">
             <Upload className="h-3.5 w-3.5" /> Upload
           </button>
         }

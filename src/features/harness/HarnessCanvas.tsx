@@ -47,7 +47,7 @@ interface NodeTypeDef {
 }
 
 const NODE_TYPES: NodeTypeDef[] = [
-  { typeName: "Planner",    label: "Planner",    subtitle: "GPT-4o / entry",       color: "#4F7AFF", iconKey: "planner",    canBeSource: true,  canBeTarget: false, latencyMs: 800 },
+  { typeName: "Planner",    label: "Planner",    subtitle: "GPT-4o / entry",       color: "#C7C7CC", iconKey: "planner",    canBeSource: true,  canBeTarget: false, latencyMs: 800 },
   { typeName: "Memory",     label: "Memory",     subtitle: "Qdrant / 12k vectors", color: "#8B5CF6", iconKey: "memory",     canBeSource: true,  canBeTarget: true,  latencyMs: 120 },
   { typeName: "Retriever",  label: "Retriever",  subtitle: "Hybrid / top-8",       color: "#14B8A6", iconKey: "retriever",  canBeSource: true,  canBeTarget: true,  latencyMs: 240 },
   { typeName: "Tools",      label: "Tools",      subtitle: "12 registered",        color: "#F59E0B", iconKey: "tools",      canBeSource: true,  canBeTarget: true,  latencyMs: 450 },
@@ -515,7 +515,7 @@ function HarnessCanvasInner() {
           <div ref={templateBtnRef} className="relative">
             <button
               onClick={() => setTemplateMenuOpen(v => !v)}
-              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full bg-[var(--accent)] text-white text-[12px] font-medium hover:bg-[var(--accent-hover)]"
+              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full bg-[var(--accent)] text-[var(--bg-base)] text-[12px] font-medium hover:bg-[var(--accent-hover)]"
             >
               <Sparkles className="h-3.5 w-3.5" /> Templates
             </button>
@@ -660,7 +660,7 @@ function HarnessCanvasInner() {
         >
           <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="rgba(255,255,255,0.07)" />
           <Controls position="bottom-left" showInteractive={false} />
-          <MiniMap pannable zoomable maskColor="rgba(9,9,15,0.85)" nodeColor={() => "#4F7AFF"} style={{ width: 160, height: 100 }} />
+          <MiniMap pannable zoomable maskColor="rgba(10,10,11,0.85)" nodeColor={() => "#C7C7CC"} style={{ width: 160, height: 100 }} />
         </ReactFlow>
 
         {/* Selection panel */}

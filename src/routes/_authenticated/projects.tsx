@@ -33,7 +33,7 @@ export const Route = createFileRoute("/_authenticated/projects")({
         title="Projects"
         subtitle="Group agents, prompts, and evaluations by initiative"
         actions={
-          <button className="inline-flex items-center gap-1.5 h-9 px-3 rounded-md bg-[var(--accent)] text-white text-[13px] font-medium hover:bg-[var(--accent-hover)]">
+          <button className="inline-flex items-center gap-1.5 h-9 px-3 rounded-md bg-[var(--accent)] text-[var(--bg-base)] text-[13px] font-medium hover:bg-[var(--accent-hover)]">
             <Plus className="h-3.5 w-3.5" /> New project
           </button>
         }

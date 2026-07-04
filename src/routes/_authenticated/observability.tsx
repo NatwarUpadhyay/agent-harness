@@ -295,7 +295,7 @@ function TraceList({
                 className={
                   t.status === "error"
                     ? "h-full bg-[var(--danger)]"
-                    : "h-full bg-gradient-to-r from-[var(--accent)] to-[var(--violet)]"
+                    : "h-full bg-gradient-to-r from-[var(--text-secondary)] to-[var(--text-primary)]"
                 }
                 style={{ width: `${(t.duration / maxDur) * 100}%` }}
               />
@@ -384,7 +384,7 @@ function WaterfallRow({ span, total }: { span: Span; total: number }) {
             "absolute top-0 h-full rounded-sm",
             span.status === "error"
               ? "bg-[var(--danger)]"
-              : "bg-gradient-to-r from-[var(--accent)] to-[var(--violet)]",
+              : "bg-gradient-to-r from-[var(--text-secondary)] to-[var(--text-primary)]",
           )}
           style={{ left: `${left}%`, width: `${width}%` }}
         />
