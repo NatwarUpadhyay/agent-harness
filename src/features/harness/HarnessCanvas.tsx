@@ -155,6 +155,18 @@ function HarnessCanvasInner() {
   const [templateMenuOpen, setTemplateMenuOpen] = useState(false);
   const [currentWorkflowId, setCurrentWorkflowId] = useState<string | null>(null);
   const [workflowName, setWorkflowName] = useState<string>("Untitled workflow");
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  useEffect(() => {
+    try {
+      if (typeof window !== "undefined" && !window.localStorage.getItem("harness.onboarded.v1")) {
+        setShowOnboarding(true);
+      }
+    } catch { /* ignore */ }
+  }, []);
+  const dismissOnboarding = useCallback(() => {
+    setShowOnboarding(false);
+    try { window.localStorage.setItem("harness.onboarded.v1", "1"); } catch { /* ignore */ }
+  }, []);
   const [simulating, setSimulating] = useState(false);
   const [simStep, setSimStep] = useState(0);
   const [simLatency, setSimLatency] = useState(0);
@@ -642,6 +654,32 @@ function HarnessCanvasInner() {
             {disconnectedIds.size} disconnected node{disconnectedIds.size > 1 ? "s" : ""}
           </div>
         )}
+
+        {/* First-visit onboarding hint */}
+        <AnimatePresence>
+          {showOnboarding && (
+            <motion.div
+              initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.25 }}
+              className="absolute top-20 right-4 z-10 w-[280px] rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)]/95 backdrop-blur p-4 shadow-lg"
+            >
+              <div className="flex items-start justify-between mb-2">
+                <span className="text-[11px] uppercase tracking-widest text-[var(--text-muted)]">Try the harness</span>
+                <button onClick={dismissOnboarding} className="p-0.5 -mr-1 -mt-0.5 rounded hover:bg-white/5 text-[var(--text-muted)]" aria-label="Dismiss">
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+              <ol className="space-y-1.5 text-[12px] text-[var(--text-secondary)] leading-relaxed">
+                <li><span className="text-[var(--accent)] font-mono-tabular mr-1.5">01</span>Drag a node from the left rail onto the canvas</li>
+                <li><span className="text-[var(--accent)] font-mono-tabular mr-1.5">02</span>Connect handles by dragging Planner → next node</li>
+                <li><span className="text-[var(--accent)] font-mono-tabular mr-1.5">03</span>Hit <span className="text-[#22C55E]">Simulate</span> to watch it flow</li>
+              </ol>
+              <div className="mt-3 pt-3 border-t border-[var(--border-default)] text-[10px] text-[var(--text-muted)]">
+                Or start from a <span className="text-[var(--text-secondary)]">Template</span> above. Everything is undoable (⌘Z).
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <ReactFlow
           nodes={nodesWithFlags}
