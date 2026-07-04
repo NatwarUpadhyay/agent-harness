@@ -139,6 +139,15 @@ const TEMPLATES: Record<string, { label: string; description: string; build: () 
 };
 
 export function HarnessCanvas() {
+  return (
+    <ReactFlowProvider>
+      <HarnessCanvasInner />
+    </ReactFlowProvider>
+  );
+}
+
+function HarnessCanvasInner() {
+  const { screenToFlowPosition } = useReactFlow();
   const [nodes, setNodes, onNodesChange] = useNodesState<NodeData>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedId, setSelectedId] = useState<string | null>(null);
