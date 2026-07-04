@@ -30,22 +30,18 @@ It's built for anyone who thinks better with a diagram than with a config file �
 
 ## Current status
 
-> **Published and playable** — the harness canvas is live as a public playground with demo workflows, templates, and simulation. Backend persistence is still synthetic/demo data.
+> **Published and playable** — the harness canvas is live as a public playground with demo workflows, templates, and simulation. Data persistence is currently local/export-based; cloud save is planned for later phases.
 
 | Phase | Area | Status |
 | --- | --- | --- |
 | 1 | Auth, routing, app shell | Done |
-| 2 | Dashboard + metrics | Done |
-| 3 | Agents, prompts, tools, models | Demo data |
-| 4 | Datasets, memory, context, retriever | Demo data |
-| 5 | Harness canvas (drag-and-drop, auto-layout, simulate) | Done |
-| 6 | Observability traces + waterfalls | Demo data |
-| 7 | Onyx Graphite design system + shared layout | Done |
-| **8** | **Evaluations engine + command palette polish** | **Next** |
-| 9 | Deployments + policies | Planned |
-| 10 | Experiments + planner comparison | Planned |
-| 11 | MCP integrations | Planned |
-| 12 | Real backend wiring (Lovable Cloud) | Planned |
+| 2 | Dashboard + navigation | Done |
+| 3 | Harness canvas (drag, drop, connect, simulate) | Done |
+| 4 | Templates, save/load, export/import, undo/redo | Done |
+| 5 | Auto-layout + onboarding | Done |
+| 6 | Graphite design system + responsive polish | Done |
+| **7** | **Evaluations engine + command palette polish** | **Next** |
+| 8 | Multi-user cloud persistence | Planned |
 
 ---
 
@@ -57,8 +53,8 @@ It's built for anyone who thinks better with a diagram than with a config file �
 - **Save / Load / Export / Import** — Persist flows locally as JSON and share them between sessions or users.
 - **Undo / Redo** — Step through canvas changes without fear.
 - **Onboarding** — Dismissible first-visit guide that teaches _drag → connect → simulate_ in three steps.
-- **Dashboard** — Landing surface with project metrics and navigation into each area.
-- **Design system** — Dark Onyx Graphite palette (`#0A0A0B` base, restrained cool accent), JetBrains Mono headings, Work Sans body.
+- **Dashboard** — Landing surface with project overview and navigation into the harness.
+- **Design system** — Graphite palette (`#0A0A0B` base, restrained cool accent), JetBrains Mono headings, Work Sans body.
 
 ---
 
@@ -96,7 +92,7 @@ Then open the local URL Vite prints. The published app is already live at:
 The fastest way to understand Harness is to use the preview:
 
 1. Open **[harness-flow-control.lovable.app](https://harness-flow-control.lovable.app)**.
-2. Pick the **Harness** section.
+2. Go to the **Harness** section.
 3. Drag a node from the sidebar onto the canvas.
 4. Drag a connection from one node's output port to another node's input port.
 5. Click **Simulate** and watch the flow run.
@@ -104,13 +100,13 @@ The fastest way to understand Harness is to use the preview:
 
 ---
 
-## Next up — Phase 8
+## Next up — Phase 7
 
-1. **Evaluations engine** — dataset × run results, pass/fail rubrics, and diff views.
+1. **Evaluations engine** — run flows against datasets, apply pass/fail rubrics, and compare runs.
 2. **Command palette polish** — `⌘K` recent actions, fuzzy search, and keyboard shortcut overlay.
 3. **Empty-state pass** — purposeful empty states with clear next actions on every surface.
 
-After Phase 8 the platform will be feature-complete enough to swap the synthetic data layer for real backend tables.
+After Phase 7 the platform will be feature-complete enough to add multi-user cloud persistence.
 
 ---
 
