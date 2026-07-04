@@ -8,7 +8,7 @@ export const Route = createFileRoute("/_authenticated/harness")({
     <>
       <PageHeader
         title="Harness"
-        subtitle="Compose agent workflows visually — every node is a hot-swappable runtime"
+        subtitle="Compose flows visually — drag nodes, connect them, and simulate the result step by step"
       />
       <HarnessCanvas />
     </>
