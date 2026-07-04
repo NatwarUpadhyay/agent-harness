@@ -1,44 +1,47 @@
 <div align="center">
 
-![Onyx Agents](docs/hero.png)
+![Harness](docs/hero.png)
 
-# Onyx Agents
+# Harness
 
-**A visual platform to build, evaluate, and observe AI agent workflows.**
+**Design, simulate, and share process flows on a canvas.**
 
-Design multi-step agents on a canvas, wire them to tools and memory, run them against datasets, and trace every token in production — all with an Onyx-graphite, Apple/OpenAI-inspired UI.
+Live preview: **[harness-flow-control.lovable.app](https://harness-flow-control.lovable.app)**
 
 </div>
 
 ---
 
-## Why this exists
+## What it is
 
-Shipping reliable AI agents is still messy: prompts live in notebooks, tools live in scripts, evals live in spreadsheets, and production traces live nowhere. **Onyx Agents** brings the full lifecycle into one workspace so builders can go from idea → agent → eval → deployment without stitching five tools together.
+**Harness** is a visual workflow playground. It gives you a node-based canvas where you can drag building blocks, connect them into a flow, and hit **Simulate** to watch the whole thing run step by step.
 
-It's useful if you are:
+It's built for anyone who thinks better with a diagram than with a config file — makers sketching logic, engineers prototyping pipelines, educators teaching control flow, or teams who want a shared visual language before writing code.
 
-- **A solo builder** prototyping an agent and want a visual canvas instead of raw code.
-- **An AI team** that needs shared datasets, evaluations, and traces.
-- **A platform engineer** deploying agents and needing observability + policies.
-- **A researcher** running planners and comparing model behavior side-by-side.
+### Why use it
+
+- **Sketch fast** — drag nodes from a sidebar and connect ports without any setup.
+- **See it run** — simulation highlights each step and reveals how decisions propagate.
+- **Start from templates** — choose from starter workflows to learn the tool quickly.
+- **Take it with you** — save, load, export, and import flows as JSON.
+- **Stay in flow** — undo/redo, auto-layout, and a first-visit onboarding card keep the canvas friction-free.
 
 ---
 
 ## Current status
 
-> **Phase 7 complete** — Core platform surfaces are live, styled, and wired to synthetic data. Ready to start Phase 8.
+> **Published and playable** — the harness canvas is live as a public playground with demo workflows, templates, and simulation. Backend persistence is still synthetic/demo data.
 
 | Phase | Area | Status |
 | --- | --- | --- |
 | 1 | Auth, routing, app shell | Done |
 | 2 | Dashboard + metrics | Done |
-| 3 | Agents, prompts, tools, models | Done |
-| 4 | Datasets, memory, context, retriever | Done |
-| 5 | Harness canvas (drag-and-drop, auto-layout) | Done |
-| 6 | Observability traces + waterfalls | Done |
-| 7 | Onyx Graphite design system (Apple/OpenAI-inspired) | Done |
-| **8** | **Evaluations engine + Command palette polish** | **Next** |
+| 3 | Agents, prompts, tools, models | Demo data |
+| 4 | Datasets, memory, context, retriever | Demo data |
+| 5 | Harness canvas (drag-and-drop, auto-layout, simulate) | Done |
+| 6 | Observability traces + waterfalls | Demo data |
+| 7 | Onyx Graphite design system + shared layout | Done |
+| **8** | **Evaluations engine + command palette polish** | **Next** |
 | 9 | Deployments + policies | Planned |
 | 10 | Experiments + planner comparison | Planned |
 | 11 | MCP integrations | Planned |
@@ -48,13 +51,14 @@ It's useful if you are:
 
 ## What's inside
 
-- **Harness** — React Flow canvas with drag-from-sidebar, viewport-aware drop positioning, and topological auto-layout.
-- **Agents / Prompts / Tools / Models** — CRUD-style surfaces for the building blocks.
-- **Datasets & Memory** — Manage evaluation data and long-term agent memory.
-- **Observability** — Trace list, span waterfall, token/latency charts.
-- **Dashboard** — Live-feel metrics with monochrome charts.
-- **Command palette** — `⌘K` navigation across every surface.
-- **Design system** — Onyx Graphite palette (`#0A0A0B` base, restrained cool accent), JetBrains Mono headings, Work Sans body.
+- **Harness Canvas** — React Flow workspace with drag-from-sidebar node creation, edge connections, viewport-aware drop, and topological auto-layout.
+- **Simulate** — Run any wired flow and watch each node activate in sequence.
+- **Templates** — Pre-built starter workflows to load and experiment with.
+- **Save / Load / Export / Import** — Persist flows locally as JSON and share them between sessions or users.
+- **Undo / Redo** — Step through canvas changes without fear.
+- **Onboarding** — Dismissible first-visit guide that teaches _drag → connect → simulate_ in three steps.
+- **Dashboard** — Landing surface with project metrics and navigation into each area.
+- **Design system** — Dark Onyx Graphite palette (`#0A0A0B` base, restrained cool accent), JetBrains Mono headings, Work Sans body.
 
 ---
 
@@ -77,7 +81,9 @@ bun install
 bun dev
 ```
 
-Then open the local URL Vite prints. Sign in through the login screen (Lovable Cloud auth) and you'll land on the dashboard.
+Then open the local URL Vite prints. The published app is already live at:
+
+**https://harness-flow-control.lovable.app**
 
 ### Environment
 
@@ -85,11 +91,24 @@ Then open the local URL Vite prints. Sign in through the login screen (Lovable C
 
 ---
 
+## Try it live
+
+The fastest way to understand Harness is to use the preview:
+
+1. Open **[harness-flow-control.lovable.app](https://harness-flow-control.lovable.app)**.
+2. Pick the **Harness** section.
+3. Drag a node from the sidebar onto the canvas.
+4. Drag a connection from one node's output port to another node's input port.
+5. Click **Simulate** and watch the flow run.
+6. Export the JSON if you want to save or share it.
+
+---
+
 ## Next up — Phase 8
 
-1. **Evaluations engine** — dataset × agent runs, pass/fail rubrics, diff view between runs.
-2. **Command palette polish** — recent actions, fuzzy entity search, keyboard shortcuts overlay.
-3. **Empty-state pass** — every surface gets a purposeful empty state with a next action.
+1. **Evaluations engine** — dataset × run results, pass/fail rubrics, and diff views.
+2. **Command palette polish** — `⌘K` recent actions, fuzzy search, and keyboard shortcut overlay.
+3. **Empty-state pass** — purposeful empty states with clear next actions on every surface.
 
 After Phase 8 the platform will be feature-complete enough to swap the synthetic data layer for real backend tables.
 
@@ -104,7 +123,7 @@ This project is developed inside [Lovable](https://lovable.dev) with two-way Git
 
 ```bash
 git clone <your-repo-url>
-cd onyx-agents
+cd harness
 bun install
 bun dev
 ```
@@ -113,4 +132,4 @@ bun dev
 
 ## License
 
-MIT — do whatever helps you ship better agents.
+MIT — use it, extend it, and build better flows.
