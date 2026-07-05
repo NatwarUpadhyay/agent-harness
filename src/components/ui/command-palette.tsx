@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Bot, Wrench, Workflow, Beaker, ArrowRight } from "lucide-react";
+import { Search, Bot, Wrench, Workflow, Beaker, ArrowRight, Clock } from "lucide-react";
 import { useUiStore } from "@/stores/ui";
 import { navGroups } from "@/components/layout/nav-config";
 import { useAgents, useTools, useWorkflows, useExperiments } from "@/lib/hooks/use-entities";
@@ -14,6 +14,23 @@ type Item = {
   icon: React.ComponentType<{ className?: string }>;
   hint?: string;
 };
+
+const RECENTS_KEY = "harness-cmdk-recents";
+
+function loadRecents(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    return JSON.parse(localStorage.getItem(RECENTS_KEY) ?? "[]");
+  } catch {
+    return [];
+  }
+}
+function pushRecent(id: string) {
+  if (typeof window === "undefined") return;
+  const cur = loadRecents().filter((x) => x !== id);
+  cur.unshift(id);
+  localStorage.setItem(RECENTS_KEY, JSON.stringify(cur.slice(0, 6)));
+}
 
 function fuzzyIncludes(haystack: string, needle: string): boolean {
   if (!needle) return true;
@@ -34,13 +51,14 @@ export function CommandPalette() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [cursor, setCursor] = useState(0);
+  const [recents, setRecents] = useState<string[]>([]);
 
   const { data: agents = [] } = useAgents();
   const { data: tools = [] } = useTools();
   const { data: workflows = [] } = useWorkflows();
   const { data: experiments = [] } = useExperiments();
 
-  useEffect(() => { setQuery(""); setCursor(0); }, [open]);
+  useEffect(() => { setQuery(""); setCursor(0); if (open) setRecents(loadRecents()); }, [open]);
 
   const items = useMemo<Item[]>(() => {
     const navItems: Item[] = navGroups.flatMap((g) =>
@@ -68,28 +86,40 @@ export function CommandPalette() {
     return [...navItems, ...agentItems, ...toolItems, ...wfItems, ...expItems];
   }, [agents, tools, workflows, experiments]);
 
-  const filtered = useMemo(
-    () => items.filter((i) => fuzzyIncludes(i.label, query)).slice(0, 40),
-    [items, query],
+  const recentItems = useMemo(
+    () => recents.map((id) => items.find((i) => i.id === id)).filter(Boolean) as Item[],
+    [recents, items],
   );
 
+  const filtered = useMemo(() => {
+    if (!query) return recentItems;
+    return items.filter((i) => fuzzyIncludes(i.label, query)).slice(0, 40);
+  }, [items, query, recentItems]);
+
   const grouped = useMemo(() => {
+    if (!query) return recentItems.length ? [["Recent", recentItems] as [string, Item[]]] : [];
     const map = new Map<string, Item[]>();
     filtered.forEach((i) => {
       if (!map.has(i.group)) map.set(i.group, []);
       map.get(i.group)!.push(i);
     });
     return Array.from(map.entries());
-  }, [filtered]);
+  }, [filtered, recentItems, query]);
 
   const flat = filtered;
+
+  const activate = (item: Item) => {
+    pushRecent(item.id);
+    navigate({ to: item.to });
+    setOpen(false);
+  };
 
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowDown") { e.preventDefault(); setCursor((c) => Math.min(flat.length - 1, c + 1)); }
     else if (e.key === "ArrowUp") { e.preventDefault(); setCursor((c) => Math.max(0, c - 1)); }
     else if (e.key === "Enter") {
       const item = flat[cursor];
-      if (item) { navigate({ to: item.to }); setOpen(false); }
+      if (item) activate(item);
     } else if (e.key === "Escape") { setOpen(false); }
   };
 
@@ -123,18 +153,23 @@ export function CommandPalette() {
             </div>
             <div className="max-h-[420px] overflow-y-auto py-2">
               {flat.length === 0 && (
-                <div className="px-4 py-8 text-center text-[13px] text-[var(--text-muted)]">No results</div>
+                <div className="px-4 py-8 text-center text-[13px] text-[var(--text-muted)]">
+                  {query ? "No results" : "Start typing to search, or press ? for shortcuts"}
+                </div>
               )}
               {grouped.map(([group, list]) => (
                 <div key={group} className="mb-2">
-                  <div className="px-4 py-1 text-[10px] uppercase tracking-wider text-[var(--text-muted)]">{group}</div>
+                  <div className="px-4 py-1 text-[10px] uppercase tracking-wider text-[var(--text-muted)] flex items-center gap-1.5">
+                    {group === "Recent" && <Clock className="h-3 w-3" />}
+                    {group}
+                  </div>
                   {list.map((i) => {
                     const active = flat.indexOf(i) === cursor;
                     const Icon = i.icon;
                     return (
                       <Link
                         key={i.id} to={i.to}
-                        onClick={() => setOpen(false)}
+                        onClick={(e) => { e.preventDefault(); activate(i); }}
                         onMouseEnter={() => setCursor(flat.indexOf(i))}
                         className={`flex items-center gap-3 px-4 py-2 text-[13px] transition-colors ${
                           active ? "bg-[var(--accent-muted)] text-[var(--text-primary)]" : "hover:bg-[var(--accent-muted)]/60"
@@ -153,7 +188,7 @@ export function CommandPalette() {
               ))}
             </div>
             <div className="flex items-center justify-between px-4 h-9 border-t border-[var(--border-subtle)] text-[10px] text-[var(--text-muted)]">
-              <span>{flat.length} results</span>
+              <span>{flat.length} {query ? "results" : "recent"}</span>
               <span className="flex items-center gap-2">
                 <kbd className="font-mono-tabular px-1 rounded bg-[var(--bg-surface)] border border-[var(--border-subtle)]">↑↓</kbd> navigate
                 <kbd className="font-mono-tabular px-1 rounded bg-[var(--bg-surface)] border border-[var(--border-subtle)]">↵</kbd> open

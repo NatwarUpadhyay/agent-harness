@@ -1,27 +1,41 @@
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouterState } from "@tanstack/react-router";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
 import { CommandPalette } from "@/components/ui/command-palette";
+import { ShortcutOverlay } from "@/components/ui/shortcut-overlay";
 import { useUiStore } from "@/stores/ui";
 import { Toaster } from "@/components/ui/sonner";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const collapsed = useUiStore((s) => s.sidebarCollapsed);
+  const commandOpen = useUiStore((s) => s.commandOpen);
   const setCommandOpen = useUiStore((s) => s.setCommandOpen);
   const pathname = useRouterState({ select: (r) => r.location.pathname });
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
   useEffect(() => {
+    const isEditable = (t: EventTarget | null) => {
+      const el = t as HTMLElement | null;
+      if (!el) return false;
+      const tag = el.tagName;
+      return tag === "INPUT" || tag === "TEXTAREA" || el.isContentEditable;
+    };
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setCommandOpen(true);
+        return;
+      }
+      if (e.key === "?" && !commandOpen && !isEditable(e.target)) {
+        e.preventDefault();
+        setShortcutsOpen((v) => !v);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [setCommandOpen]);
+  }, [setCommandOpen, commandOpen]);
 
   if (pathname === "/login") {
     return <>{children}</>;
@@ -52,6 +66,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </main>
       </div>
       <CommandPalette />
+      <ShortcutOverlay open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
       <Toaster theme="dark" position="bottom-right" />
     </div>
   );

@@ -40,8 +40,8 @@ It's built for anyone who thinks better with a diagram than with a config file �
 | 4 | Templates, save/load, export/import, undo/redo | Done |
 | 5 | Auto-layout + onboarding | Done |
 | 6 | Graphite design system + responsive polish | Done |
-| **7** | **Evaluations engine + command palette polish** | **Next** |
-| 8 | Multi-user cloud persistence | Planned |
+| 7 | Evaluations engine + command palette polish | Done |
+| **8** | **Multi-user cloud persistence** | **Next** |
 
 ---
 
@@ -100,13 +100,16 @@ The fastest way to understand Harness is to use the preview:
 
 ---
 
-## Next up — Phase 7
+## What shipped in Phase 7
 
-1. **Evaluations engine** — run flows against datasets, apply pass/fail rubrics, and compare runs.
-2. **Command palette polish** — `⌘K` recent actions, fuzzy search, and keyboard shortcut overlay.
+1. **Evaluations engine** — dataset picker, weighted rubric panel, per-run detail drawer, and a two-run comparison view with per-metric deltas.
+2. **Command palette polish** — recent-actions memory, fuzzy search, and a keyboard shortcut overlay (press `?`).
 3. **Empty-state pass** — purposeful empty states with clear next actions on every surface.
 
-After Phase 7 the platform will be feature-complete enough to add multi-user cloud persistence.
+## Next up — Phase 8
+
+Multi-user cloud persistence: shared workspaces, saved runs, and collaborative editing on the harness canvas.
+
 
 ---
 
