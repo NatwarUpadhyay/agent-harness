@@ -40,8 +40,8 @@ It's built for anyone who thinks better with a diagram than with a config file â
 | 4 | Templates, save/load, export/import, undo/redo | Done |
 | 5 | Auto-layout + onboarding | Done |
 | 6 | Graphite design system + responsive polish | Done |
-| **7** | **Evaluations engine + command palette polish** | **Next** |
-| 8 | Multi-user cloud persistence | Planned |
+| 7 | Evaluations engine + command palette polish | Done |
+| **8** | **Multi-user cloud persistence** | **Next** |
 
 ---
 
