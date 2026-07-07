@@ -667,6 +667,8 @@ function HarnessCanvasInner() {
           </div>
         )}
 
+        <UsagePanel />
+
         {/* First-visit onboarding hint */}
         <AnimatePresence>
           {showOnboarding && (
