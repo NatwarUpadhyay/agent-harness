@@ -1,7 +1,20 @@
-import { Link, useRouterState } from "@tanstack/react-router";
-import { Search, Bell, ChevronRight } from "lucide-react";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { Search, Bell, ChevronRight, LogOut } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useUiStore } from "@/stores/ui";
 import { allNavItems } from "./nav-config";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
+
+function initialsFrom(name: string | null | undefined, email: string | null | undefined) {
+  const src = (name && name.trim()) || (email ? email.split("@")[0] : "");
+  if (!src) return "?";
+  const parts = src.replace(/[._-]+/g, " ").split(/\s+/).filter(Boolean);
+  const letters = parts.length >= 2
+    ? parts[0][0] + parts[parts.length - 1][0]
+    : src.slice(0, 2);
+  return letters.toUpperCase();
+}
 
 function useBreadcrumbs() {
   const pathname = useRouterState({ select: (r) => r.location.pathname });
