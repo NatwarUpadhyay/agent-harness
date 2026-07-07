@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { useWorkflows, useSaveWorkflow, type WorkflowRow } from "@/lib/hooks/use-entities";
 import { toast } from "sonner";
+import { UsagePanel } from "./UsagePanel";
+import { estimateNodeCost, recordRun, formatCost } from "@/lib/data/harness-usage";
 
 interface NodeData {
   label: string;
@@ -404,9 +406,16 @@ function HarnessCanvasInner() {
 
     setSimulating(true); setSimStep(0); setSimLatency(0);
     let cumulative = 0;
+    const perNode: { typeName: string; latencyMs: number; tokens: number; cost: number }[] = [];
     const step = (idx: number) => {
       if (idx >= order.length) {
-        toast.success(`Simulation complete · ${cumulative}ms`);
+        const totalTokens = perNode.reduce((s, n) => s + n.tokens, 0);
+        const totalCost = perNode.reduce((s, n) => s + n.cost, 0);
+        recordRun({
+          workflowName, totalLatencyMs: cumulative, totalTokens, totalCost,
+          nodeCount: nodes.length, edgeCount: edges.length, perNode,
+        });
+        toast.success(`Simulation complete · ${cumulative}ms · ${totalTokens.toLocaleString()} tok · ${formatCost(totalCost)}`);
         simTimerRef.current = setTimeout(() => {
           setSimulating(false); setSimStep(0);
           setNodes(nds => nds.map(n => ({ ...n, data: { ...n.data, simState: "idle" as const } })));
@@ -415,7 +424,10 @@ function HarnessCanvasInner() {
       }
       const currentId = order[idx];
       const nodeDef = nodes.find(n => n.id === currentId);
-      const lat = nodeDef ? TYPE_BY_NAME[nodeDef.data.typeName]?.latencyMs ?? 300 : 300;
+      const typeName = nodeDef?.data.typeName ?? "Unknown";
+      const lat = nodeDef ? TYPE_BY_NAME[typeName]?.latencyMs ?? 300 : 300;
+      const { tokens, cost } = estimateNodeCost(typeName, lat);
+      perNode.push({ typeName, latencyMs: lat, tokens, cost });
       cumulative += lat;
       setSimStep(idx + 1); setSimLatency(cumulative);
       setNodes(nds => nds.map(n => ({
@@ -435,7 +447,7 @@ function HarnessCanvasInner() {
       simTimerRef.current = setTimeout(() => step(idx + 1), wait);
     };
     step(0);
-  }, [nodes, edges, setNodes, setEdges]);
+  }, [nodes, edges, setNodes, setEdges, workflowName]);
 
   useEffect(() => () => { if (simTimerRef.current) clearTimeout(simTimerRef.current); }, []);
 
