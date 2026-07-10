@@ -99,11 +99,10 @@ function DatasetsView() {
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard index={0} label="Datasets" value={totals.files} />
-        <MetricCard index={1} label="Total rows" value={totals.rows} display={(v) => Math.round(v).toLocaleString()} />
-        <MetricCard index={2} label="Total size" value={totals.bytes} display={(v) => formatBytes(v)} />
-        <MetricCard index={3} label="Your uploads" value={totals.uploads} />
-      </div>
+        <MetricCard index={0} label="Datasets" value={totals.files} trend={0} series={[totals.files]} />
+        <MetricCard index={1} label="Total rows" value={totals.rows} display={(v) => Math.round(v).toLocaleString()} trend={0} series={[totals.rows]} />
+        <MetricCard index={2} label="Total size" value={totals.bytes} display={(v) => formatBytes(v)} trend={0} series={[totals.bytes]} />
+        <MetricCard index={3} label="Your uploads" value={totals.uploads} trend={totals.uploads > 0 ? totals.uploads : 0} series={[totals.uploads]} />
 
       <div
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
