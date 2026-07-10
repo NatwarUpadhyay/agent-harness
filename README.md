@@ -110,13 +110,14 @@ The fastest way to understand Harness is to use the preview:
 
 ---
 
-## What shipped in Phase 7
+## What shipped recently
 
-1. **Evaluations engine** — dataset picker, weighted rubric panel, per-run detail drawer, and a two-run comparison view with per-metric deltas.
-2. **Command palette polish** — recent-actions memory, fuzzy search, and a keyboard shortcut overlay (press `?`).
-3. **Empty-state pass** — purposeful empty states with clear next actions on every surface.
+- **Phase 8 — Usage analytics.** Live tokens/latency/cost tracker on the harness page, per-node type breakdown, persisted across sessions.
+- **Phase 9 — Prompt library.** Versioned prompts, `{{variable}}` extraction, live rendering, per-version notes.
+- **Phase 10 — Experiments.** Two-variant A/B setup, animated trial batches, auto-detected winner, trials feed usage analytics.
+- **Phase 11 — Datasets.** Drag-drop CSV/JSON/JSONL/Markdown upload with parsing, column detection, and preview drawer.
 
-## Next up — Phase 8
+## Next up — Phase 12
 
 Multi-user cloud persistence: shared workspaces, saved runs, and collaborative editing on the harness canvas.
 
