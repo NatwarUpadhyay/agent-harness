@@ -41,7 +41,11 @@ It's built for anyone who thinks better with a diagram than with a config file �
 | 5 | Auto-layout + onboarding | Done |
 | 6 | Graphite design system + responsive polish | Done |
 | 7 | Evaluations engine + command palette polish | Done |
-| **8** | **Multi-user cloud persistence** | **Next** |
+| 8 | Harness usage analytics (tokens, latency, cost) | Done |
+| 9 | Prompt library with versioning + variable rendering | Done |
+| 10 | Experiments — A/B variants with simulated trials | Done |
+| 11 | Datasets — upload, parse, preview CSV/JSON/JSONL/MD | Done |
+| **12** | **Multi-user cloud persistence** | **Next** |
 
 ---
 
@@ -49,9 +53,15 @@ It's built for anyone who thinks better with a diagram than with a config file �
 
 - **Harness Canvas** — React Flow workspace with drag-from-sidebar node creation, edge connections, viewport-aware drop, and topological auto-layout.
 - **Simulate** — Run any wired flow and watch each node activate in sequence.
+- **Usage analytics** — Every simulation records tokens, latency, and estimated cost per node type, surfaced live on the harness page.
+- **Prompt library** — Versioned prompts with `{{variable}}` extraction and live rendering; save new versions with notes.
+- **Experiments** — Define two variants with custom success-rate + latency knobs, run animated trial batches, and auto-detect a winner. Trials feed the harness usage analytics.
+- **Datasets** — Drag-drop upload for CSV, JSON, JSONL, and Markdown with automatic parsing, column detection, and a first-50-rows preview drawer.
+- **Evaluations** — Dataset picker, weighted rubric panel, per-run drawer, and two-run comparison with per-metric deltas.
 - **Templates** — Pre-built starter workflows to load and experiment with.
 - **Save / Load / Export / Import** — Persist flows locally as JSON and share them between sessions or users.
 - **Undo / Redo** — Step through canvas changes without fear.
+- **Command palette** — Fuzzy search, recent actions, and a `?` shortcut overlay.
 - **Onboarding** — Dismissible first-visit guide that teaches _drag → connect → simulate_ in three steps.
 - **Dashboard** — Landing surface with project overview and navigation into the harness.
 - **Design system** — Graphite palette (`#0A0A0B` base, restrained cool accent), JetBrains Mono headings, Work Sans body.
@@ -100,13 +110,14 @@ The fastest way to understand Harness is to use the preview:
 
 ---
 
-## What shipped in Phase 7
+## What shipped recently
 
-1. **Evaluations engine** — dataset picker, weighted rubric panel, per-run detail drawer, and a two-run comparison view with per-metric deltas.
-2. **Command palette polish** — recent-actions memory, fuzzy search, and a keyboard shortcut overlay (press `?`).
-3. **Empty-state pass** — purposeful empty states with clear next actions on every surface.
+- **Phase 8 — Usage analytics.** Live tokens/latency/cost tracker on the harness page, per-node type breakdown, persisted across sessions.
+- **Phase 9 — Prompt library.** Versioned prompts, `{{variable}}` extraction, live rendering, per-version notes.
+- **Phase 10 — Experiments.** Two-variant A/B setup, animated trial batches, auto-detected winner, trials feed usage analytics.
+- **Phase 11 — Datasets.** Drag-drop CSV/JSON/JSONL/Markdown upload with parsing, column detection, and preview drawer.
 
-## Next up — Phase 8
+## Next up — Phase 12
 
 Multi-user cloud persistence: shared workspaces, saved runs, and collaborative editing on the harness canvas.
 
