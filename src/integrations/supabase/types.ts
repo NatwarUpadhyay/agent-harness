@@ -170,6 +170,7 @@ export type Database = {
           description: string | null
           edges: Json
           id: string
+          is_favorite: boolean
           is_template: boolean
           name: string
           nodes: Json
@@ -181,6 +182,7 @@ export type Database = {
           description?: string | null
           edges?: Json
           id?: string
+          is_favorite?: boolean
           is_template?: boolean
           name: string
           nodes?: Json
@@ -192,6 +194,7 @@ export type Database = {
           description?: string | null
           edges?: Json
           id?: string
+          is_favorite?: boolean
           is_template?: boolean
           name?: string
           nodes?: Json
