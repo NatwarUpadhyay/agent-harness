@@ -117,10 +117,11 @@ The fastest way to understand Harness is to use the preview:
 - **Phase 9 — Prompt library.** Versioned prompts, `{{variable}}` extraction, live rendering, per-version notes.
 - **Phase 10 — Experiments.** Two-variant A/B setup, animated trial batches, auto-detected winner, trials feed usage analytics.
 - **Phase 11 — Datasets.** Drag-drop CSV/JSON/JSONL/Markdown upload with parsing, column detection, and preview drawer.
+- **Phase 12 — Cloud workflow management.** Rename, duplicate, and delete saved workflows directly from the Load menu, backed by Lovable Cloud.
 
-## Next up — Phase 12
+## Next up — Phase 13
 
-Multi-user cloud persistence: shared workspaces, saved runs, and collaborative editing on the harness canvas.
+Shared workspaces and collaborative editing: public read-only workflow links, org-scoped libraries, and live multi-cursor editing on the harness canvas.
 
 
 ---
