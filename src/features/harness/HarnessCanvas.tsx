@@ -9,9 +9,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Brain, Database, Search, Wrench, ShieldCheck, RefreshCcw, ArrowRightCircle,
   Plus, Layout, Download, Upload, Trash2, X, Save, FolderOpen, Play, Square,
-  Undo2, Redo2, Sparkles, AlertTriangle, GripVertical,
+  Undo2, Redo2, Sparkles, AlertTriangle, GripVertical, Copy, Pencil,
 } from "lucide-react";
-import { useWorkflows, useSaveWorkflow, type WorkflowRow } from "@/lib/hooks/use-entities";
+import {
+  useWorkflows, useSaveWorkflow, useDeleteWorkflow, useDuplicateWorkflow,
+  useRenameWorkflow, type WorkflowRow,
+} from "@/lib/hooks/use-entities";
 import { toast } from "sonner";
 import { UsagePanel } from "./UsagePanel";
 import { estimateNodeCost, recordRun, formatCost } from "@/lib/data/harness-usage";
