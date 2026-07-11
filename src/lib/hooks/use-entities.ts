@@ -169,6 +169,19 @@ export function useRenameWorkflow() {
   });
 }
 
+export function useToggleWorkflowFavorite() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, is_favorite }: { id: string; is_favorite: boolean }) => {
+      const { data, error } = await supabase
+        .from("workflows").update({ is_favorite }).eq("id", id).select().single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: workflowsKey }),
+  });
+}
+
 // ---------- EXPERIMENTS ----------
 export const experimentsKey = ["experiments"] as const;
 
