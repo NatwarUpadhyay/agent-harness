@@ -127,6 +127,48 @@ export function useSaveWorkflow() {
   });
 }
 
+export function useDeleteWorkflow() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("workflows").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: workflowsKey }),
+  });
+}
+
+export function useDuplicateWorkflow() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (wf: WorkflowRow) => {
+      const user_id = await currentUserId();
+      const { data, error } = await supabase.from("workflows").insert({
+        user_id,
+        name: `${wf.name} (copy)`,
+        nodes: wf.nodes,
+        edges: wf.edges,
+      }).select().single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: workflowsKey }),
+  });
+}
+
+export function useRenameWorkflow() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, name }: { id: string; name: string }) => {
+      const { data, error } = await supabase
+        .from("workflows").update({ name }).eq("id", id).select().single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: workflowsKey }),
+  });
+}
+
 // ---------- EXPERIMENTS ----------
 export const experimentsKey = ["experiments"] as const;
 

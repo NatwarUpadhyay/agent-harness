@@ -9,9 +9,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Brain, Database, Search, Wrench, ShieldCheck, RefreshCcw, ArrowRightCircle,
   Plus, Layout, Download, Upload, Trash2, X, Save, FolderOpen, Play, Square,
-  Undo2, Redo2, Sparkles, AlertTriangle, GripVertical,
+  Undo2, Redo2, Sparkles, AlertTriangle, GripVertical, Copy, Pencil,
 } from "lucide-react";
-import { useWorkflows, useSaveWorkflow, type WorkflowRow } from "@/lib/hooks/use-entities";
+import {
+  useWorkflows, useSaveWorkflow, useDeleteWorkflow, useDuplicateWorkflow,
+  useRenameWorkflow, type WorkflowRow,
+} from "@/lib/hooks/use-entities";
 import { toast } from "sonner";
 import { UsagePanel } from "./UsagePanel";
 import { estimateNodeCost, recordRun, formatCost } from "@/lib/data/harness-usage";
@@ -178,6 +181,9 @@ function HarnessCanvasInner() {
   const simTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { data: savedWorkflows = [] } = useWorkflows();
   const saveWorkflow = useSaveWorkflow();
+  const deleteWorkflow = useDeleteWorkflow();
+  const duplicateWorkflow = useDuplicateWorkflow();
+  const renameWorkflow = useRenameWorkflow();
 
   // ---------- Undo / redo history ----------
   const historyRef = useRef<{ nodes: Node<NodeData>[]; edges: Edge[] }[]>([{ nodes: initialNodes, edges: initialEdges }]);
@@ -621,15 +627,70 @@ function HarnessCanvasInner() {
                   {savedWorkflows.length === 0 ? (
                     <div className="px-3 py-4 text-center text-[12px] text-[var(--text-muted)]">No saved workflows yet</div>
                   ) : savedWorkflows.map((wf) => (
-                    <button
-                      key={wf.id} onClick={() => handleLoad(wf)}
-                      className="w-full flex flex-col items-start gap-0.5 px-3 py-2 hover:bg-white/5 text-left"
-                    >
-                      <span className="text-[13px] text-[var(--text-primary)] truncate w-full">{wf.name}</span>
-                      <span className="text-[10px] text-[var(--text-muted)] font-mono-tabular">
-                        {Array.isArray(wf.nodes) ? wf.nodes.length : 0} nodes · {new Date(wf.updated_at).toLocaleDateString()}
-                      </span>
-                    </button>
+                    <div key={wf.id} className="group flex items-center gap-1 pr-1 hover:bg-white/5">
+                      <button
+                        onClick={() => handleLoad(wf)}
+                        className="flex-1 flex flex-col items-start gap-0.5 px-3 py-2 text-left min-w-0"
+                      >
+                        <span className="text-[13px] text-[var(--text-primary)] truncate w-full">{wf.name}</span>
+                        <span className="text-[10px] text-[var(--text-muted)] font-mono-tabular">
+                          {Array.isArray(wf.nodes) ? wf.nodes.length : 0} nodes · {new Date(wf.updated_at).toLocaleDateString()}
+                        </span>
+                      </button>
+                      <button
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          const name = prompt("Rename workflow", wf.name)?.trim();
+                          if (!name || name === wf.name) return;
+                          try {
+                            const updated = await renameWorkflow.mutateAsync({ id: wf.id, name });
+                            if (currentWorkflowId === wf.id) setWorkflowName(updated.name);
+                            toast.success(`Renamed to “${name}”`);
+                          } catch (err) {
+                            toast.error(err instanceof Error ? err.message : "Rename failed");
+                          }
+                        }}
+                        title="Rename"
+                        className="opacity-0 group-hover:opacity-100 p-1 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                      >
+                        <Pencil className="h-3 w-3" />
+                      </button>
+                      <button
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          try {
+                            await duplicateWorkflow.mutateAsync(wf);
+                            toast.success(`Duplicated “${wf.name}”`);
+                          } catch (err) {
+                            toast.error(err instanceof Error ? err.message : "Duplicate failed");
+                          }
+                        }}
+                        title="Duplicate"
+                        className="opacity-0 group-hover:opacity-100 p-1 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                      >
+                        <Copy className="h-3 w-3" />
+                      </button>
+                      <button
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          if (!confirm(`Delete workflow "${wf.name}"?`)) return;
+                          try {
+                            await deleteWorkflow.mutateAsync(wf.id);
+                            if (currentWorkflowId === wf.id) {
+                              setCurrentWorkflowId(null);
+                              setWorkflowName("Untitled workflow");
+                            }
+                            toast.success(`Deleted “${wf.name}”`);
+                          } catch (err) {
+                            toast.error(err instanceof Error ? err.message : "Delete failed");
+                          }
+                        }}
+                        title="Delete"
+                        className="opacity-0 group-hover:opacity-100 p-1 rounded text-[var(--text-muted)] hover:text-red-400"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </div>
                   ))}
                 </motion.div>
               )}
