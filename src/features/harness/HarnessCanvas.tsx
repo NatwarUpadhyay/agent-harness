@@ -624,15 +624,46 @@ function HarnessCanvasInner() {
                 <motion.div
                   initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute top-10 right-0 w-64 max-h-80 overflow-y-auto rounded-md border border-[var(--border-default)] bg-[var(--bg-surface)] py-1 shadow-lg z-20"
+                  className="absolute top-10 right-0 w-72 max-h-96 flex flex-col rounded-md border border-[var(--border-default)] bg-[var(--bg-surface)] shadow-lg z-20"
                 >
-                  {savedWorkflows.length === 0 ? (
-                    <div className="px-3 py-4 text-center text-[12px] text-[var(--text-muted)]">No saved workflows yet</div>
-                  ) : savedWorkflows.map((wf) => (
+                  <div className="p-2 border-b border-[var(--border-default)]">
+                    <div className="relative">
+                      <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-[var(--text-muted)]" />
+                      <input
+                        value={loadQuery}
+                        onChange={(e) => setLoadQuery(e.target.value)}
+                        placeholder="Search workflows…"
+                        className="w-full h-7 pl-7 pr-2 rounded bg-white/5 text-[12px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none focus:bg-white/10"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex-1 overflow-y-auto py-1">
+                  {(() => {
+                    const q = loadQuery.trim().toLowerCase();
+                    const filtered = q
+                      ? savedWorkflows.filter((wf) => wf.name.toLowerCase().includes(q))
+                      : savedWorkflows;
+                    const favs = filtered.filter((wf) => wf.is_favorite);
+                    const rest = filtered.filter((wf) => !wf.is_favorite);
+                    const renderRow = (wf: WorkflowRow) => (
                     <div key={wf.id} className="group flex items-center gap-1 pr-1 hover:bg-white/5">
                       <button
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          try {
+                            await toggleFavorite.mutateAsync({ id: wf.id, is_favorite: !wf.is_favorite });
+                          } catch (err) {
+                            toast.error(err instanceof Error ? err.message : "Failed to update");
+                          }
+                        }}
+                        title={wf.is_favorite ? "Unstar" : "Star"}
+                        className={`pl-2 pr-1 py-2 ${wf.is_favorite ? "text-amber-400" : "text-[var(--text-muted)] opacity-0 group-hover:opacity-100 hover:text-amber-400"}`}
+                      >
+                        <Star className="h-3 w-3" fill={wf.is_favorite ? "currentColor" : "none"} />
+                      </button>
+                      <button
                         onClick={() => handleLoad(wf)}
-                        className="flex-1 flex flex-col items-start gap-0.5 px-3 py-2 text-left min-w-0"
+                        className="flex-1 flex flex-col items-start gap-0.5 py-2 pr-1 text-left min-w-0"
                       >
                         <span className="text-[13px] text-[var(--text-primary)] truncate w-full">{wf.name}</span>
                         <span className="text-[10px] text-[var(--text-muted)] font-mono-tabular">
@@ -693,7 +724,27 @@ function HarnessCanvasInner() {
                         <Trash2 className="h-3 w-3" />
                       </button>
                     </div>
-                  ))}
+                    );
+                    if (savedWorkflows.length === 0) {
+                      return <div className="px-3 py-4 text-center text-[12px] text-[var(--text-muted)]">No saved workflows yet</div>;
+                    }
+                    if (filtered.length === 0) {
+                      return <div className="px-3 py-4 text-center text-[12px] text-[var(--text-muted)]">No matches for “{loadQuery}”</div>;
+                    }
+                    return (
+                      <>
+                        {favs.length > 0 && (
+                          <>
+                            <div className="px-3 pt-1 pb-0.5 text-[10px] uppercase tracking-wider text-[var(--text-muted)]">Favorites</div>
+                            {favs.map(renderRow)}
+                            {rest.length > 0 && <div className="px-3 pt-2 pb-0.5 text-[10px] uppercase tracking-wider text-[var(--text-muted)]">All</div>}
+                          </>
+                        )}
+                        {rest.map(renderRow)}
+                      </>
+                    );
+                  })()}
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
