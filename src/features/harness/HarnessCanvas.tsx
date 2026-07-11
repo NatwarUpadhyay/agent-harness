@@ -181,6 +181,9 @@ function HarnessCanvasInner() {
   const simTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { data: savedWorkflows = [] } = useWorkflows();
   const saveWorkflow = useSaveWorkflow();
+  const deleteWorkflow = useDeleteWorkflow();
+  const duplicateWorkflow = useDuplicateWorkflow();
+  const renameWorkflow = useRenameWorkflow();
 
   // ---------- Undo / redo history ----------
   const historyRef = useRef<{ nodes: Node<NodeData>[]; edges: Edge[] }[]>([{ nodes: initialNodes, edges: initialEdges }]);
