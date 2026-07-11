@@ -185,6 +185,7 @@ function HarnessCanvasInner() {
   const deleteWorkflow = useDeleteWorkflow();
   const duplicateWorkflow = useDuplicateWorkflow();
   const renameWorkflow = useRenameWorkflow();
+  const toggleFavorite = useToggleWorkflowFavorite();
 
   // ---------- Undo / redo history ----------
   const historyRef = useRef<{ nodes: Node<NodeData>[]; edges: Edge[] }[]>([{ nodes: initialNodes, edges: initialEdges }]);
