@@ -157,6 +157,7 @@ function HarnessCanvasInner() {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [loadMenuOpen, setLoadMenuOpen] = useState(false);
+  const [loadQuery, setLoadQuery] = useState("");
   const [templateMenuOpen, setTemplateMenuOpen] = useState(false);
   const [currentWorkflowId, setCurrentWorkflowId] = useState<string | null>(null);
   const [workflowName, setWorkflowName] = useState<string>("Untitled workflow");
