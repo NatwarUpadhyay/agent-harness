@@ -46,7 +46,8 @@ It's built for anyone who thinks better with a diagram than with a config file �
 | 10 | Experiments — A/B variants with simulated trials | Done |
 | 11 | Datasets — upload, parse, preview CSV/JSON/JSONL/MD | Done |
 | 12 | Cloud workflow management — rename, duplicate, delete | Done |
-| **13** | **Shared workspaces + collaborative editing** | **Next** |
+| 13 | Workflow favorites + search in the Load menu | Done |
+| **14** | **Shared workspaces + collaborative editing** | **Next** |
 
 ---
 
