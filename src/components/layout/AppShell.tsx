@@ -45,12 +45,12 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-[var(--bg-base)] text-[var(--text-primary)]">
       <Sidebar />
       <div
-        className="flex flex-col min-h-screen transition-[margin] duration-200"
-        style={{ marginLeft: collapsed ? 64 : 240 }}
+        className="flex flex-col min-h-screen transition-[margin] duration-200 md:[margin-left:var(--shell-ml)]"
+        style={{ ["--shell-ml" as string]: collapsed ? "64px" : "240px" }}
       >
         <Header />
         <main className="flex-1">
-          <div className="mx-auto w-full max-w-[1400px] px-8 pt-6 pb-16">
+          <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-8 pt-6 pb-16">
             <AnimatePresence mode="wait">
               <motion.div
                 key={pathname}
