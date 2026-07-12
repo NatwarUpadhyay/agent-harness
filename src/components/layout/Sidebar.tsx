@@ -29,16 +29,24 @@ export function Sidebar() {
   const isActive = (to: string) => (to === "/" ? pathname === "/" : pathname.startsWith(to));
 
   return (
-    <aside
-      className={cn(
-        "fixed inset-y-0 left-0 z-40 flex flex-col border-r border-[var(--border-subtle)] bg-[var(--bg-surface)] transition-[width] duration-200",
-        collapsed ? "w-16" : "w-60",
+    <>
+      {!collapsed && (
+        <button
+          aria-label="Close sidebar"
+          onClick={toggle}
+          className="md:hidden fixed inset-0 z-30 bg-black/50 backdrop-blur-sm"
+        />
       )}
-      style={{
-        backgroundImage:
-          "radial-gradient(circle at 0% 100%, rgba(79,122,255,0.18), transparent 55%)",
-      }}
-    >
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-40 flex flex-col border-r border-[var(--border-subtle)] bg-[var(--bg-surface)] transition-all duration-200",
+          collapsed ? "w-16 max-md:-translate-x-full" : "w-60",
+        )}
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 0% 100%, rgba(79,122,255,0.18), transparent 55%)",
+        }}
+      >
       <div className="flex h-14 items-center justify-between px-4 border-b border-[var(--border-subtle)]">
         <Link to="/" className="flex items-center gap-2 overflow-hidden">
           <div className="grid h-7 w-7 place-items-center rounded-md bg-[var(--accent-muted)] text-[var(--text-accent)] shrink-0">
