@@ -37,9 +37,10 @@ export function AppShell({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [setCommandOpen, commandOpen]);
 
-  if (pathname === "/login") {
+  if (pathname === "/login" || pathname.startsWith("/share/")) {
     return <>{children}</>;
   }
+
 
   return (
     <div className="min-h-screen bg-[var(--bg-base)] text-[var(--text-primary)]">

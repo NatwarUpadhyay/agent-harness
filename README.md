@@ -47,7 +47,9 @@ It's built for anyone who thinks better with a diagram than with a config file �
 | 11 | Datasets — upload, parse, preview CSV/JSON/JSONL/MD | Done |
 | 12 | Cloud workflow management — rename, duplicate, delete | Done |
 | 13 | Workflow favorites + search in the Load menu | Done |
-| **14** | **Shared workspaces + collaborative editing** | **Next** |
+| 14 | Public read-only workflow share links | Done |
+| **15** | **Org-scoped libraries + live multi-cursor editing** | **Next** |
+
 
 ---
 
@@ -119,10 +121,13 @@ The fastest way to understand Harness is to use the preview:
 - **Phase 10 — Experiments.** Two-variant A/B setup, animated trial batches, auto-detected winner, trials feed usage analytics.
 - **Phase 11 — Datasets.** Drag-drop CSV/JSON/JSONL/Markdown upload with parsing, column detection, and preview drawer.
 - **Phase 12 — Cloud workflow management.** Rename, duplicate, and delete saved workflows directly from the Load menu, backed by Lovable Cloud.
+- **Phase 13 — Workflow favorites + search.** Star workflows and filter the Load menu with instant search.
+- **Phase 14 — Public share links.** Toggle any saved workflow to public and share a read-only `/share/:id` URL that opens without a login.
 
-## Next up — Phase 13
+## Next up — Phase 15
 
-Shared workspaces and collaborative editing: public read-only workflow links, org-scoped libraries, and live multi-cursor editing on the harness canvas.
+Org-scoped libraries and live multi-cursor editing on the harness canvas.
+
 
 
 ---
