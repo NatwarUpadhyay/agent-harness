@@ -182,6 +182,20 @@ export function useToggleWorkflowFavorite() {
   });
 }
 
+export function useToggleWorkflowPublic() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, is_public }: { id: string; is_public: boolean }) => {
+      const { data, error } = await supabase
+        .from("workflows").update({ is_public }).eq("id", id).select().single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: workflowsKey }),
+  });
+}
+
+
 // ---------- EXPERIMENTS ----------
 export const experimentsKey = ["experiments"] as const;
 
