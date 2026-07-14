@@ -9,12 +9,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Brain, Database, Search, Wrench, ShieldCheck, RefreshCcw, ArrowRightCircle,
   Plus, Layout, Download, Upload, Trash2, X, Save, FolderOpen, Play, Square,
-  Undo2, Redo2, Sparkles, AlertTriangle, GripVertical, Copy, Pencil, Star,
+  Undo2, Redo2, Sparkles, AlertTriangle, GripVertical, Copy, Pencil, Star, Share2, Globe,
 } from "lucide-react";
 import {
   useWorkflows, useSaveWorkflow, useDeleteWorkflow, useDuplicateWorkflow,
-  useRenameWorkflow, useToggleWorkflowFavorite, type WorkflowRow,
+  useRenameWorkflow, useToggleWorkflowFavorite, useToggleWorkflowPublic, type WorkflowRow,
 } from "@/lib/hooks/use-entities";
+
 import { toast } from "sonner";
 import { UsagePanel } from "./UsagePanel";
 import { estimateNodeCost, recordRun, formatCost } from "@/lib/data/harness-usage";
@@ -186,6 +187,8 @@ function HarnessCanvasInner() {
   const duplicateWorkflow = useDuplicateWorkflow();
   const renameWorkflow = useRenameWorkflow();
   const toggleFavorite = useToggleWorkflowFavorite();
+  const togglePublic = useToggleWorkflowPublic();
+
 
   // ---------- Undo / redo history ----------
   const historyRef = useRef<{ nodes: Node<NodeData>[]; edges: Edge[] }[]>([{ nodes: initialNodes, edges: initialEdges }]);
@@ -771,6 +774,37 @@ function HarnessCanvasInner() {
           >
             <Layout className="h-3.5 w-3.5" /> Auto layout
           </button>
+          <button
+            onClick={async () => {
+              if (!currentWorkflowId) {
+                toast.error("Save the workflow first to share it");
+                return;
+              }
+              const current = savedWorkflows.find(w => w.id === currentWorkflowId);
+              const nextPublic = !(current?.is_public ?? false);
+              try {
+                await togglePublic.mutateAsync({ id: currentWorkflowId, is_public: nextPublic });
+                if (nextPublic) {
+                  const url = `${window.location.origin}/share/${currentWorkflowId}`;
+                  try { await navigator.clipboard.writeText(url); } catch { /* ignore */ }
+                  toast.success("Share link copied to clipboard", { description: url });
+                } else {
+                  toast.success("Sharing disabled");
+                }
+              } catch (err) {
+                toast.error(err instanceof Error ? err.message : "Failed to update sharing");
+              }
+            }}
+            disabled={togglePublic.isPending}
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/5 disabled:opacity-50"
+          >
+            {(savedWorkflows.find(w => w.id === currentWorkflowId)?.is_public) ? (
+              <><Globe className="h-3.5 w-3.5 text-[var(--accent)]" /> Shared</>
+            ) : (
+              <><Share2 className="h-3.5 w-3.5" /> Share</>
+            )}
+          </button>
+
         </div>
 
         {/* Warnings pill */}
