@@ -48,7 +48,8 @@ It's built for anyone who thinks better with a diagram than with a config file �
 | 12 | Cloud workflow management — rename, duplicate, delete | Done |
 | 13 | Workflow favorites + search in the Load menu | Done |
 | 14 | Public read-only workflow share links | Done |
-| **15** | **Org-scoped libraries + live multi-cursor editing** | **Next** |
+| 15 | Vendor integrations hub + capability compatibility checks | Done |
+| **16** | **Org-scoped libraries + live multi-cursor editing** | **Next** |
 
 
 ---
@@ -123,8 +124,9 @@ The fastest way to understand Harness is to use the preview:
 - **Phase 12 — Cloud workflow management.** Rename, duplicate, and delete saved workflows directly from the Load menu, backed by Lovable Cloud.
 - **Phase 13 — Workflow favorites + search.** Star workflows and filter the Load menu with instant search.
 - **Phase 14 — Public share links.** Toggle any saved workflow to public and share a read-only `/share/:id` URL that opens without a login.
+- **Phase 15 — Integrations hub.** New `/integrations` page catalogues every LLM, vector DB, orchestration, observability, and MCP vendor with an auth type, region, and p50 latency. A live capability compatibility checker ranks vendors against required capabilities (chat, streaming, tools, vision, embeddings, JSON mode, fine-tune, audio), with per-vendor gap callouts and a full coverage matrix.
 
-## Next up — Phase 15
+## Next up — Phase 16
 
 Org-scoped libraries and live multi-cursor editing on the harness canvas.
 
