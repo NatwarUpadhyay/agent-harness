@@ -48,7 +48,8 @@ It's built for anyone who thinks better with a diagram than with a config file â
 | 12 | Cloud workflow management â€” rename, duplicate, delete | Done |
 | 13 | Workflow favorites + search in the Load menu | Done |
 | 14 | Public read-only workflow share links | Done |
-| **15** | **Org-scoped libraries + live multi-cursor editing** | **Next** |
+| 15 | Vendor integrations hub + capability compatibility checks | Done |
+| **16** | **Org-scoped libraries + live multi-cursor editing** | **Next** |
 
 
 ---
