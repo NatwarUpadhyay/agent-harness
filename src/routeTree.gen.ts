@@ -25,6 +25,7 @@ import { Route as AuthenticatedObservabilityRouteImport } from './routes/_authen
 import { Route as AuthenticatedModelsRouteImport } from './routes/_authenticated/models'
 import { Route as AuthenticatedMemoryRouteImport } from './routes/_authenticated/memory'
 import { Route as AuthenticatedMcpRouteImport } from './routes/_authenticated/mcp'
+import { Route as AuthenticatedLibraryRouteImport } from './routes/_authenticated/library'
 import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authenticated/integrations'
 import { Route as AuthenticatedHarnessRouteImport } from './routes/_authenticated/harness'
 import { Route as AuthenticatedExperimentsRouteImport } from './routes/_authenticated/experiments'
@@ -115,6 +116,11 @@ const AuthenticatedMcpRoute = AuthenticatedMcpRouteImport.update({
   path: '/mcp',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedLibraryRoute = AuthenticatedLibraryRouteImport.update({
+  id: '/library',
+  path: '/library',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedIntegrationsRoute =
   AuthenticatedIntegrationsRouteImport.update({
     id: '/integrations',
@@ -177,6 +183,7 @@ export interface FileRoutesByFullPath {
   '/experiments': typeof AuthenticatedExperimentsRoute
   '/harness': typeof AuthenticatedHarnessRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
+  '/library': typeof AuthenticatedLibraryRoute
   '/mcp': typeof AuthenticatedMcpRoute
   '/memory': typeof AuthenticatedMemoryRoute
   '/models': typeof AuthenticatedModelsRoute
@@ -202,6 +209,7 @@ export interface FileRoutesByTo {
   '/experiments': typeof AuthenticatedExperimentsRoute
   '/harness': typeof AuthenticatedHarnessRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
+  '/library': typeof AuthenticatedLibraryRoute
   '/mcp': typeof AuthenticatedMcpRoute
   '/memory': typeof AuthenticatedMemoryRoute
   '/models': typeof AuthenticatedModelsRoute
@@ -230,6 +238,7 @@ export interface FileRoutesById {
   '/_authenticated/experiments': typeof AuthenticatedExperimentsRoute
   '/_authenticated/harness': typeof AuthenticatedHarnessRoute
   '/_authenticated/integrations': typeof AuthenticatedIntegrationsRoute
+  '/_authenticated/library': typeof AuthenticatedLibraryRoute
   '/_authenticated/mcp': typeof AuthenticatedMcpRoute
   '/_authenticated/memory': typeof AuthenticatedMemoryRoute
   '/_authenticated/models': typeof AuthenticatedModelsRoute
@@ -259,6 +268,7 @@ export interface FileRouteTypes {
     | '/experiments'
     | '/harness'
     | '/integrations'
+    | '/library'
     | '/mcp'
     | '/memory'
     | '/models'
@@ -284,6 +294,7 @@ export interface FileRouteTypes {
     | '/experiments'
     | '/harness'
     | '/integrations'
+    | '/library'
     | '/mcp'
     | '/memory'
     | '/models'
@@ -311,6 +322,7 @@ export interface FileRouteTypes {
     | '/_authenticated/experiments'
     | '/_authenticated/harness'
     | '/_authenticated/integrations'
+    | '/_authenticated/library'
     | '/_authenticated/mcp'
     | '/_authenticated/memory'
     | '/_authenticated/models'
@@ -447,6 +459,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMcpRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/library': {
+      id: '/_authenticated/library'
+      path: '/library'
+      fullPath: '/library'
+      preLoaderRoute: typeof AuthenticatedLibraryRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/integrations': {
       id: '/_authenticated/integrations'
       path: '/integrations'
@@ -523,6 +542,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedExperimentsRoute: typeof AuthenticatedExperimentsRoute
   AuthenticatedHarnessRoute: typeof AuthenticatedHarnessRoute
   AuthenticatedIntegrationsRoute: typeof AuthenticatedIntegrationsRoute
+  AuthenticatedLibraryRoute: typeof AuthenticatedLibraryRoute
   AuthenticatedMcpRoute: typeof AuthenticatedMcpRoute
   AuthenticatedMemoryRoute: typeof AuthenticatedMemoryRoute
   AuthenticatedModelsRoute: typeof AuthenticatedModelsRoute
@@ -548,6 +568,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedExperimentsRoute: AuthenticatedExperimentsRoute,
   AuthenticatedHarnessRoute: AuthenticatedHarnessRoute,
   AuthenticatedIntegrationsRoute: AuthenticatedIntegrationsRoute,
+  AuthenticatedLibraryRoute: AuthenticatedLibraryRoute,
   AuthenticatedMcpRoute: AuthenticatedMcpRoute,
   AuthenticatedMemoryRoute: AuthenticatedMemoryRoute,
   AuthenticatedModelsRoute: AuthenticatedModelsRoute,

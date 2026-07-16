@@ -1,8 +1,9 @@
 import {
   LayoutDashboard, FolderKanban, Workflow, Bot, Brain, Database, BookOpen,
   Search, Boxes, FileText, Wrench, Plug, ShieldCheck, Activity, Beaker,
-  Scale, FileStack, Rocket, FlaskConical, Settings, Cable,
+  Scale, FileStack, Rocket, FlaskConical, Settings, Cable, Library,
 } from "lucide-react";
+
 import type { LucideIcon } from "lucide-react";
 
 
@@ -22,7 +23,9 @@ export const navGroups: NavGroup[] = [
     items: [
       { to: "/", label: "Dashboard", icon: LayoutDashboard },
       { to: "/projects", label: "Projects", icon: FolderKanban },
+      { to: "/library", label: "Library", icon: Library },
     ],
+
   },
   {
     label: "Agent system",
