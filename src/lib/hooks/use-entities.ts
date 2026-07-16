@@ -195,6 +195,45 @@ export function useToggleWorkflowPublic() {
   });
 }
 
+// ---------- PUBLIC LIBRARY ----------
+export const publicWorkflowsKey = ["workflows", "public"] as const;
+
+export function usePublicWorkflows() {
+  return useQuery({
+    queryKey: publicWorkflowsKey,
+    queryFn: async (): Promise<WorkflowRow[]> => {
+      const { data, error } = await supabase
+        .from("workflows")
+        .select("*")
+        .eq("is_public", true)
+        .order("updated_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+}
+
+export function useCloneWorkflow() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (wf: WorkflowRow) => {
+      const user_id = await currentUserId();
+      const { data, error } = await supabase.from("workflows").insert({
+        user_id,
+        name: `${wf.name} (from library)`,
+        description: wf.description,
+        nodes: wf.nodes,
+        edges: wf.edges,
+      }).select().single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: workflowsKey }),
+  });
+}
+
+
+
 
 // ---------- EXPERIMENTS ----------
 export const experimentsKey = ["experiments"] as const;
