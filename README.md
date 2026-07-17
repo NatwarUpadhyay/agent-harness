@@ -50,7 +50,8 @@ It's built for anyone who thinks better with a diagram than with a config file â
 | 14 | Public read-only workflow share links | Done |
 | 15 | Vendor integrations hub + capability compatibility checks | Done |
 | 16 | Community library â€” browse & clone public workflows across the org | Done |
-| **17** | **Live multi-cursor editing on the harness canvas** | **Next** |
+| 17 | Live multi-cursor presence on the harness canvas | Done |
+| **18** | **Realtime collaborative editing (shared node graph)** | **Next** |
 
 
 

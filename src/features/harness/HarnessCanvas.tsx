@@ -19,6 +19,7 @@ import {
 import { toast } from "sonner";
 import { UsagePanel } from "./UsagePanel";
 import { estimateNodeCost, recordRun, formatCost } from "@/lib/data/harness-usage";
+import { PresenceCursors, PresenceAvatars, usePresence } from "./PresenceOverlay";
 
 interface NodeData {
   label: string;
@@ -177,6 +178,8 @@ function HarnessCanvasInner() {
   const [simulating, setSimulating] = useState(false);
   const [simStep, setSimStep] = useState(0);
   const [simLatency, setSimLatency] = useState(0);
+  const [liveEnabled, setLiveEnabled] = useState(true);
+  const peers = usePresence(liveEnabled);
   const loadBtnRef = useRef<HTMLDivElement>(null);
   const templateBtnRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -805,7 +808,12 @@ function HarnessCanvasInner() {
             )}
           </button>
 
+          <div className="mx-1 h-5 w-px bg-[var(--border-default)]" />
+          <PresenceAvatars peers={peers} enabled={liveEnabled} onToggle={() => setLiveEnabled(v => !v)} />
         </div>
+
+        {liveEnabled && <PresenceCursors peers={peers} />}
+
 
         {/* Warnings pill */}
         {disconnectedIds.size > 0 && (
