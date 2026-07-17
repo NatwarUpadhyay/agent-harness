@@ -19,6 +19,7 @@ import {
 import { toast } from "sonner";
 import { UsagePanel } from "./UsagePanel";
 import { estimateNodeCost, recordRun, formatCost } from "@/lib/data/harness-usage";
+import { PresenceCursors, PresenceAvatars, usePresence } from "./PresenceOverlay";
 
 interface NodeData {
   label: string;
