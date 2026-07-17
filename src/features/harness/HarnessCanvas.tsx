@@ -808,7 +808,12 @@ function HarnessCanvasInner() {
             )}
           </button>
 
+          <div className="mx-1 h-5 w-px bg-[var(--border-default)]" />
+          <PresenceAvatars peers={peers} enabled={liveEnabled} onToggle={() => setLiveEnabled(v => !v)} />
         </div>
+
+        {liveEnabled && <PresenceCursors peers={peers} />}
+
 
         {/* Warnings pill */}
         {disconnectedIds.size > 0 && (
