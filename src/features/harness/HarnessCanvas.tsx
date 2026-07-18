@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { UsagePanel } from "./UsagePanel";
 import { estimateNodeCost, recordRun, formatCost } from "@/lib/data/harness-usage";
 import { PresenceCursors, PresenceAvatars, usePresence } from "./PresenceOverlay";
+import { SnapshotsMenu } from "./SnapshotsMenu";
 
 interface NodeData {
   label: string;
@@ -777,6 +778,18 @@ function HarnessCanvasInner() {
           >
             <Layout className="h-3.5 w-3.5" /> Auto layout
           </button>
+          <SnapshotsMenu
+            workflowId={currentWorkflowId}
+            workflowName={workflowName}
+            nodes={nodes}
+            edges={edges}
+            onRestore={(n, e, label) => {
+              setNodes(n as Node<NodeData>[]);
+              setEdges(e);
+              pushHistory(n as Node<NodeData>[], e);
+              toast.success(`Restored “${label}”`);
+            }}
+          />
           <button
             onClick={async () => {
               if (!currentWorkflowId) {

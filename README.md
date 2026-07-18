@@ -51,7 +51,8 @@ It's built for anyone who thinks better with a diagram than with a config file �
 | 15 | Vendor integrations hub + capability compatibility checks | Done |
 | 16 | Community library — browse & clone public workflows across the org | Done |
 | 17 | Live multi-cursor presence on the harness canvas | Done |
-| **18** | **Realtime collaborative editing (shared node graph)** | **Next** |
+| 18 | Canvas snapshots — take, list, restore local graph checkpoints | Done |
+| **19** | **Realtime collaborative editing (shared node graph)** | **Next** |
 
 
 
