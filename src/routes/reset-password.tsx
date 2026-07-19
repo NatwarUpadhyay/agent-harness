@@ -19,14 +19,32 @@ function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Supabase JS auto-parses the recovery hash and fires PASSWORD_RECOVERY.
+    let mounted = true;
+    // Handle PKCE recovery flow: ?code=... in query string
+    const url = new URL(window.location.href);
+    const code = url.searchParams.get("code");
+    if (code) {
+      supabase.auth.exchangeCodeForSession(code).then(({ error: exErr }) => {
+        if (!mounted) return;
+        if (exErr) setError(exErr.message);
+        else {
+          setReady(true);
+          url.searchParams.delete("code");
+          window.history.replaceState({}, "", url.pathname);
+        }
+      });
+    }
+    // Handle implicit recovery flow: #access_token=...&type=recovery
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") setReady(true);
     });
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) setReady(true);
     });
-    return () => sub.subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
   const onSubmit = async (e: FormEvent) => {
