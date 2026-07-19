@@ -14,6 +14,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as ShareIdRouteImport } from './routes/share/$id'
+import { Route as AuthenticatedUsageRouteImport } from './routes/_authenticated/usage'
 import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedRetrieverRouteImport } from './routes/_authenticated/retriever'
@@ -60,6 +61,11 @@ const ShareIdRoute = ShareIdRouteImport.update({
   id: '/share/$id',
   path: '/share/$id',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedUsageRoute = AuthenticatedUsageRouteImport.update({
+  id: '/usage',
+  path: '/usage',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedToolsRoute = AuthenticatedToolsRouteImport.update({
   id: '/tools',
@@ -203,6 +209,7 @@ export interface FileRoutesByFullPath {
   '/retriever': typeof AuthenticatedRetrieverRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/tools': typeof AuthenticatedToolsRoute
+  '/usage': typeof AuthenticatedUsageRoute
   '/share/$id': typeof ShareIdRoute
 }
 export interface FileRoutesByTo {
@@ -230,6 +237,7 @@ export interface FileRoutesByTo {
   '/retriever': typeof AuthenticatedRetrieverRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/tools': typeof AuthenticatedToolsRoute
+  '/usage': typeof AuthenticatedUsageRoute
   '/share/$id': typeof ShareIdRoute
   '/': typeof AuthenticatedIndexRoute
 }
@@ -260,6 +268,7 @@ export interface FileRoutesById {
   '/_authenticated/retriever': typeof AuthenticatedRetrieverRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/tools': typeof AuthenticatedToolsRoute
+  '/_authenticated/usage': typeof AuthenticatedUsageRoute
   '/share/$id': typeof ShareIdRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
 }
@@ -291,6 +300,7 @@ export interface FileRouteTypes {
     | '/retriever'
     | '/settings'
     | '/tools'
+    | '/usage'
     | '/share/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -318,6 +328,7 @@ export interface FileRouteTypes {
     | '/retriever'
     | '/settings'
     | '/tools'
+    | '/usage'
     | '/share/$id'
     | '/'
   id:
@@ -347,6 +358,7 @@ export interface FileRouteTypes {
     | '/_authenticated/retriever'
     | '/_authenticated/settings'
     | '/_authenticated/tools'
+    | '/_authenticated/usage'
     | '/share/$id'
     | '/_authenticated/'
   fileRoutesById: FileRoutesById
@@ -394,6 +406,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/share/$id'
       preLoaderRoute: typeof ShareIdRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/usage': {
+      id: '/_authenticated/usage'
+      path: '/usage'
+      fullPath: '/usage'
+      preLoaderRoute: typeof AuthenticatedUsageRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/tools': {
       id: '/_authenticated/tools'
@@ -575,6 +594,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedRetrieverRoute: typeof AuthenticatedRetrieverRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedToolsRoute: typeof AuthenticatedToolsRoute
+  AuthenticatedUsageRoute: typeof AuthenticatedUsageRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
 
@@ -601,6 +621,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRetrieverRoute: AuthenticatedRetrieverRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedToolsRoute: AuthenticatedToolsRoute,
+  AuthenticatedUsageRoute: AuthenticatedUsageRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
 

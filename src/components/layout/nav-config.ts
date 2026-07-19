@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, FolderKanban, Workflow, Bot, Brain, Database, BookOpen,
   Search, Boxes, FileText, Wrench, Plug, ShieldCheck, Activity, Beaker,
-  Scale, FileStack, Rocket, FlaskConical, Settings, Cable, Library,
+  Scale, FileStack, Rocket, FlaskConical, Settings, Cable, Library, Coins,
 } from "lucide-react";
 
 import type { LucideIcon } from "lucide-react";
