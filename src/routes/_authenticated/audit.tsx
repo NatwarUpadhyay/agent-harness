@@ -79,7 +79,7 @@ const ENTRIES: Entry[] = Array.from({ length: 240 }, (_, i) => {
     resource: RESOURCES[Math.floor(seeded(i + 7) * RESOURCES.length)],
     ip: ip(i + 1),
     severity: a.sev as Sev,
-    status: denied ? "denied" : "success",
+    status: (denied ? "denied" : "success") as "denied" | "success",
     hash: hash(i + 1),
   };
 }).sort((a, b) => b.ts - a.ts);
