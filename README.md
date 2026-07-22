@@ -4,7 +4,7 @@
 
 # Harness
 
-**Design, simulate, and share process flows on a canvas.**
+**Design, simulate, and share AI agent flows on a canvas.**
 
 Live preview: **[harness-flow-control.lovable.app](https://harness-flow-control.lovable.app)**
 
@@ -14,23 +14,27 @@ Live preview: **[harness-flow-control.lovable.app](https://harness-flow-control.
 
 ## What it is
 
-**Harness** is a visual workflow playground. It gives you a node-based canvas where you can drag building blocks, connect them into a flow, and hit **Simulate** to watch the whole thing run step by step.
+**Harness** is a visual operating system for AI agents. It gives you a node-based canvas where you can drag building blocks, wire them into agentic flows, and hit **Simulate** to watch the whole thing run step by step. Beyond the canvas, it includes a full enterprise stack: prompt versioning, experiments, datasets, evaluations, usage & cost tracking, audit logs, and scoped API keys.
 
-It's built for anyone who thinks better with a diagram than with a config file — makers sketching logic, engineers prototyping pipelines, educators teaching control flow, or teams who want a shared visual language before writing code.
+It is built for teams who want a shared visual language for AI systems before writing code — makers sketching agent logic, engineers prototyping LLM pipelines, educators teaching control flow, and enterprise teams who need governance, observability, and access control around their AI workflows.
 
 ### Why use it
 
 - **Sketch fast** — drag nodes from a sidebar and connect ports without any setup.
 - **See it run** — simulation highlights each step and reveals how decisions propagate.
 - **Start from templates** — choose from starter workflows to learn the tool quickly.
-- **Take it with you** — save, load, export, and import flows as JSON.
-- **Stay in flow** — undo/redo, auto-layout, and a first-visit onboarding card keep the canvas friction-free.
+- **Iterate with prompts** — version, preview, and render `{{variable}}` templates in real time.
+- **Run experiments** — A/B variants with animated trial batches and auto-detected winners.
+- **Ground flows in data** — upload CSV/JSON/JSONL datasets and inspect them before wiring them in.
+- **Track spend** — per-employee, per-model token usage and cost analytics with CSV export.
+- **Stay compliant** — tamper-evident audit log and scoped API keys with request tracking.
+- **Stay in flow** — undo/redo, auto-layout, snapshots, and a first-visit onboarding card keep the canvas friction-free.
 
 ---
 
 ## Current status
 
-> **Published and playable** — the harness canvas is live as a public playground with demo workflows, templates, and simulation. Data persistence is currently local/export-based; cloud save is planned for later phases.
+> **Published and playable** — the harness canvas is live with workflows, templates, simulation, and enterprise features. Cloud persistence is active for workflows, prompts, datasets, and API keys; data retention and organization-scoped controls are planned for later phases.
 
 | Phase | Area | Status |
 | --- | --- | --- |
@@ -52,9 +56,10 @@ It's built for anyone who thinks better with a diagram than with a config file �
 | 16 | Community library — browse & clone public workflows across the org | Done |
 | 17 | Live multi-cursor presence on the harness canvas | Done |
 | 18 | Canvas snapshots — take, list, restore local graph checkpoints | Done |
-| **19** | **Realtime collaborative editing (shared node graph)** | **Next** |
-
-
+| 19 | Usage & cost analytics — employee, model, and team spend | Done |
+| 20 | Audit log — tamper-evident SHA-256 chained event log | Done |
+| 21 | API key management — scoped keys, request tracking | Done |
+| **22** | **Real-time collaborative node editing** | **Next** |
 
 ---
 
@@ -67,6 +72,9 @@ It's built for anyone who thinks better with a diagram than with a config file �
 - **Experiments** — Define two variants with custom success-rate + latency knobs, run animated trial batches, and auto-detect a winner. Trials feed the harness usage analytics.
 - **Datasets** — Drag-drop upload for CSV, JSON, JSONL, and Markdown with automatic parsing, column detection, and a first-50-rows preview drawer.
 - **Evaluations** — Dataset picker, weighted rubric panel, per-run drawer, and two-run comparison with per-metric deltas.
+- **Usage & cost** — Per-employee, per-model token tracking, daily spend charts, team filters, and CSV export.
+- **Audit log** — Tamper-evident SHA-256 chained event log with filtering, inspection, and export.
+- **API keys** — Scoped keys (read / write / admin), environment tags, and request tracking.
 - **Templates** — Pre-built starter workflows to load and experiment with.
 - **Save / Load / Export / Import** — Persist flows locally as JSON and share them between sessions or users.
 - **Undo / Redo** — Step through canvas changes without fear.
@@ -115,26 +123,21 @@ The fastest way to understand Harness is to use the preview:
 3. Drag a node from the sidebar onto the canvas.
 4. Drag a connection from one node's output port to another node's input port.
 5. Click **Simulate** and watch the flow run.
-6. Export the JSON if you want to save or share it.
+6. Open **Usage** to see token and cost analytics per simulation.
+7. Export the JSON or create a public share link if you want to save or share it.
 
 ---
 
 ## What shipped recently
 
-- **Phase 8 — Usage analytics.** Live tokens/latency/cost tracker on the harness page, per-node type breakdown, persisted across sessions.
-- **Phase 9 — Prompt library.** Versioned prompts, `{{variable}}` extraction, live rendering, per-version notes.
-- **Phase 10 — Experiments.** Two-variant A/B setup, animated trial batches, auto-detected winner, trials feed usage analytics.
-- **Phase 11 — Datasets.** Drag-drop CSV/JSON/JSONL/Markdown upload with parsing, column detection, and preview drawer.
-- **Phase 12 — Cloud workflow management.** Rename, duplicate, and delete saved workflows directly from the Load menu, backed by Lovable Cloud.
-- **Phase 13 — Workflow favorites + search.** Star workflows and filter the Load menu with instant search.
-- **Phase 14 — Public share links.** Toggle any saved workflow to public and share a read-only `/share/:id` URL that opens without a login.
-- **Phase 15 — Integrations hub.** New `/integrations` page catalogues every LLM, vector DB, orchestration, observability, and MCP vendor with an auth type, region, and p50 latency. A live capability compatibility checker ranks vendors against required capabilities (chat, streaming, tools, vision, embeddings, JSON mode, fine-tune, audio), with per-vendor gap callouts and a full coverage matrix.
+- **Phase 19 — Usage & cost analytics.** Per-employee, per-model token tracking, daily spend charts, team filters, and CSV export for enterprise cost visibility.
+- **Phase 20 — Audit log.** Tamper-evident SHA-256 chained event log with category/severity filters, event inspection drawer, and CSV export.
+- **Phase 21 — API key management.** Scoped keys (read / write / admin), environment tags, last-used tracking, and request analytics.
+- *(Fixes)* Shared workflow view now uses the styled HarnessNode, API-key revocations persist correctly, Usage CSV exports actual rows, presence overlay throttles to 3s updates, and the integrations compatibility checker ranks fully compatible vendors first.
 
-## Next up — Phase 16
+## Next up — Phase 22
 
-Org-scoped libraries and live multi-cursor editing on the harness canvas.
-
-
+Real-time collaborative node editing on the harness canvas, building on the existing presence layer to let multiple users edit the same graph together.
 
 ---
 
