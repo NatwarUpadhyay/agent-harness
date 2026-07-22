@@ -76,7 +76,7 @@ function IntegrationsPage() {
       VENDORS.map((v) => {
         const missing = required.filter((c) => !v.capabilities.includes(c));
         return { v, missing, ok: missing.length === 0 };
-      }).sort((a, b) => Number(a.ok) - Number(b.ok) || a.missing.length - b.missing.length),
+      }).sort((a, b) => Number(b.ok) - Number(a.ok) || a.missing.length - b.missing.length),
     [required],
   );
 
