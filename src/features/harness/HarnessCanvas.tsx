@@ -107,7 +107,8 @@ function HarnessNode({ data, selected }: NodeProps<NodeData>) {
   );
 }
 
-const nodeTypes = { harness: HarnessNode };
+export const nodeTypes = { harness: HarnessNode };
+export { HarnessNode };
 const MODELS = ["GPT-4o", "Claude 3.5", "Gemini 1.5"];
 
 function makeNode(def: NodeTypeDef, index: number, x: number, y: number): Node<NodeData> {

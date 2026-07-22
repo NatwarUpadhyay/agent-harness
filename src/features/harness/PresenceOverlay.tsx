@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MousePointer2 } from "lucide-react";
 
@@ -21,38 +21,18 @@ const SEED: Omit<Collaborator, "x" | "y" | "active">[] = [
 
 function rand(min: number, max: number) { return min + Math.random() * (max - min); }
 
+function newPeers(): Collaborator[] {
+  return SEED.map((p) => ({ ...p, x: rand(0.1, 0.9), y: rand(0.12, 0.86), active: true }));
+}
+
 export function usePresence(enabled: boolean) {
-  const [peers, setPeers] = useState<Collaborator[]>(() =>
-    SEED.map((p) => ({ ...p, x: rand(0.15, 0.85), y: rand(0.15, 0.8), active: true }))
-  );
-  const targets = useRef<Record<string, { x: number; y: number }>>({});
+  const [peers, setPeers] = useState<Collaborator[]>(() => newPeers());
 
   useEffect(() => {
     if (!enabled) return;
-    // pick fresh targets periodically
-    const retarget = () => {
-      const next: Record<string, { x: number; y: number }> = {};
-      for (const p of SEED) next[p.id] = { x: rand(0.08, 0.92), y: rand(0.1, 0.88) };
-      targets.current = next;
-    };
-    retarget();
-    const t = window.setInterval(retarget, 2200);
-
-    let raf = 0;
-    const step = () => {
-      setPeers((prev) =>
-        prev.map((p) => {
-          const t2 = targets.current[p.id];
-          if (!t2) return p;
-          const nx = p.x + (t2.x - p.x) * 0.03;
-          const ny = p.y + (t2.y - p.y) * 0.03;
-          return { ...p, x: nx, y: ny };
-        })
-      );
-      raf = window.requestAnimationFrame(step);
-    };
-    raf = window.requestAnimationFrame(step);
-    return () => { window.clearInterval(t); window.cancelAnimationFrame(raf); };
+    // One state update every ~3s; framer-motion tweens between targets on the GPU.
+    const t = window.setInterval(() => setPeers(newPeers()), 3000);
+    return () => window.clearInterval(t);
   }, [enabled]);
 
   return peers;
@@ -65,11 +45,10 @@ export function PresenceCursors({ peers }: { peers: Collaborator[] }) {
         {peers.map((p) => (
           <motion.div
             key={p.id}
-            initial={{ opacity: 0, scale: 0.6 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, scale: 0.6, left: `${p.x * 100}%`, top: `${p.y * 100}%` }}
+            animate={{ opacity: 1, scale: 1, left: `${p.x * 100}%`, top: `${p.y * 100}%` }}
             exit={{ opacity: 0, scale: 0.6 }}
-            transition={{ duration: 0.2 }}
-            style={{ left: `${p.x * 100}%`, top: `${p.y * 100}%` }}
+            transition={{ left: { duration: 2.8, ease: "easeInOut" }, top: { duration: 2.8, ease: "easeInOut" }, opacity: { duration: 0.2 }, scale: { duration: 0.2 } }}
             className="absolute -translate-x-1 -translate-y-1"
           >
             <MousePointer2 className="h-4 w-4" style={{ color: p.color, fill: p.color }} />

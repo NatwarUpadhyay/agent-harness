@@ -7,6 +7,7 @@ import ReactFlow, {
 import "reactflow/dist/style.css";
 import { supabase } from "@/integrations/supabase/client";
 import { Hexagon, ArrowLeft } from "lucide-react";
+import { nodeTypes } from "@/features/harness/HarnessCanvas";
 
 export const Route = createFileRoute("/share/$id")({
   head: () => ({
@@ -85,6 +86,7 @@ function SharedWorkflowView() {
               <ReactFlow
                 nodes={(data.nodes as unknown as Node[]) ?? []}
                 edges={(data.edges as unknown as Edge[]) ?? []}
+                nodeTypes={nodeTypes}
                 nodesDraggable={false}
                 nodesConnectable={false}
                 elementsSelectable={false}

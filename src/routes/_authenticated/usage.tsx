@@ -105,7 +105,7 @@ function UsagePage() {
         e.cost.toFixed(2), e.budget.toFixed(2), ((e.cost/e.budget)*100).toFixed(1) + "%",
       ]),
     ].map(r => r.join(",")).join("\n");
-    const blob = new Blob([csv.length > 0 ? rows : ""], { type: "text/csv" });
+    const blob = new Blob([rows], { type: "text/csv" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = `harness-usage-${new Date().toISOString().slice(0,10)}.csv`;

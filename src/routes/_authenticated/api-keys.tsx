@@ -115,6 +115,7 @@ function fmtRel(ts: number | null) {
 
 function ApiKeysView() {
   const [keys, setKeys] = useState<ApiKey[]>([]);
+  const [hydrated, setHydrated] = useState(false);
   const [creating, setCreating] = useState(false);
   const [justCreated, setJustCreated] = useState<{ key: ApiKey; secret: string } | null>(null);
   const [copied, setCopied] = useState(false);
@@ -123,8 +124,8 @@ function ApiKeysView() {
   const [scopes, setScopes] = useState<Scope[]>(["read"]);
   const [revokeTarget, setRevokeTarget] = useState<ApiKey | null>(null);
 
-  useEffect(() => { setKeys(loadKeys()); }, []);
-  useEffect(() => { if (keys.length) saveKeys(keys); }, [keys]);
+  useEffect(() => { setKeys(loadKeys()); setHydrated(true); }, []);
+  useEffect(() => { if (hydrated) saveKeys(keys); }, [keys, hydrated]);
 
   const kpis = useMemo(() => {
     const total = keys.length;
