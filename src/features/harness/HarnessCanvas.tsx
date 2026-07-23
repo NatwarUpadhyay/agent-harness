@@ -183,7 +183,9 @@ function HarnessCanvasInner() {
   const [simStep, setSimStep] = useState(0);
   const [simLatency, setSimLatency] = useState(0);
   const [liveEnabled, setLiveEnabled] = useState(true);
+  const [activityOpen, setActivityOpen] = useState(false);
   const peers = usePresence(liveEnabled);
+  const activityEvents = useActivityStream(peers, liveEnabled && activityOpen);
   const loadBtnRef = useRef<HTMLDivElement>(null);
   const templateBtnRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -826,9 +828,20 @@ function HarnessCanvasInner() {
 
           <div className="mx-1 h-5 w-px bg-[var(--border-default)]" />
           <PresenceAvatars peers={peers} enabled={liveEnabled} onToggle={() => setLiveEnabled(v => !v)} />
+          {liveEnabled && (
+            <button
+              onClick={() => setActivityOpen(v => !v)}
+              className={`inline-flex items-center gap-1.5 h-8 px-2.5 rounded-full border border-[var(--border-default)] text-[11px] ${activityOpen ? "text-[var(--text-primary)] bg-white/5" : "text-[var(--text-secondary)]"} hover:bg-white/5`}
+              title="Live activity feed"
+            >
+              <ActivityIcon className="h-3.5 w-3.5" />
+              Activity
+            </button>
+          )}
         </div>
 
         {liveEnabled && <PresenceCursors peers={peers} />}
+        <ActivityFeed events={activityEvents} open={liveEnabled && activityOpen} onClose={() => setActivityOpen(false)} />
 
 
         {/* Warnings pill */}
