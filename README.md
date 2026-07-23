@@ -59,7 +59,8 @@ It is built for teams who want a shared visual language for AI systems before wr
 | 19 | Usage & cost analytics — employee, model, and team spend | Done |
 | 20 | Audit log — tamper-evident SHA-256 chained event log | Done |
 | 21 | API key management — scoped keys, request tracking | Done |
-| **22** | **Real-time collaborative node editing** | **Next** |
+| **22** | **Live collaboration activity stream** | **Shipped** |
+| **23** | **Real-time collaborative node editing** | **Next** |
 
 ---
 
@@ -133,11 +134,12 @@ The fastest way to understand Harness is to use the preview:
 - **Phase 19 — Usage & cost analytics.** Per-employee, per-model token tracking, daily spend charts, team filters, and CSV export for enterprise cost visibility.
 - **Phase 20 — Audit log.** Tamper-evident SHA-256 chained event log with category/severity filters, event inspection drawer, and CSV export.
 - **Phase 21 — API key management.** Scoped keys (read / write / admin), environment tags, last-used tracking, and request analytics.
+- **Phase 22 — Live collaboration activity stream.** A frosted-glass activity feed on the harness canvas showing peer edits (add, connect, edit, comment, delete) in real time, wired to the existing presence layer.
 - *(Fixes)* Shared workflow view now uses the styled HarnessNode, API-key revocations persist correctly, Usage CSV exports actual rows, presence overlay throttles to 3s updates, and the integrations compatibility checker ranks fully compatible vendors first.
 
-## Next up — Phase 22
+## Next up — Phase 23
 
-Real-time collaborative node editing on the harness canvas, building on the existing presence layer to let multiple users edit the same graph together.
+Real-time collaborative node editing on the harness canvas — turning the activity stream into actual co-editing across peers.
 
 ---
 
