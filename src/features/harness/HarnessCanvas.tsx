@@ -37,6 +37,7 @@ interface NodeData {
   maxTokens: number;
   simState?: "idle" | "active" | "done";
   disconnected?: boolean;
+  coEditor?: CoEditLock;
 }
 
 type IconKey = "planner" | "memory" | "retriever" | "tools" | "evaluator" | "reflection" | "output";
