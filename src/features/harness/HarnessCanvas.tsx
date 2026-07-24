@@ -202,6 +202,8 @@ function HarnessCanvasInner() {
   const [activityOpen, setActivityOpen] = useState(false);
   const peers = usePresence(liveEnabled);
   const activityEvents = useActivityStream(peers, liveEnabled && activityOpen);
+  const coEditLocks = useCoEditing(peers, nodes.map(n => n.id), liveEnabled);
+
   const loadBtnRef = useRef<HTMLDivElement>(null);
   const templateBtnRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
