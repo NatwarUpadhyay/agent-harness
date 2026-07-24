@@ -202,7 +202,10 @@ function HarnessCanvasInner() {
   const [activityOpen, setActivityOpen] = useState(false);
   const peers = usePresence(liveEnabled);
   const activityEvents = useActivityStream(peers, liveEnabled && activityOpen);
-  const coEditLocks = useCoEditing(peers, nodes.map(n => n.id), liveEnabled);
+  const nodeIdsKey = useMemo(() => nodes.map(n => n.id).sort().join(","), [nodes]);
+  const nodeIds = useMemo(() => nodeIdsKey ? nodeIdsKey.split(",") : [], [nodeIdsKey]);
+  const coEditLocks = useCoEditing(peers, nodeIds, liveEnabled);
+
 
   const loadBtnRef = useRef<HTMLDivElement>(null);
   const templateBtnRef = useRef<HTMLDivElement>(null);
