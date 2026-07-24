@@ -21,6 +21,7 @@ import { UsagePanel } from "./UsagePanel";
 import { estimateNodeCost, recordRun, formatCost } from "@/lib/data/harness-usage";
 import { PresenceCursors, PresenceAvatars, usePresence } from "./PresenceOverlay";
 import { ActivityFeed, useActivityStream } from "./PresenceActivity";
+import { useCoEditing, type CoEditLock } from "./CoEditing";
 import { Activity as ActivityIcon } from "lucide-react";
 import { SnapshotsMenu } from "./SnapshotsMenu";
 
@@ -36,6 +37,7 @@ interface NodeData {
   maxTokens: number;
   simState?: "idle" | "active" | "done";
   disconnected?: boolean;
+  coEditor?: CoEditLock;
 }
 
 type IconKey = "planner" | "memory" | "retriever" | "tools" | "evaluator" | "reflection" | "output";
@@ -83,6 +85,7 @@ function HarnessNode({ data, selected }: NodeProps<NodeData>) {
         borderLeft: `5px solid ${data.color}`,
         boxShadow: selected
           ? `0 0 0 2px var(--accent)`
+          : data.coEditor ? `0 0 0 2px ${data.coEditor.peer.color}, 0 0 20px ${data.coEditor.peer.color}55`
           : isActive ? `0 0 0 2px ${data.color}, 0 0 24px ${data.color}66`
           : isDone ? `0 0 0 1px ${data.color}55` : undefined,
       }}
@@ -92,6 +95,19 @@ function HarnessNode({ data, selected }: NodeProps<NodeData>) {
         <span className="absolute -top-1.5 -left-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--danger,#ef4444)] text-white" title="Disconnected">
           <AlertTriangle className="h-2.5 w-2.5" />
         </span>
+      )}
+      {data.coEditor && (
+        <motion.div
+          initial={{ opacity: 0, y: -4, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18 }}
+          className="absolute -top-3 left-2 z-10 inline-flex items-center gap-1 pl-1 pr-1.5 h-5 rounded-full text-[10px] font-medium text-white shadow"
+          style={{ background: data.coEditor.peer.color }}
+        >
+          <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+          {data.coEditor.peer.name.split(" ")[0]} {data.coEditor.kind === "dragging" ? "moving" : "editing"}
+        </motion.div>
       )}
       <span className="absolute top-2 right-2 flex h-2 w-2">
         <span className={`absolute inline-flex h-full w-full rounded-full ${isActive ? "bg-[var(--accent)]" : "bg-[#22C55E]"} opacity-70 animate-ping`} />
@@ -186,6 +202,11 @@ function HarnessCanvasInner() {
   const [activityOpen, setActivityOpen] = useState(false);
   const peers = usePresence(liveEnabled);
   const activityEvents = useActivityStream(peers, liveEnabled && activityOpen);
+  const nodeIdsKey = useMemo(() => nodes.map(n => n.id).sort().join(","), [nodes]);
+  const nodeIds = useMemo(() => nodeIdsKey ? nodeIdsKey.split(",") : [], [nodeIdsKey]);
+  const coEditLocks = useCoEditing(peers, nodeIds, liveEnabled);
+
+
   const loadBtnRef = useRef<HTMLDivElement>(null);
   const templateBtnRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -395,8 +416,8 @@ function HarnessCanvasInner() {
   }, [nodes, edges]);
 
   const nodesWithFlags = useMemo(() => nodes.map(n => ({
-    ...n, data: { ...n.data, disconnected: disconnectedIds.has(n.id) },
-  })), [nodes, disconnectedIds]);
+    ...n, data: { ...n.data, disconnected: disconnectedIds.has(n.id), coEditor: coEditLocks.get(n.id) },
+  })), [nodes, disconnectedIds, coEditLocks]);
 
   // ---------- Simulation ----------
   const stopSim = useCallback(() => {
