@@ -59,8 +59,9 @@ It is built for teams who want a shared visual language for AI systems before wr
 | 19 | Usage & cost analytics — employee, model, and team spend | Done |
 | 20 | Audit log — tamper-evident SHA-256 chained event log | Done |
 | 21 | API key management — scoped keys, request tracking | Done |
-| **22** | **Live collaboration activity stream** | **Shipped** |
-| **23** | **Real-time collaborative node editing** | **Next** |
+| 22 | Live collaboration activity stream | Done |
+| **23** | **Real-time collaborative node editing** | **Shipped** |
+| **24** | **Next phase — TBD** | **Next** |
 
 ---
 
