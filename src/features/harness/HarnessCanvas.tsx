@@ -21,6 +21,7 @@ import { UsagePanel } from "./UsagePanel";
 import { estimateNodeCost, recordRun, formatCost } from "@/lib/data/harness-usage";
 import { PresenceCursors, PresenceAvatars, usePresence } from "./PresenceOverlay";
 import { ActivityFeed, useActivityStream } from "./PresenceActivity";
+import { useCoEditing, type CoEditLock } from "./CoEditing";
 import { Activity as ActivityIcon } from "lucide-react";
 import { SnapshotsMenu } from "./SnapshotsMenu";
 
