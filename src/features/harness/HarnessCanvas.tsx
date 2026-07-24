@@ -416,8 +416,8 @@ function HarnessCanvasInner() {
   }, [nodes, edges]);
 
   const nodesWithFlags = useMemo(() => nodes.map(n => ({
-    ...n, data: { ...n.data, disconnected: disconnectedIds.has(n.id) },
-  })), [nodes, disconnectedIds]);
+    ...n, data: { ...n.data, disconnected: disconnectedIds.has(n.id), coEditor: coEditLocks.get(n.id) },
+  })), [nodes, disconnectedIds, coEditLocks]);
 
   // ---------- Simulation ----------
   const stopSim = useCallback(() => {
