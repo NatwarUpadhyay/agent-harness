@@ -24,6 +24,8 @@ import { ActivityFeed, useActivityStream } from "./PresenceActivity";
 import { useCoEditing, type CoEditLock } from "./CoEditing";
 import { Activity as ActivityIcon } from "lucide-react";
 import { SnapshotsMenu } from "./SnapshotsMenu";
+import { useCommentsStore } from "@/stores/comments";
+import { MessageSquare, Check } from "lucide-react";
 
 interface NodeData {
   label: string;
