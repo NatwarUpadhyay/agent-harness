@@ -428,9 +428,31 @@ function HarnessCanvasInner() {
     return new Set(nodes.filter(n => !connected.has(n.id)).map(n => n.id));
   }, [nodes, edges]);
 
-  const nodesWithFlags = useMemo(() => nodes.map(n => ({
-    ...n, data: { ...n.data, disconnected: disconnectedIds.has(n.id), coEditor: coEditLocks.get(n.id) },
-  })), [nodes, disconnectedIds, coEditLocks]);
+  const commentsAll = useCommentsStore((s) => s.comments);
+  const commentIndex = useMemo(() => {
+    const m = new Map<string, { total: number; open: number }>();
+    for (const c of commentsAll) {
+      const cur = m.get(c.nodeId) ?? { total: 0, open: 0 };
+      cur.total += 1;
+      if (!c.resolved) cur.open += 1;
+      m.set(c.nodeId, cur);
+    }
+    return m;
+  }, [commentsAll]);
+
+  const nodesWithFlags = useMemo(() => nodes.map(n => {
+    const ci = commentIndex.get(n.id);
+    return {
+      ...n,
+      data: {
+        ...n.data,
+        disconnected: disconnectedIds.has(n.id),
+        coEditor: coEditLocks.get(n.id),
+        commentCount: ci?.total ?? 0,
+        commentOpen: ci?.open ?? 0,
+      },
+    };
+  }), [nodes, disconnectedIds, coEditLocks, commentIndex]);
 
   // ---------- Simulation ----------
   const stopSim = useCallback(() => {
