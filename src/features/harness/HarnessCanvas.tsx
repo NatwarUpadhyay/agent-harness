@@ -115,6 +115,15 @@ function HarnessNode({ data, selected }: NodeProps<NodeData>) {
         <span className={`absolute inline-flex h-full w-full rounded-full ${isActive ? "bg-[var(--accent)]" : "bg-[#22C55E]"} opacity-70 animate-ping`} />
         <span className={`relative inline-flex rounded-full h-2 w-2 ${isActive ? "bg-[var(--accent)]" : "bg-[#22C55E]"}`} />
       </span>
+      {data.commentCount ? (
+        <span
+          className="absolute -bottom-2 -right-2 z-10 inline-flex items-center gap-0.5 h-5 min-w-[20px] px-1.5 rounded-full text-[10px] font-semibold text-white shadow"
+          style={{ background: data.commentOpen ? "var(--accent)" : "rgba(120,120,128,0.9)" }}
+          title={`${data.commentCount} comment${data.commentCount === 1 ? "" : "s"}${data.commentOpen ? ` · ${data.commentOpen} open` : ""}`}
+        >
+          💬 {data.commentCount}
+        </span>
+      ) : null}
       <div className="h-full px-3 py-2 flex flex-col justify-center overflow-hidden">
         <div className="flex items-center gap-2">
           <Icon className="h-4 w-4" />
