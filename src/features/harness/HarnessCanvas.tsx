@@ -1028,6 +1028,7 @@ function HarnessCanvasInner() {
                   <div>Source: <span className="text-[var(--text-secondary)]">{TYPE_BY_NAME[selectedNode.data.typeName]?.canBeSource ? "yes" : "no"}</span></div>
                   <div>Target: <span className="text-[var(--text-secondary)]">{TYPE_BY_NAME[selectedNode.data.typeName]?.canBeTarget ? "yes" : "no"}</span></div>
                 </div>
+                <NodeCommentsSection nodeId={selectedNode.id} />
               </div>
               <div className="p-4 border-t border-[var(--border-default)]">
                 <button
