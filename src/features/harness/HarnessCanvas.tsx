@@ -24,6 +24,8 @@ import { ActivityFeed, useActivityStream } from "./PresenceActivity";
 import { useCoEditing, type CoEditLock } from "./CoEditing";
 import { Activity as ActivityIcon } from "lucide-react";
 import { SnapshotsMenu } from "./SnapshotsMenu";
+import { useCommentsStore } from "@/stores/comments";
+import { MessageSquare, Check } from "lucide-react";
 
 interface NodeData {
   label: string;
@@ -38,6 +40,8 @@ interface NodeData {
   simState?: "idle" | "active" | "done";
   disconnected?: boolean;
   coEditor?: CoEditLock;
+  commentCount?: number;
+  commentOpen?: number;
 }
 
 type IconKey = "planner" | "memory" | "retriever" | "tools" | "evaluator" | "reflection" | "output";
@@ -113,6 +117,15 @@ function HarnessNode({ data, selected }: NodeProps<NodeData>) {
         <span className={`absolute inline-flex h-full w-full rounded-full ${isActive ? "bg-[var(--accent)]" : "bg-[#22C55E]"} opacity-70 animate-ping`} />
         <span className={`relative inline-flex rounded-full h-2 w-2 ${isActive ? "bg-[var(--accent)]" : "bg-[#22C55E]"}`} />
       </span>
+      {data.commentCount ? (
+        <span
+          className="absolute -bottom-2 -right-2 z-10 inline-flex items-center gap-0.5 h-5 min-w-[20px] px-1.5 rounded-full text-[10px] font-semibold text-white shadow"
+          style={{ background: data.commentOpen ? "var(--accent)" : "rgba(120,120,128,0.9)" }}
+          title={`${data.commentCount} comment${data.commentCount === 1 ? "" : "s"}${data.commentOpen ? ` · ${data.commentOpen} open` : ""}`}
+        >
+          💬 {data.commentCount}
+        </span>
+      ) : null}
       <div className="h-full px-3 py-2 flex flex-col justify-center overflow-hidden">
         <div className="flex items-center gap-2">
           <Icon className="h-4 w-4" />
@@ -415,9 +428,31 @@ function HarnessCanvasInner() {
     return new Set(nodes.filter(n => !connected.has(n.id)).map(n => n.id));
   }, [nodes, edges]);
 
-  const nodesWithFlags = useMemo(() => nodes.map(n => ({
-    ...n, data: { ...n.data, disconnected: disconnectedIds.has(n.id), coEditor: coEditLocks.get(n.id) },
-  })), [nodes, disconnectedIds, coEditLocks]);
+  const commentsAll = useCommentsStore((s) => s.comments);
+  const commentIndex = useMemo(() => {
+    const m = new Map<string, { total: number; open: number }>();
+    for (const c of commentsAll) {
+      const cur = m.get(c.nodeId) ?? { total: 0, open: 0 };
+      cur.total += 1;
+      if (!c.resolved) cur.open += 1;
+      m.set(c.nodeId, cur);
+    }
+    return m;
+  }, [commentsAll]);
+
+  const nodesWithFlags = useMemo(() => nodes.map(n => {
+    const ci = commentIndex.get(n.id);
+    return {
+      ...n,
+      data: {
+        ...n.data,
+        disconnected: disconnectedIds.has(n.id),
+        coEditor: coEditLocks.get(n.id),
+        commentCount: ci?.total ?? 0,
+        commentOpen: ci?.open ?? 0,
+      },
+    };
+  }), [nodes, disconnectedIds, coEditLocks, commentIndex]);
 
   // ---------- Simulation ----------
   const stopSim = useCallback(() => {
@@ -993,6 +1028,7 @@ function HarnessCanvasInner() {
                   <div>Source: <span className="text-[var(--text-secondary)]">{TYPE_BY_NAME[selectedNode.data.typeName]?.canBeSource ? "yes" : "no"}</span></div>
                   <div>Target: <span className="text-[var(--text-secondary)]">{TYPE_BY_NAME[selectedNode.data.typeName]?.canBeTarget ? "yes" : "no"}</span></div>
                 </div>
+                <NodeCommentsSection nodeId={selectedNode.id} />
               </div>
               <div className="p-4 border-t border-[var(--border-default)]">
                 <button
@@ -1005,6 +1041,85 @@ function HarnessCanvasInner() {
             </motion.aside>
           )}
         </AnimatePresence>
+      </div>
+    </div>
+  );
+}
+
+function NodeCommentsSection({ nodeId }: { nodeId: string }) {
+  const comments = useCommentsStore((s) => s.comments.filter((c) => c.nodeId === nodeId));
+  const add = useCommentsStore((s) => s.add);
+  const toggleResolved = useCommentsStore((s) => s.toggleResolved);
+  const remove = useCommentsStore((s) => s.remove);
+  const [draft, setDraft] = useState("");
+  const submit = () => {
+    const body = draft.trim();
+    if (!body) return;
+    add({ nodeId, author: "You", authorColor: "var(--accent)", body });
+    setDraft("");
+    toast.success("Comment added");
+  };
+  return (
+    <div className="pt-3 mt-3 border-t border-[var(--border-default)] space-y-2.5">
+      <div className="flex items-center justify-between">
+        <label className="text-[11px] uppercase tracking-widest text-[var(--text-muted)] flex items-center gap-1.5">
+          <MessageSquare className="h-3 w-3" /> Comments
+        </label>
+        <span className="text-[10px] font-mono-tabular text-[var(--text-muted)]">
+          {comments.filter(c => !c.resolved).length} open · {comments.length} total
+        </span>
+      </div>
+      <div className="space-y-1.5 max-h-[180px] overflow-y-auto">
+        {comments.length === 0 ? (
+          <div className="text-[11px] text-[var(--text-muted)] italic py-1.5">No comments yet.</div>
+        ) : comments.map((c) => (
+          <div
+            key={c.id}
+            className={`rounded-md border p-2 text-[12px] ${c.resolved ? "border-[var(--border-subtle)] bg-transparent opacity-60" : "border-[var(--border-default)] bg-[var(--bg-base)]"}`}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[11px] font-medium" style={{ color: c.authorColor }}>{c.author}</span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => toggleResolved(c.id)}
+                  title={c.resolved ? "Reopen" : "Resolve"}
+                  className="p-0.5 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-white/5"
+                >
+                  <Check className="h-3 w-3" />
+                </button>
+                <button
+                  onClick={() => remove(c.id)}
+                  title="Delete"
+                  className="p-0.5 rounded text-[var(--text-muted)] hover:text-red-400 hover:bg-white/5"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            </div>
+            <div className={`text-[var(--text-primary)] whitespace-pre-wrap break-words ${c.resolved ? "line-through" : ""}`}>
+              {c.body}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="space-y-1.5">
+        <textarea
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === "Enter") submit(); }}
+          placeholder="Leave a comment… (⌘↵ to send)"
+          rows={2}
+          className="w-full resize-none px-2.5 py-1.5 rounded-md bg-[var(--bg-base)] border border-[var(--border-default)] text-[12px] text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)]"
+        />
+        <div className="flex justify-end">
+          <button
+            onClick={submit}
+            disabled={!draft.trim()}
+            className="h-7 px-2.5 rounded-md bg-[var(--accent)] text-[var(--bg-base)] text-[12px] font-medium hover:bg-[var(--accent-hover)] disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Comment
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
+import { toast } from "sonner";
 
 const tabs = ["General", "Team", "API keys", "Billing", "Integrations"] as const;
 type Tab = (typeof tabs)[number];
@@ -50,8 +51,18 @@ function SettingsPage() {
           ))}
         </div>
         <div className="mt-6 flex items-center justify-end gap-2">
-          <button className="h-9 px-3 rounded-md text-[13px] text-[var(--text-secondary)]">Cancel</button>
-          <button className="h-9 px-3 rounded-md bg-[var(--accent)] text-[var(--bg-base)] text-[13px] font-medium hover:bg-[var(--accent-hover)]">Save changes</button>
+          <button
+            onClick={() => toast("Changes discarded")}
+            className="h-9 px-3 rounded-md text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => toast.success(`${tab} settings saved`)}
+            className="h-9 px-3 rounded-md bg-[var(--accent)] text-[var(--bg-base)] text-[13px] font-medium hover:bg-[var(--accent-hover)]"
+          >
+            Save changes
+          </button>
         </div>
       </div>
     </>

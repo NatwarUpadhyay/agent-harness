@@ -60,8 +60,9 @@ It is built for teams who want a shared visual language for AI systems before wr
 | 20 | Audit log — tamper-evident SHA-256 chained event log | Done |
 | 21 | API key management — scoped keys, request tracking | Done |
 | 22 | Live collaboration activity stream | Done |
-| **23** | **Real-time collaborative node editing** | **Shipped** |
-| **24** | **Next phase — TBD** | **Next** |
+| 23 | Real-time collaborative node editing | Done |
+| **24** | **Node comments — threaded discussion per canvas node** | **Shipped** |
+| **25** | **Next phase — TBD** | **Next** |
 
 ---
 
