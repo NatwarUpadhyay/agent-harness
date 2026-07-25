@@ -38,6 +38,8 @@ interface NodeData {
   simState?: "idle" | "active" | "done";
   disconnected?: boolean;
   coEditor?: CoEditLock;
+  commentCount?: number;
+  commentOpen?: number;
 }
 
 type IconKey = "planner" | "memory" | "retriever" | "tools" | "evaluator" | "reflection" | "output";
