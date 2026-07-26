@@ -37,6 +37,7 @@ export const navGroups: NavGroup[] = [
       { to: "/memory", label: "Memory", icon: Database },
       { to: "/context", label: "Context", icon: BookOpen },
       { to: "/retriever", label: "Retriever", icon: Search },
+      { to: "/optimizer", label: "Optimizer", icon: Sparkles },
     ],
   },
   {
