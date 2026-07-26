@@ -2,7 +2,7 @@ import {
   LayoutDashboard, FolderKanban, Workflow, Bot, Brain, Database, BookOpen,
   Search, Boxes, FileText, Wrench, Plug, ShieldCheck, Activity, Beaker,
   Scale, FileStack, Rocket, FlaskConical, Settings, Cable, Library, Coins,
-  Shield, KeyRound,
+  Shield, KeyRound, Sparkles,
 } from "lucide-react";
 
 import type { LucideIcon } from "lucide-react";
