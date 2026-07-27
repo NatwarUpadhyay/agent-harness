@@ -44,7 +44,7 @@ function DeploymentsView() {
         environment: dest,
         version: bumpVersion(d.version),
         lastDeployed: new Date().toISOString(),
-        status: "active",
+        status: "healthy" as const,
       } : d);
     });
   };
@@ -53,7 +53,7 @@ function DeploymentsView() {
     setRows((prev) => prev.map((d) => {
       if (d.id !== id) return d;
       toast(`Rolled back ${d.name} to previous version`);
-      return { ...d, status: "idle", lastDeployed: new Date().toISOString() };
+      return { ...d, status: "degraded" as const, lastDeployed: new Date().toISOString() };
     }));
   };
 
