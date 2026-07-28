@@ -23,6 +23,8 @@ export const navGroups: NavGroup[] = [
     label: "Core",
     items: [
       { to: "/", label: "Dashboard", icon: LayoutDashboard },
+      { to: "/org", label: "Control room", icon: Building2 },
+      { to: "/onboarding", label: "Get started", icon: Compass },
       { to: "/projects", label: "Projects", icon: FolderKanban },
       { to: "/library", label: "Library", icon: Library },
     ],
