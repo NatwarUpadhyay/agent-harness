@@ -23,6 +23,7 @@ import { Route as AuthenticatedPromptsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedProjectsRouteImport } from './routes/_authenticated/projects'
 import { Route as AuthenticatedPoliciesRouteImport } from './routes/_authenticated/policies'
 import { Route as AuthenticatedPlannerRouteImport } from './routes/_authenticated/planner'
+import { Route as AuthenticatedOrgRouteImport } from './routes/_authenticated/org'
 import { Route as AuthenticatedOptimizerRouteImport } from './routes/_authenticated/optimizer'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedObservabilityRouteImport } from './routes/_authenticated/observability'
@@ -109,6 +110,11 @@ const AuthenticatedPoliciesRoute = AuthenticatedPoliciesRouteImport.update({
 const AuthenticatedPlannerRoute = AuthenticatedPlannerRouteImport.update({
   id: '/planner',
   path: '/planner',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedOrgRoute = AuthenticatedOrgRouteImport.update({
+  id: '/org',
+  path: '/org',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedOptimizerRoute = AuthenticatedOptimizerRouteImport.update({
@@ -229,6 +235,7 @@ export interface FileRoutesByFullPath {
   '/observability': typeof AuthenticatedObservabilityRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/optimizer': typeof AuthenticatedOptimizerRoute
+  '/org': typeof AuthenticatedOrgRoute
   '/planner': typeof AuthenticatedPlannerRoute
   '/policies': typeof AuthenticatedPoliciesRoute
   '/projects': typeof AuthenticatedProjectsRoute
@@ -261,6 +268,7 @@ export interface FileRoutesByTo {
   '/observability': typeof AuthenticatedObservabilityRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/optimizer': typeof AuthenticatedOptimizerRoute
+  '/org': typeof AuthenticatedOrgRoute
   '/planner': typeof AuthenticatedPlannerRoute
   '/policies': typeof AuthenticatedPoliciesRoute
   '/projects': typeof AuthenticatedProjectsRoute
@@ -296,6 +304,7 @@ export interface FileRoutesById {
   '/_authenticated/observability': typeof AuthenticatedObservabilityRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/optimizer': typeof AuthenticatedOptimizerRoute
+  '/_authenticated/org': typeof AuthenticatedOrgRoute
   '/_authenticated/planner': typeof AuthenticatedPlannerRoute
   '/_authenticated/policies': typeof AuthenticatedPoliciesRoute
   '/_authenticated/projects': typeof AuthenticatedProjectsRoute
@@ -332,6 +341,7 @@ export interface FileRouteTypes {
     | '/observability'
     | '/onboarding'
     | '/optimizer'
+    | '/org'
     | '/planner'
     | '/policies'
     | '/projects'
@@ -364,6 +374,7 @@ export interface FileRouteTypes {
     | '/observability'
     | '/onboarding'
     | '/optimizer'
+    | '/org'
     | '/planner'
     | '/policies'
     | '/projects'
@@ -398,6 +409,7 @@ export interface FileRouteTypes {
     | '/_authenticated/observability'
     | '/_authenticated/onboarding'
     | '/_authenticated/optimizer'
+    | '/_authenticated/org'
     | '/_authenticated/planner'
     | '/_authenticated/policies'
     | '/_authenticated/projects'
@@ -516,6 +528,13 @@ declare module '@tanstack/react-router' {
       path: '/planner'
       fullPath: '/planner'
       preLoaderRoute: typeof AuthenticatedPlannerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/org': {
+      id: '/_authenticated/org'
+      path: '/org'
+      fullPath: '/org'
+      preLoaderRoute: typeof AuthenticatedOrgRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/optimizer': {
@@ -666,6 +685,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedObservabilityRoute: typeof AuthenticatedObservabilityRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedOptimizerRoute: typeof AuthenticatedOptimizerRoute
+  AuthenticatedOrgRoute: typeof AuthenticatedOrgRoute
   AuthenticatedPlannerRoute: typeof AuthenticatedPlannerRoute
   AuthenticatedPoliciesRoute: typeof AuthenticatedPoliciesRoute
   AuthenticatedProjectsRoute: typeof AuthenticatedProjectsRoute
@@ -697,6 +717,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedObservabilityRoute: AuthenticatedObservabilityRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedOptimizerRoute: AuthenticatedOptimizerRoute,
+  AuthenticatedOrgRoute: AuthenticatedOrgRoute,
   AuthenticatedPlannerRoute: AuthenticatedPlannerRoute,
   AuthenticatedPoliciesRoute: AuthenticatedPoliciesRoute,
   AuthenticatedProjectsRoute: AuthenticatedProjectsRoute,
