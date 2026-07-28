@@ -23,7 +23,9 @@ import { Route as AuthenticatedPromptsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedProjectsRouteImport } from './routes/_authenticated/projects'
 import { Route as AuthenticatedPoliciesRouteImport } from './routes/_authenticated/policies'
 import { Route as AuthenticatedPlannerRouteImport } from './routes/_authenticated/planner'
+import { Route as AuthenticatedOrgRouteImport } from './routes/_authenticated/org'
 import { Route as AuthenticatedOptimizerRouteImport } from './routes/_authenticated/optimizer'
+import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedObservabilityRouteImport } from './routes/_authenticated/observability'
 import { Route as AuthenticatedModelsRouteImport } from './routes/_authenticated/models'
 import { Route as AuthenticatedMemoryRouteImport } from './routes/_authenticated/memory'
@@ -110,9 +112,19 @@ const AuthenticatedPlannerRoute = AuthenticatedPlannerRouteImport.update({
   path: '/planner',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedOrgRoute = AuthenticatedOrgRouteImport.update({
+  id: '/org',
+  path: '/org',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedOptimizerRoute = AuthenticatedOptimizerRouteImport.update({
   id: '/optimizer',
   path: '/optimizer',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedObservabilityRoute =
@@ -221,7 +233,9 @@ export interface FileRoutesByFullPath {
   '/memory': typeof AuthenticatedMemoryRoute
   '/models': typeof AuthenticatedModelsRoute
   '/observability': typeof AuthenticatedObservabilityRoute
+  '/onboarding': typeof AuthenticatedOnboardingRoute
   '/optimizer': typeof AuthenticatedOptimizerRoute
+  '/org': typeof AuthenticatedOrgRoute
   '/planner': typeof AuthenticatedPlannerRoute
   '/policies': typeof AuthenticatedPoliciesRoute
   '/projects': typeof AuthenticatedProjectsRoute
@@ -252,7 +266,9 @@ export interface FileRoutesByTo {
   '/memory': typeof AuthenticatedMemoryRoute
   '/models': typeof AuthenticatedModelsRoute
   '/observability': typeof AuthenticatedObservabilityRoute
+  '/onboarding': typeof AuthenticatedOnboardingRoute
   '/optimizer': typeof AuthenticatedOptimizerRoute
+  '/org': typeof AuthenticatedOrgRoute
   '/planner': typeof AuthenticatedPlannerRoute
   '/policies': typeof AuthenticatedPoliciesRoute
   '/projects': typeof AuthenticatedProjectsRoute
@@ -286,7 +302,9 @@ export interface FileRoutesById {
   '/_authenticated/memory': typeof AuthenticatedMemoryRoute
   '/_authenticated/models': typeof AuthenticatedModelsRoute
   '/_authenticated/observability': typeof AuthenticatedObservabilityRoute
+  '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/optimizer': typeof AuthenticatedOptimizerRoute
+  '/_authenticated/org': typeof AuthenticatedOrgRoute
   '/_authenticated/planner': typeof AuthenticatedPlannerRoute
   '/_authenticated/policies': typeof AuthenticatedPoliciesRoute
   '/_authenticated/projects': typeof AuthenticatedProjectsRoute
@@ -321,7 +339,9 @@ export interface FileRouteTypes {
     | '/memory'
     | '/models'
     | '/observability'
+    | '/onboarding'
     | '/optimizer'
+    | '/org'
     | '/planner'
     | '/policies'
     | '/projects'
@@ -352,7 +372,9 @@ export interface FileRouteTypes {
     | '/memory'
     | '/models'
     | '/observability'
+    | '/onboarding'
     | '/optimizer'
+    | '/org'
     | '/planner'
     | '/policies'
     | '/projects'
@@ -385,7 +407,9 @@ export interface FileRouteTypes {
     | '/_authenticated/memory'
     | '/_authenticated/models'
     | '/_authenticated/observability'
+    | '/_authenticated/onboarding'
     | '/_authenticated/optimizer'
+    | '/_authenticated/org'
     | '/_authenticated/planner'
     | '/_authenticated/policies'
     | '/_authenticated/projects'
@@ -506,11 +530,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPlannerRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/org': {
+      id: '/_authenticated/org'
+      path: '/org'
+      fullPath: '/org'
+      preLoaderRoute: typeof AuthenticatedOrgRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/optimizer': {
       id: '/_authenticated/optimizer'
       path: '/optimizer'
       fullPath: '/optimizer'
       preLoaderRoute: typeof AuthenticatedOptimizerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/onboarding': {
+      id: '/_authenticated/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/observability': {
@@ -645,7 +683,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMemoryRoute: typeof AuthenticatedMemoryRoute
   AuthenticatedModelsRoute: typeof AuthenticatedModelsRoute
   AuthenticatedObservabilityRoute: typeof AuthenticatedObservabilityRoute
+  AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedOptimizerRoute: typeof AuthenticatedOptimizerRoute
+  AuthenticatedOrgRoute: typeof AuthenticatedOrgRoute
   AuthenticatedPlannerRoute: typeof AuthenticatedPlannerRoute
   AuthenticatedPoliciesRoute: typeof AuthenticatedPoliciesRoute
   AuthenticatedProjectsRoute: typeof AuthenticatedProjectsRoute
@@ -675,7 +715,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMemoryRoute: AuthenticatedMemoryRoute,
   AuthenticatedModelsRoute: AuthenticatedModelsRoute,
   AuthenticatedObservabilityRoute: AuthenticatedObservabilityRoute,
+  AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedOptimizerRoute: AuthenticatedOptimizerRoute,
+  AuthenticatedOrgRoute: AuthenticatedOrgRoute,
   AuthenticatedPlannerRoute: AuthenticatedPlannerRoute,
   AuthenticatedPoliciesRoute: AuthenticatedPoliciesRoute,
   AuthenticatedProjectsRoute: AuthenticatedProjectsRoute,
@@ -700,13 +742,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
