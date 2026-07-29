@@ -60,6 +60,21 @@ export function DashboardView() {
     Cost: Math.round(100 - e.costPerCall * 2000),
   }));
 
+  const exportCsv = () => {
+    const header = "agent,model,status,success_rate,total_calls,avg_latency_ms\n";
+    const body = agents
+      .map((a) => [a.name, a.model, a.status, a.successRate, a.totalCalls, a.avgLatency].join(","))
+      .join("\n");
+    const blob = new Blob([header + body], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `harness-overview-${range}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Overview exported", { description: `${agents.length} agents · ${range}` });
+  };
+
   return (
     <>
       <PageHeader
@@ -67,17 +82,39 @@ export function DashboardView() {
         subtitle="Real-time intelligence across your agent fleet"
         actions={
           <>
-            <button className="inline-flex items-center gap-2 h-9 px-3 rounded-md border border-[var(--border-default)] text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)]">
-              <Calendar className="h-3.5 w-3.5" />
-              Last 7 days
-            </button>
-            <button className="inline-flex items-center gap-2 h-9 px-3 rounded-md bg-[var(--accent)] text-[var(--bg-base)] text-[13px] font-medium hover:bg-[var(--accent-hover)]">
+            <div className="relative">
+              <button
+                onClick={() => setRangeOpen((v) => !v)}
+                className="inline-flex items-center gap-2 h-9 px-3 rounded-md border border-[var(--border-default)] text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)]"
+              >
+                <Calendar className="h-3.5 w-3.5" />
+                {range}
+              </button>
+              {rangeOpen && (
+                <div className="absolute right-0 mt-1 z-30 w-40 rounded-md border border-[var(--border-default)] bg-[var(--bg-elevated)] p-1 shadow-lg">
+                  {RANGES.map((r) => (
+                    <button
+                      key={r}
+                      onClick={() => { setRange(r); setRangeOpen(false); toast(`Range set to ${r}`); }}
+                      className={`w-full text-left px-2 py-1.5 rounded text-[13px] hover:bg-[var(--bg-surface)] ${r === range ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]"}`}
+                    >
+                      {r}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <button
+              onClick={exportCsv}
+              className="inline-flex items-center gap-2 h-9 px-3 rounded-md bg-[var(--accent)] text-[var(--bg-base)] text-[13px] font-medium hover:bg-[var(--accent-hover)]"
+            >
               <Download className="h-3.5 w-3.5" />
               Export
             </button>
           </>
         }
       />
+
 
       {/* KPI Strip */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
