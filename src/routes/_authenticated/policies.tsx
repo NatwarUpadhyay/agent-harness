@@ -2,8 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
+import { toast } from "sonner";
 
-const policies = [
+const SEED = [
   { id: "po1", name: "Block PII in outputs",       category: "safety",  enabled: true,  desc: "Redact emails, SSNs, and phone numbers before any model response leaves the harness." },
   { id: "po2", name: "Max cost per call: $0.05",   category: "cost",    enabled: true,  desc: "Reject completions whose projected token spend exceeds 5 cents." },
   { id: "po3", name: "Latency budget 2s",          category: "latency", enabled: false, desc: "Fail-open after 2000ms; serve a cached or degraded response." },
@@ -23,9 +24,22 @@ export const Route = createFileRoute("/_authenticated/policies")({
 
 function PoliciesPage() {
   const [open, setOpen] = useState<string | null>("po1");
+  const [policies, setPolicies] = useState(SEED);
+  const toggle = (id: string) => {
+    setPolicies((ps) =>
+      ps.map((p) => {
+        if (p.id !== id) return p;
+        toast[p.enabled ? "message" : "success"](
+          `${p.name} ${p.enabled ? "disabled" : "enabled"}`,
+        );
+        return { ...p, enabled: !p.enabled };
+      }),
+    );
+  };
+  const enabledCount = policies.filter((p) => p.enabled).length;
   return (
     <>
-      <PageHeader title="Policies" subtitle="Hard constraints applied to every agent invocation" />
+      <PageHeader title="Policies" subtitle={`Hard constraints applied to every agent invocation · ${enabledCount}/${policies.length} active`} />
       <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] divide-y divide-[var(--border-subtle)]">
         {policies.map((p) => {
           const isOpen = open === p.id;
@@ -39,7 +53,13 @@ function PoliciesPage() {
                   {p.category}
                 </span>
                 <span className="flex-1 text-[14px] font-medium">{p.name}</span>
-                <span className={`relative h-5 w-9 rounded-full transition-colors ${p.enabled ? "bg-[var(--accent)]" : "bg-[var(--bg-elevated)]"}`}>
+                <span
+                  role="switch"
+                  aria-checked={p.enabled}
+                  aria-label={`Toggle ${p.name}`}
+                  onClick={(e) => { e.stopPropagation(); toggle(p.id); }}
+                  className={`relative h-5 w-9 rounded-full transition-colors cursor-pointer ${p.enabled ? "bg-[var(--accent)]" : "bg-[var(--bg-elevated)] border border-[var(--border-default)]"}`}
+                >
                   <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all ${p.enabled ? "left-4" : "left-0.5"}`} />
                 </span>
                 <ChevronDown className={`h-4 w-4 text-[var(--text-muted)] transition-transform ${isOpen ? "rotate-180" : ""}`} />
