@@ -20,7 +20,11 @@ const tooltipStyle = {
   color: "var(--text-primary)",
 };
 
+const RANGES = ["Last 7 days", "Last 30 days", "Last 90 days"] as const;
+
 export function DashboardView() {
+  const [range, setRange] = useState<(typeof RANGES)[number]>("Last 7 days");
+  const [rangeOpen, setRangeOpen] = useState(false);
   const { data: liveAgents } = useAgents();
   const agents = useMemo(
     () => (liveAgents && liveAgents.length > 0
