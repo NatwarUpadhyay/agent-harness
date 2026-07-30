@@ -85,6 +85,17 @@ export function useCreateTool() {
   });
 }
 
+export function useToggleTool() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, enabled }: { id: string; enabled: boolean }) => {
+      const { error } = await supabase.from("tools").update({ enabled }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: toolsKey }),
+  });
+}
+
 export function useDeleteTool() {
   const qc = useQueryClient();
   return useMutation({
