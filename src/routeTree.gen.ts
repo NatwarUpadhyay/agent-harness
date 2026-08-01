@@ -41,6 +41,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedContextRouteImport } from './routes/_authenticated/context'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedApiKeysRouteImport } from './routes/_authenticated/api-keys'
+import { Route as AuthenticatedAlertsRouteImport } from './routes/_authenticated/alerts'
 import { Route as AuthenticatedAgentsRouteImport } from './routes/_authenticated/agents'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -207,6 +208,11 @@ const AuthenticatedApiKeysRoute = AuthenticatedApiKeysRouteImport.update({
   path: '/api-keys',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAlertsRoute = AuthenticatedAlertsRouteImport.update({
+  id: '/alerts',
+  path: '/alerts',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAgentsRoute = AuthenticatedAgentsRouteImport.update({
   id: '/agents',
   path: '/agents',
@@ -218,6 +224,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/agents': typeof AuthenticatedAgentsRoute
+  '/alerts': typeof AuthenticatedAlertsRoute
   '/api-keys': typeof AuthenticatedApiKeysRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/context': typeof AuthenticatedContextRoute
@@ -251,6 +258,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/agents': typeof AuthenticatedAgentsRoute
+  '/alerts': typeof AuthenticatedAlertsRoute
   '/api-keys': typeof AuthenticatedApiKeysRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/context': typeof AuthenticatedContextRoute
@@ -287,6 +295,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/agents': typeof AuthenticatedAgentsRoute
+  '/_authenticated/alerts': typeof AuthenticatedAlertsRoute
   '/_authenticated/api-keys': typeof AuthenticatedApiKeysRoute
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
   '/_authenticated/context': typeof AuthenticatedContextRoute
@@ -324,6 +333,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/agents'
+    | '/alerts'
     | '/api-keys'
     | '/audit'
     | '/context'
@@ -357,6 +367,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/agents'
+    | '/alerts'
     | '/api-keys'
     | '/audit'
     | '/context'
@@ -392,6 +403,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/_authenticated/agents'
+    | '/_authenticated/alerts'
     | '/_authenticated/api-keys'
     | '/_authenticated/audit'
     | '/_authenticated/context'
@@ -656,6 +668,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedApiKeysRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/alerts': {
+      id: '/_authenticated/alerts'
+      path: '/alerts'
+      fullPath: '/alerts'
+      preLoaderRoute: typeof AuthenticatedAlertsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/agents': {
       id: '/_authenticated/agents'
       path: '/agents'
@@ -668,6 +687,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAgentsRoute: typeof AuthenticatedAgentsRoute
+  AuthenticatedAlertsRoute: typeof AuthenticatedAlertsRoute
   AuthenticatedApiKeysRoute: typeof AuthenticatedApiKeysRoute
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
   AuthenticatedContextRoute: typeof AuthenticatedContextRoute
@@ -700,6 +720,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAgentsRoute: AuthenticatedAgentsRoute,
+  AuthenticatedAlertsRoute: AuthenticatedAlertsRoute,
   AuthenticatedApiKeysRoute: AuthenticatedApiKeysRoute,
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
   AuthenticatedContextRoute: AuthenticatedContextRoute,
