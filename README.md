@@ -140,6 +140,8 @@ The fastest way to understand Harness is to use the preview:
 - **Phase 23 — Real-time collaborative node editing.** Peer "locks" show up directly on canvas nodes with a colored ring, pulsing dot, and a name badge ("Nat editing", "Priya moving"), so you can see who's touching which node as it happens.
 - *(Fixes)* Shared workflow view now uses the styled HarnessNode, API-key revocations persist correctly, Usage CSV exports actual rows, presence overlay throttles to 3s updates, and the integrations compatibility checker ranks fully compatible vendors first.
 
+- **Phase 25 — Alerts & incidents.** A rule-driven alerting console covering cost, latency, error-rate, and audit-anomaly metrics with severity levels and Slack / email / PagerDuty / webhook routing. Fire rules to generate incidents, then acknowledge, resolve, or reopen them. Rules and incidents persist locally.
+
 ## Next up
 
 Governance and org-scoped controls — data retention, workspace roles, and organization-wide policy enforcement across workflows.
