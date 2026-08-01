@@ -62,7 +62,8 @@ It is built for teams who want a shared visual language for AI systems before wr
 | 22 | Live collaboration activity stream | Done |
 | 23 | Real-time collaborative node editing | Done |
 | **24** | **Node comments — threaded discussion per canvas node** | **Shipped** |
-| **25** | **Next phase — TBD** | **Next** |
+| **25** | **Alerts & incidents — rule-driven alerting console** | **Shipped** |
+| **26** | **Next phase — governance & org-scoped controls** | **Next** |
 
 ---
 
