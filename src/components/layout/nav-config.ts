@@ -75,6 +75,7 @@ export const navGroups: NavGroup[] = [
   {
     label: "System",
     items: [
+      { to: "/governance", label: "Governance", icon: Scale },
       { to: "/api-keys", label: "API Keys", icon: KeyRound },
       { to: "/settings", label: "Settings", icon: Settings },
     ],
