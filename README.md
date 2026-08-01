@@ -142,10 +142,12 @@ The fastest way to understand Harness is to use the preview:
 - *(Fixes)* Shared workflow view now uses the styled HarnessNode, API-key revocations persist correctly, Usage CSV exports actual rows, presence overlay throttles to 3s updates, and the integrations compatibility checker ranks fully compatible vendors first.
 
 - **Phase 25 — Alerts & incidents.** A rule-driven alerting console covering cost, latency, error-rate, and audit-anomaly metrics with severity levels and Slack / email / PagerDuty / webhook routing. Fire rules to generate incidents, then acknowledge, resolve, or reopen them. Rules and incidents persist locally.
+- **Phase 26 — Governance & org-scoped controls.** A `/governance` page with a role capability matrix (owner → viewer) and CSV export, member management with live role re-scoping and invites, just-in-time access requests with approve/deny trails, and org controls for SSO enforcement, SCIM, MFA, IP allowlisting, data residency (US/EU/IN), and trace retention. All state persists locally.
 
 ## Next up
 
-Governance and org-scoped controls — data retention, workspace roles, and organization-wide policy enforcement across workflows.
+Cost budgeting and enforcement — per-team spend caps that actually throttle agent runs, forecasted burn-down, and budget breach alerts wired into the incident console.
+
 
 ---
 
