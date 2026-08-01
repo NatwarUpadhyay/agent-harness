@@ -33,6 +33,7 @@ import { Route as AuthenticatedMcpRouteImport } from './routes/_authenticated/mc
 import { Route as AuthenticatedLibraryRouteImport } from './routes/_authenticated/library'
 import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authenticated/integrations'
 import { Route as AuthenticatedHarnessRouteImport } from './routes/_authenticated/harness'
+import { Route as AuthenticatedGovernanceRouteImport } from './routes/_authenticated/governance'
 import { Route as AuthenticatedExperimentsRouteImport } from './routes/_authenticated/experiments'
 import { Route as AuthenticatedEvaluationsRouteImport } from './routes/_authenticated/evaluations'
 import { Route as AuthenticatedDeploymentsRouteImport } from './routes/_authenticated/deployments'
@@ -165,6 +166,11 @@ const AuthenticatedHarnessRoute = AuthenticatedHarnessRouteImport.update({
   path: '/harness',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedGovernanceRoute = AuthenticatedGovernanceRouteImport.update({
+  id: '/governance',
+  path: '/governance',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedExperimentsRoute =
   AuthenticatedExperimentsRouteImport.update({
     id: '/experiments',
@@ -233,6 +239,7 @@ export interface FileRoutesByFullPath {
   '/deployments': typeof AuthenticatedDeploymentsRoute
   '/evaluations': typeof AuthenticatedEvaluationsRoute
   '/experiments': typeof AuthenticatedExperimentsRoute
+  '/governance': typeof AuthenticatedGovernanceRoute
   '/harness': typeof AuthenticatedHarnessRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/library': typeof AuthenticatedLibraryRoute
@@ -267,6 +274,7 @@ export interface FileRoutesByTo {
   '/deployments': typeof AuthenticatedDeploymentsRoute
   '/evaluations': typeof AuthenticatedEvaluationsRoute
   '/experiments': typeof AuthenticatedExperimentsRoute
+  '/governance': typeof AuthenticatedGovernanceRoute
   '/harness': typeof AuthenticatedHarnessRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/library': typeof AuthenticatedLibraryRoute
@@ -304,6 +312,7 @@ export interface FileRoutesById {
   '/_authenticated/deployments': typeof AuthenticatedDeploymentsRoute
   '/_authenticated/evaluations': typeof AuthenticatedEvaluationsRoute
   '/_authenticated/experiments': typeof AuthenticatedExperimentsRoute
+  '/_authenticated/governance': typeof AuthenticatedGovernanceRoute
   '/_authenticated/harness': typeof AuthenticatedHarnessRoute
   '/_authenticated/integrations': typeof AuthenticatedIntegrationsRoute
   '/_authenticated/library': typeof AuthenticatedLibraryRoute
@@ -342,6 +351,7 @@ export interface FileRouteTypes {
     | '/deployments'
     | '/evaluations'
     | '/experiments'
+    | '/governance'
     | '/harness'
     | '/integrations'
     | '/library'
@@ -376,6 +386,7 @@ export interface FileRouteTypes {
     | '/deployments'
     | '/evaluations'
     | '/experiments'
+    | '/governance'
     | '/harness'
     | '/integrations'
     | '/library'
@@ -412,6 +423,7 @@ export interface FileRouteTypes {
     | '/_authenticated/deployments'
     | '/_authenticated/evaluations'
     | '/_authenticated/experiments'
+    | '/_authenticated/governance'
     | '/_authenticated/harness'
     | '/_authenticated/integrations'
     | '/_authenticated/library'
@@ -612,6 +624,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHarnessRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/governance': {
+      id: '/_authenticated/governance'
+      path: '/governance'
+      fullPath: '/governance'
+      preLoaderRoute: typeof AuthenticatedGovernanceRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/experiments': {
       id: '/_authenticated/experiments'
       path: '/experiments'
@@ -696,6 +715,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDeploymentsRoute: typeof AuthenticatedDeploymentsRoute
   AuthenticatedEvaluationsRoute: typeof AuthenticatedEvaluationsRoute
   AuthenticatedExperimentsRoute: typeof AuthenticatedExperimentsRoute
+  AuthenticatedGovernanceRoute: typeof AuthenticatedGovernanceRoute
   AuthenticatedHarnessRoute: typeof AuthenticatedHarnessRoute
   AuthenticatedIntegrationsRoute: typeof AuthenticatedIntegrationsRoute
   AuthenticatedLibraryRoute: typeof AuthenticatedLibraryRoute
@@ -729,6 +749,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDeploymentsRoute: AuthenticatedDeploymentsRoute,
   AuthenticatedEvaluationsRoute: AuthenticatedEvaluationsRoute,
   AuthenticatedExperimentsRoute: AuthenticatedExperimentsRoute,
+  AuthenticatedGovernanceRoute: AuthenticatedGovernanceRoute,
   AuthenticatedHarnessRoute: AuthenticatedHarnessRoute,
   AuthenticatedIntegrationsRoute: AuthenticatedIntegrationsRoute,
   AuthenticatedLibraryRoute: AuthenticatedLibraryRoute,

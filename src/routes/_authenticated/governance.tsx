@@ -291,7 +291,7 @@ function GovernancePage() {
       </AnimatePresence>
 
       {/* Capability matrix */}
-      <SectionHeader title="Role capability matrix" subtitle="Least-privilege defaults enforced server-side on every action" />
+      <SectionHeader title="Role capability matrix" />
       <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] overflow-x-auto">
         <table className="w-full text-[13px] min-w-[560px]">
           <thead>
@@ -323,9 +323,8 @@ function GovernancePage() {
 
       {/* Members */}
       <SectionHeader
-        title="Members"
-        subtitle={`${shown.length} shown · change a role to re-scope access instantly`}
-        actions={
+        title={`Members · ${shown.length}`}
+        action={
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value as Role | "all")}
@@ -373,7 +372,7 @@ function GovernancePage() {
       </div>
 
       {/* Access requests */}
-      <SectionHeader title="Access requests" subtitle="Just-in-time elevation with an approval trail" />
+      <SectionHeader title="Access requests" />
       <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] divide-y divide-[var(--border-subtle)]">
         {requests.map((r) => (
           <div key={r.id} className="flex flex-wrap items-start gap-3 px-4 py-3">
@@ -421,7 +420,7 @@ function GovernancePage() {
       </div>
 
       {/* Org controls */}
-      <SectionHeader title="Org controls" subtitle="Identity, residency, and retention applied workspace-wide" />
+      <SectionHeader title="Org controls" />
       <div className="grid gap-3 lg:grid-cols-2">
         <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] divide-y divide-[var(--border-subtle)]">
           {([
