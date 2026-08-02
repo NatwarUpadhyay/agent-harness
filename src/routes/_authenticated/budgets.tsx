@@ -161,10 +161,11 @@ function BudgetsView() {
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard index={0} label="Allocated" value={totalCap} display={(v) => `$${Math.round(v).toLocaleString()}`} />
-        <MetricCard index={1} label="Spent to date" value={totalSpent} display={(v) => `$${Math.round(v).toLocaleString()}`} trend={Math.round((totalSpent / Math.max(1, totalCap)) * 100)} trendTone="amber" />
-        <MetricCard index={2} label="Forecast (month end)" value={forecast} display={(v) => `$${Math.round(v).toLocaleString()}`} trendTone={forecast > totalCap ? "red" : "green"} />
-        <MetricCard index={3} label="Breached caps" value={breaches} trendTone={breaches ? "red" : "green"} />
+        <MetricCard index={0} label="Allocated" value={totalCap} display={(v) => `$${Math.round(v).toLocaleString()}`} trend={0} trendTone="green" series={[totalCap * 0.9, totalCap * 0.95, totalCap]} />
+        <MetricCard index={1} label="Spent to date" value={totalSpent} display={(v) => `$${Math.round(v).toLocaleString()}`} trend={Math.round((totalSpent / Math.max(1, totalCap)) * 100)} trendTone="amber" series={[totalSpent * 0.5, totalSpent * 0.75, totalSpent]} />
+        <MetricCard index={2} label="Forecast (month end)" value={forecast} display={(v) => `$${Math.round(v).toLocaleString()}`} trend={Math.round(((forecast - totalCap) / Math.max(1, totalCap)) * 100)} trendTone={forecast > totalCap ? "red" : "green"} series={[forecast * 0.6, forecast * 0.8, forecast]} />
+        <MetricCard index={3} label="Breached caps" value={breaches} trend={breaches} trendTone={breaches ? "red" : "green"} series={[0, 1, breaches]} />
+
       </div>
 
       <AnimatePresence>
