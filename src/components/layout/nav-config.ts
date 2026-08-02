@@ -62,6 +62,8 @@ export const navGroups: NavGroup[] = [
       { to: "/policies", label: "Policies", icon: Scale },
       { to: "/datasets", label: "Datasets", icon: FileStack },
       { to: "/usage", label: "Usage & Cost", icon: Coins },
+      { to: "/budgets", label: "Budgets", icon: Wallet },
+
       { to: "/audit", label: "Audit Log", icon: Shield },
     ],
   },
