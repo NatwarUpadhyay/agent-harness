@@ -40,6 +40,7 @@ import { Route as AuthenticatedDeploymentsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedDatasetsRouteImport } from './routes/_authenticated/datasets'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedContextRouteImport } from './routes/_authenticated/context'
+import { Route as AuthenticatedBudgetsRouteImport } from './routes/_authenticated/budgets'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedApiKeysRouteImport } from './routes/_authenticated/api-keys'
 import { Route as AuthenticatedAlertsRouteImport } from './routes/_authenticated/alerts'
@@ -204,6 +205,11 @@ const AuthenticatedContextRoute = AuthenticatedContextRouteImport.update({
   path: '/context',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedBudgetsRoute = AuthenticatedBudgetsRouteImport.update({
+  id: '/budgets',
+  path: '/budgets',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAuditRoute = AuthenticatedAuditRouteImport.update({
   id: '/audit',
   path: '/audit',
@@ -233,6 +239,7 @@ export interface FileRoutesByFullPath {
   '/alerts': typeof AuthenticatedAlertsRoute
   '/api-keys': typeof AuthenticatedApiKeysRoute
   '/audit': typeof AuthenticatedAuditRoute
+  '/budgets': typeof AuthenticatedBudgetsRoute
   '/context': typeof AuthenticatedContextRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/datasets': typeof AuthenticatedDatasetsRoute
@@ -268,6 +275,7 @@ export interface FileRoutesByTo {
   '/alerts': typeof AuthenticatedAlertsRoute
   '/api-keys': typeof AuthenticatedApiKeysRoute
   '/audit': typeof AuthenticatedAuditRoute
+  '/budgets': typeof AuthenticatedBudgetsRoute
   '/context': typeof AuthenticatedContextRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/datasets': typeof AuthenticatedDatasetsRoute
@@ -306,6 +314,7 @@ export interface FileRoutesById {
   '/_authenticated/alerts': typeof AuthenticatedAlertsRoute
   '/_authenticated/api-keys': typeof AuthenticatedApiKeysRoute
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
+  '/_authenticated/budgets': typeof AuthenticatedBudgetsRoute
   '/_authenticated/context': typeof AuthenticatedContextRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/datasets': typeof AuthenticatedDatasetsRoute
@@ -345,6 +354,7 @@ export interface FileRouteTypes {
     | '/alerts'
     | '/api-keys'
     | '/audit'
+    | '/budgets'
     | '/context'
     | '/dashboard'
     | '/datasets'
@@ -380,6 +390,7 @@ export interface FileRouteTypes {
     | '/alerts'
     | '/api-keys'
     | '/audit'
+    | '/budgets'
     | '/context'
     | '/dashboard'
     | '/datasets'
@@ -417,6 +428,7 @@ export interface FileRouteTypes {
     | '/_authenticated/alerts'
     | '/_authenticated/api-keys'
     | '/_authenticated/audit'
+    | '/_authenticated/budgets'
     | '/_authenticated/context'
     | '/_authenticated/dashboard'
     | '/_authenticated/datasets'
@@ -673,6 +685,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedContextRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/budgets': {
+      id: '/_authenticated/budgets'
+      path: '/budgets'
+      fullPath: '/budgets'
+      preLoaderRoute: typeof AuthenticatedBudgetsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/audit': {
       id: '/_authenticated/audit'
       path: '/audit'
@@ -709,6 +728,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAlertsRoute: typeof AuthenticatedAlertsRoute
   AuthenticatedApiKeysRoute: typeof AuthenticatedApiKeysRoute
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
+  AuthenticatedBudgetsRoute: typeof AuthenticatedBudgetsRoute
   AuthenticatedContextRoute: typeof AuthenticatedContextRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDatasetsRoute: typeof AuthenticatedDatasetsRoute
@@ -743,6 +763,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAlertsRoute: AuthenticatedAlertsRoute,
   AuthenticatedApiKeysRoute: AuthenticatedApiKeysRoute,
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
+  AuthenticatedBudgetsRoute: AuthenticatedBudgetsRoute,
   AuthenticatedContextRoute: AuthenticatedContextRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDatasetsRoute: AuthenticatedDatasetsRoute,
