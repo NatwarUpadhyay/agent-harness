@@ -63,7 +63,9 @@ It is built for teams who want a shared visual language for AI systems before wr
 | 23 | Real-time collaborative node editing | Done |
 | **24** | **Node comments — threaded discussion per canvas node** | **Shipped** |
 | **25** | **Alerts & incidents — rule-driven alerting console** | **Shipped** |
-| **26** | **Next phase — governance & org-scoped controls** | **Next** |
+| 26 | Governance & org-scoped controls | Done |
+| **27** | **Budgets & forecasting — per-team spend caps and breach enforcement** | **Shipped** |
+
 
 ---
 
@@ -143,10 +145,12 @@ The fastest way to understand Harness is to use the preview:
 
 - **Phase 25 — Alerts & incidents.** A rule-driven alerting console covering cost, latency, error-rate, and audit-anomaly metrics with severity levels and Slack / email / PagerDuty / webhook routing. Fire rules to generate incidents, then acknowledge, resolve, or reopen them. Rules and incidents persist locally.
 - **Phase 26 — Governance & org-scoped controls.** A `/governance` page with a role capability matrix (owner → viewer) and CSV export, member management with live role re-scoping and invites, just-in-time access requests with approve/deny trails, and org controls for SSO enforcement, SCIM, MFA, IP allowlisting, data residency (US/EU/IN), and trace retention. All state persists locally.
+- **Phase 27 — Budgets & forecasting.** A `/budgets` page with per-team monthly/quarterly spend caps, live utilization bars, month-end burn-down forecasting against the cap line, and breach enforcement modes (notify, throttle, hard-block). Create, pause, raise, or delete budgets and export the whole ledger to CSV; all state persists locally.
 
 ## Next up
 
-Cost budgeting and enforcement — per-team spend caps that actually throttle agent runs, forecasted burn-down, and budget breach alerts wired into the incident console.
+Wiring budget breaches into real enforcement — blocking agent runs server-side when a team cap is exhausted, plus anomaly detection on burn-rate spikes.
+
 
 
 ---
