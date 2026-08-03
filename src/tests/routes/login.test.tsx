@@ -27,6 +27,9 @@ vi.mock("@/integrations/supabase/client", () => ({
 
 import { Route } from "../../routes/login";
 
+// createFileRoute is mocked above, so the route object is a plain config bag.
+const RouteComponent = (Route as unknown as { component: React.ComponentType }).component;
+
 describe("Login route", () => {
   beforeEach(() => {
     mocks.navigate.mockClear();
@@ -35,7 +38,7 @@ describe("Login route", () => {
 
   it("signs in and switches auth modes", async () => {
     const user = userEvent.setup();
-    render(<Route.component />);
+    render(<RouteComponent />);
 
     await user.type(screen.getByPlaceholderText(/you@company\.com/i), "avery@example.com");
     await user.type(screen.getByPlaceholderText(/••••••••/i), "secret123");
@@ -56,7 +59,7 @@ describe("Login route", () => {
 
   it("sends a recovery email from the forgot password button", async () => {
     const user = userEvent.setup();
-    render(<Route.component />);
+    render(<RouteComponent />);
 
     await user.type(screen.getByPlaceholderText(/you@company\.com/i), "avery@example.com");
     await user.click(screen.getByRole("button", { name: /Forgot password\?/i }));

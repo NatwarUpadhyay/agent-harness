@@ -39,7 +39,7 @@ describe("Agents route", () => {
 
   it("deploys an agent and filters the list", async () => {
     const user = userEvent.setup();
-    render(<Route.component />);
+    render(<RouteComponent />);
 
     await user.click(screen.getByRole("button", { name: /Deploy agent/i }));
     await user.type(screen.getByPlaceholderText(/e\.g\. Vega-2/i), "Gamma");
@@ -54,7 +54,7 @@ describe("Agents route", () => {
 
   it("removes an agent", async () => {
     const user = userEvent.setup();
-    render(<Route.component />);
+    render(<RouteComponent />);
 
     await user.click(screen.getAllByLabelText(/Remove agent/i)[0]);
 
