@@ -18,7 +18,9 @@ vi.mock("@tanstack/react-router", () => ({
   createFileRoute: () => (config: { component: React.ComponentType }) => ({ ...config }),
   useNavigate: () => mocks.navigate,
   useSearch: () => ({}),
-  Link: ({ to, children }: { to: string; children: React.ReactNode }) => <a href={to}>{children}</a>,
+  Link: ({ to, children }: { to: string; children: React.ReactNode }) => (
+    <a href={to}>{children}</a>
+  ),
 }));
 
 vi.mock("@/integrations/supabase/client", () => ({

@@ -13,8 +13,26 @@ vi.mock("@tanstack/react-router", () => ({
 vi.mock("@/lib/hooks/use-entities", () => ({
   useAgents: () => ({
     data: [
-      { id: "a1", name: "Alpha", model: "gpt-4o", status: "active", success_rate: 91, total_calls: 120, avg_latency: 220, last_active: "1m ago" },
-      { id: "a2", name: "Beta", model: "claude-3-5-sonnet", status: "idle", success_rate: 84, total_calls: 60, avg_latency: 330, last_active: "5m ago" },
+      {
+        id: "a1",
+        name: "Alpha",
+        model: "gpt-4o",
+        status: "active",
+        success_rate: 91,
+        total_calls: 120,
+        avg_latency: 220,
+        last_active: "1m ago",
+      },
+      {
+        id: "a2",
+        name: "Beta",
+        model: "claude-3-5-sonnet",
+        status: "idle",
+        success_rate: 84,
+        total_calls: 60,
+        avg_latency: 330,
+        last_active: "5m ago",
+      },
     ],
     isLoading: false,
   }),

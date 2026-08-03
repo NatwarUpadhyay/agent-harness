@@ -33,19 +33,28 @@ beforeEach(() => {
   });
   localStorageMemory.clear();
   vi.stubGlobal("ResizeObserver", MockResizeObserver);
-  vi.stubGlobal("matchMedia", vi.fn(() => ({
-    matches: false,
-    media: "",
-    onchange: null,
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  })));
+  vi.stubGlobal(
+    "matchMedia",
+    vi.fn(() => ({
+      matches: false,
+      media: "",
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+  );
   vi.stubGlobal("scrollTo", vi.fn());
-  vi.stubGlobal("confirm", vi.fn(() => true));
-  vi.stubGlobal("prompt", vi.fn(() => "Test workflow"));
+  vi.stubGlobal(
+    "confirm",
+    vi.fn(() => true),
+  );
+  vi.stubGlobal(
+    "prompt",
+    vi.fn(() => "Test workflow"),
+  );
   vi.stubGlobal("alert", vi.fn());
   Object.defineProperty(window.navigator, "clipboard", {
     value: {
