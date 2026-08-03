@@ -70,7 +70,9 @@ function LoginPage() {
           });
           if (error) throw error;
           setCodeSent(true);
-          setInfo(`We sent a 6-digit code to ${email}.`);
+          setInfo(
+            `Sign-in link sent to ${email}. Open the email and click the link to sign in. If your email shows a 6-digit code, you can paste it below instead.`,
+          );
         } else {
           const { error } = await supabase.auth.verifyOtp({
             email,
@@ -131,7 +133,7 @@ function LoginPage() {
       ? "Enter your email and password to continue."
       : mode === "signup"
         ? "Sign up with email and password to get started."
-        : "No password needed — we'll email you a 6-digit code.";
+        : "No password needed — we'll email you a secure sign-in link.";
 
   return (
     <div className="min-h-screen w-full bg-[var(--bg-base)] flex items-center justify-center px-4">
@@ -191,7 +193,7 @@ function LoginPage() {
           {mode === "otp" && codeSent && (
             <div>
               <label className="block text-[12px] font-medium text-[var(--text-secondary)] mb-1.5">
-                6-digit code
+                6-digit code (optional)
               </label>
               <input
                 inputMode="numeric"
@@ -230,7 +232,7 @@ function LoginPage() {
                     : "Verify code"
                   : loading
                     ? "Sending code…"
-                    : "Email me a code"}
+                    : "Email me a sign-in link"}
           </button>
 
           {mode === "otp" && codeSent && (
@@ -244,7 +246,7 @@ function LoginPage() {
               }}
               className="w-full text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
             >
-              Use a different email / resend code
+              Use a different email / resend link
             </button>
           )}
 
@@ -289,7 +291,7 @@ function LoginPage() {
               </>
             ) : (
               <>
-                <Mail className="h-4 w-4" /> Continue with email code (OTP)
+                <Mail className="h-4 w-4" /> Continue with an email sign-in link
               </>
             )}
           </button>

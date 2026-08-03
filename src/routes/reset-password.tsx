@@ -146,7 +146,7 @@ function ResetPasswordPage() {
         <p className="text-[13px] text-[var(--text-secondary)] mb-6">
           {ready
             ? "Enter a new password for your account."
-            : "Enter the 6-digit code from your recovery email."}
+            : "Open the reset link in the email we sent — it brings you right back here, ready to set a new password. If your email shows a 6-digit code instead, enter it below."}
         </p>
 
         {!ready && (
@@ -167,7 +167,7 @@ function ResetPasswordPage() {
             </div>
             <div>
               <label className="block text-[12px] font-medium text-[var(--text-secondary)] mb-1.5">
-                Recovery code
+                Recovery code (only if your email shows one)
               </label>
               <input
                 inputMode="numeric"
