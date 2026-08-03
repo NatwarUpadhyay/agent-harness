@@ -65,6 +65,10 @@ It is built for teams who want a shared visual language for AI systems before wr
 | **25** | **Alerts & incidents — rule-driven alerting console** | **Shipped** |
 | 26 | Governance & org-scoped controls | Done |
 | **27** | **Budgets & forecasting — per-team spend caps and breach enforcement** | **Shipped** |
+| **28** | **Optimizer — advanced RAG & memory tuning suggestions with impact estimates** | **Shipped** |
+| **29** | **Org control room + onboarding wizard — company-wide cost, latency, department roll-ups** | **Shipped** |
+| 30 | Regression test suite (Vitest + Testing Library) across canvas, dashboard, auth | Done |
+| **Next** | Enterprise auth (SSO/SCIM) and server-persisted org data behind Lovable Cloud | Planned |
 
 
 ---
