@@ -65,6 +65,10 @@ It is built for teams who want a shared visual language for AI systems before wr
 | **25** | **Alerts & incidents — rule-driven alerting console** | **Shipped** |
 | 26 | Governance & org-scoped controls | Done |
 | **27** | **Budgets & forecasting — per-team spend caps and breach enforcement** | **Shipped** |
+| **28** | **Optimizer — advanced RAG & memory tuning suggestions with impact estimates** | **Shipped** |
+| **29** | **Org control room + onboarding wizard — company-wide cost, latency, department roll-ups** | **Shipped** |
+| 30 | Regression test suite (Vitest + Testing Library) across canvas, dashboard, auth | Done |
+| **Next** | Enterprise auth (SSO/SCIM) and server-persisted org data behind Lovable Cloud | Planned |
 
 
 ---
@@ -87,11 +91,19 @@ It is built for teams who want a shared visual language for AI systems before wr
 - **Command palette** — Fuzzy search, recent actions, and a `?` shortcut overlay.
 - **Onboarding** — Dismissible first-visit guide that teaches _drag → connect → simulate_ in three steps.
 - **Dashboard** — Landing surface with project overview and navigation into the harness.
+- **Optimizer** — Advanced RAG and memory-optimization suggestions (hybrid retrieval, episodic compression, chunk tuning) with estimated cost/latency impact.
+- **Retriever, Models, Research, Deployments** — Interactive control surfaces with live metrics, filters, and persisted local state.
+- **Org control room & onboarding** — Guided org setup plus company-wide KPI strip, spend charts, and department roll-ups.
+- **Governance** — Role capability matrix, member invites, SSO and IP-allowlist controls.
+- **Budgets & alerts** — Per-team spend caps with burn-down forecasting, plus rule-driven alerting and an incident triage console.
+- **Integrations & library** — Vendor capability matrix with compatibility checks, and a community library for cloning public workflows.
+- **Collaboration** — Multi-cursor presence, activity stream, collaborative node editing, threaded node comments, and canvas snapshots.
+- **Share links** — Public read-only workflow views at `/share/:id`.
 - **Design system** — Graphite palette (`#0A0A0B` base, restrained cool accent), JetBrains Mono headings, Work Sans body.
 
 ## Testing
 
-The repo now includes a Vitest + Testing Library regression suite for the main interactive surfaces, including the harness canvas, dashboard, evaluations, agents, layout controls, usage math, and auth flows.
+Vitest + Testing Library regression suite covering the main interactive surfaces: harness canvas, dashboard, evaluations, agents, layout controls, usage math, and auth flows. Runs green (8 files / 14 tests) alongside a clean TypeScript check.
 
 ```bash
 npm test
