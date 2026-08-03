@@ -28,6 +28,9 @@ vi.mock("sonner", () => ({
 
 import { Route } from "../../routes/_authenticated/agents";
 
+// createFileRoute is mocked above, so the route object is a plain config bag.
+const RouteComponent = (Route as unknown as { component: React.ComponentType }).component;
+
 describe("Agents route", () => {
   beforeEach(() => {
     createAgent.mockClear();
