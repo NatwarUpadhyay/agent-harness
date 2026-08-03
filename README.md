@@ -91,8 +91,6 @@ It is built for teams who want a shared visual language for AI systems before wr
 - **Command palette** — Fuzzy search, recent actions, and a `?` shortcut overlay.
 - **Onboarding** — Dismissible first-visit guide that teaches _drag → connect → simulate_ in three steps.
 - **Dashboard** — Landing surface with project overview and navigation into the harness.
-
-
 - **Optimizer** — Advanced RAG and memory-optimization suggestions (hybrid retrieval, episodic compression, chunk tuning) with estimated cost/latency impact.
 - **Retriever, Models, Research, Deployments** — Interactive control surfaces with live metrics, filters, and persisted local state.
 - **Org control room & onboarding** — Guided org setup plus company-wide KPI strip, spend charts, and department roll-ups.
