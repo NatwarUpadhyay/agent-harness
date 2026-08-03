@@ -91,9 +91,8 @@ It is built for teams who want a shared visual language for AI systems before wr
 - **Command palette** — Fuzzy search, recent actions, and a `?` shortcut overlay.
 - **Onboarding** — Dismissible first-visit guide that teaches _drag → connect → simulate_ in three steps.
 - **Dashboard** — Landing surface with project overview and navigation into the harness.
-- **Design system** — Graphite palette (`#0A0A0B` base, restrained cool accent), JetBrains Mono headings, Work Sans body.
+- **Dashboard** — Landing surface with project overview and navigation into the harness.
 
-## Testing
 
 - **Optimizer** — Advanced RAG and memory-optimization suggestions (hybrid retrieval, episodic compression, chunk tuning) with estimated cost/latency impact.
 - **Retriever, Models, Research, Deployments** — Interactive control surfaces with live metrics, filters, and persisted local state.
