@@ -89,6 +89,17 @@ It is built for teams who want a shared visual language for AI systems before wr
 - **Dashboard** — Landing surface with project overview and navigation into the harness.
 - **Design system** — Graphite palette (`#0A0A0B` base, restrained cool accent), JetBrains Mono headings, Work Sans body.
 
+## Testing
+
+The repo now includes a Vitest + Testing Library regression suite for the main interactive surfaces, including the harness canvas, dashboard, evaluations, agents, layout controls, usage math, and auth flows.
+
+```bash
+npm test
+npm run test:run
+```
+
+The current suite is a focused smoke/regression layer rather than exhaustive coverage for every page, so it is a good starting point for validating future UI changes.
+
 ---
 
 ## Tech stack

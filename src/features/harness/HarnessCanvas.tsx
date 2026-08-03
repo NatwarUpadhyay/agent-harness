@@ -1047,7 +1047,11 @@ function HarnessCanvasInner() {
 }
 
 function NodeCommentsSection({ nodeId }: { nodeId: string }) {
-  const comments = useCommentsStore((s) => s.comments.filter((c) => c.nodeId === nodeId));
+  const allComments = useCommentsStore((s) => s.comments);
+  const comments = useMemo(
+    () => allComments.filter((c) => c.nodeId === nodeId),
+    [allComments, nodeId],
+  );
   const add = useCommentsStore((s) => s.add);
   const toggleResolved = useCommentsStore((s) => s.toggleResolved);
   const remove = useCommentsStore((s) => s.remove);
