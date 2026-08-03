@@ -95,7 +95,19 @@ It is built for teams who want a shared visual language for AI systems before wr
 
 ## Testing
 
-The repo now includes a Vitest + Testing Library regression suite for the main interactive surfaces, including the harness canvas, dashboard, evaluations, agents, layout controls, usage math, and auth flows.
+- **Optimizer** — Advanced RAG and memory-optimization suggestions (hybrid retrieval, episodic compression, chunk tuning) with estimated cost/latency impact.
+- **Retriever, Models, Research, Deployments** — Interactive control surfaces with live metrics, filters, and persisted local state.
+- **Org control room & onboarding** — Guided org setup plus company-wide KPI strip, spend charts, and department roll-ups.
+- **Governance** — Role capability matrix, member invites, SSO and IP-allowlist controls.
+- **Budgets & alerts** — Per-team spend caps with burn-down forecasting, plus rule-driven alerting and an incident triage console.
+- **Integrations & library** — Vendor capability matrix with compatibility checks, and a community library for cloning public workflows.
+- **Collaboration** — Multi-cursor presence, activity stream, collaborative node editing, threaded node comments, and canvas snapshots.
+- **Share links** — Public read-only workflow views at `/share/:id`.
+- **Design system** — Graphite palette (`#0A0A0B` base, restrained cool accent), JetBrains Mono headings, Work Sans body.
+
+## Testing
+
+Vitest + Testing Library regression suite covering the main interactive surfaces: harness canvas, dashboard, evaluations, agents, layout controls, usage math, and auth flows. Runs green (8 files / 14 tests) alongside a clean TypeScript check.
 
 ```bash
 npm test
