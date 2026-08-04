@@ -172,9 +172,11 @@ The fastest way to understand Harness is to use the preview:
 - **Phase 26 — Governance & org-scoped controls.** A `/governance` page with a role capability matrix (owner → viewer) and CSV export, member management with live role re-scoping and invites, just-in-time access requests with approve/deny trails, and org controls for SSO enforcement, SCIM, MFA, IP allowlisting, data residency (US/EU/IN), and trace retention. All state persists locally.
 - **Phase 27 — Budgets & forecasting.** A `/budgets` page with per-team monthly/quarterly spend caps, live utilization bars, month-end burn-down forecasting against the cap line, and breach enforcement modes (notify, throttle, hard-block). Create, pause, raise, or delete budgets and export the whole ledger to CSV; all state persists locally.
 
+- **Phase 31 — Spend enforcement.** A `/enforcement` page that turns budget caps into live action: trigger simulated agent runs against a team's cap and watch enforcement fire in real time (allow → throttle to 40% throughput → hard-block on breach). A 24-hour burn-rate chart runs z-score anomaly detection (σ > 2.2) and marks spikes on the graph; detected anomalies and enforcement actions stream into a live, exportable enforcement log.
+
 ## Next up
 
-Wiring budget breaches into real enforcement — blocking agent runs server-side when a team cap is exhausted, plus anomaly detection on burn-rate spikes.
+Wiring budget breaches into real server-side enforcement — blocking agent runs server-side when a team cap is exhausted, plus anomaly detection on burn-rate spikes.
 
 
 
