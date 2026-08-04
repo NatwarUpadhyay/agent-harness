@@ -13,6 +13,8 @@ vi.mock("sonner", () => ({
 
 import { Route } from "../../routes/_authenticated/projects";
 
+const RouteComponent = (Route as unknown as { component: React.ComponentType }).component;
+
 describe("Projects route", () => {
   beforeEach(() => {
     window.localStorage.clear();
@@ -20,7 +22,7 @@ describe("Projects route", () => {
 
   it("creates, filters, persists, and deletes multiple projects", async () => {
     const user = userEvent.setup();
-    const { unmount } = render(<Route.component />);
+    const { unmount } = render(<RouteComponent />);
 
     for (const project of [
       { name: "Pilot Alpha", owner: "NA" },
@@ -45,7 +47,7 @@ describe("Projects route", () => {
     expect(document.body).toHaveTextContent("1 shown · 9 projects · 38 agents total");
 
     unmount();
-    render(<Route.component />);
+    render(<RouteComponent />);
     expect(screen.getByText("Pilot Alpha")).toBeInTheDocument();
     expect(screen.getByText("Pilot Beta")).toBeInTheDocument();
     expect(screen.getByText("Pilot Gamma")).toBeInTheDocument();
