@@ -1,0 +1,45 @@
+{
+  "timestamp": "2026-08-03T20:33:03",
+  "total_tests": 5,
+  "passed": 5,
+  "failed": 0,
+  "details": [
+    {
+      "test": "test_knowledge_graph_validation",
+      "status": "PASS",
+      "details": {
+        "nodes": 244,
+        "files": 244
+      }
+    },
+    {
+      "test": "test_token_estimation",
+      "status": "PASS",
+      "details": {
+        "test_cases": 3
+      }
+    },
+    {
+      "test": "test_loop_detection_logic",
+      "status": "PASS",
+      "details": {
+        "cycles_found": 1,
+        "self_loops_detected": 1
+      }
+    },
+    {
+      "test": "test_cluster_analysis",
+      "status": "PASS",
+      "details": {
+        "directories_created": 6
+      }
+    },
+    {
+      "test": "test_integration_scenarios",
+      "status": "PASS",
+      "details": {
+        "scenarios_tested": 2
+      }
+    }
+  ]
+}

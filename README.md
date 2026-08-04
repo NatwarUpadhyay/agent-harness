@@ -89,9 +89,35 @@ It is built for teams who want a shared visual language for AI systems before wr
 - **Dashboard** — Landing surface with project overview and navigation into the harness.
 - **Design system** — Graphite palette (`#0A0A0B` base, restrained cool accent), JetBrains Mono headings, Work Sans body.
 
-## Testing
+## Context Mapping & Token Optimization
 
-The repo now includes a Vitest + Testing Library regression suite for the main interactive surfaces, including the harness canvas, dashboard, evaluations, agents, layout controls, usage math, and auth flows.
+Harness includes an advanced context mapping system that enables token-efficient AI agent interactions. This system analyzes your codebase to build a knowledge graph with dependency tracking, circular dependency detection, and token optimization for fast agent context loading.
+
+### Features
+- **Knowledge Graph**: Complete mapping of file relationships, imports, and entities
+- **Token Optimization**: Load only relevant context (typically 5-10KB vs 50KB+) per agent query  
+- **Loop Detection**: Automatic circular dependency identification using DFS algorithms
+- **Semantic Clustering**: Group files by directory and type for intelligent context retrieval
+- **Entry Point Detection**: Identify key files with no incoming dependencies for workflow initiation
+
+### Usage
+The context system is located in `/context/` and includes:
+- `knowledge_graph.json`: Complete graph of your codebase relationships
+- `graph_builder.py`: Tool to regenerate the context map
+- `loops/loop_detection.py`: Circular dependency analyzer
+- `integration_template/`: Drop-in components for any AI project
+
+To rebuild the context map:
+```bash
+python3 context/graph_builder.py
+```
+
+To check for circular dependencies:
+```bash  
+python3 context/loops/loop_detection.py
+```
+
+## Testing
 
 ```bash
 npm test

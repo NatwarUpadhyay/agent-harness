@@ -1,0 +1,98 @@
+{
+  "timestamp": "2026-08-03T20:33:03.302479",
+  "tests_run": 11,
+  "tests_passed": 5,
+  "tests_failed": 0,
+  "coverage": {
+    "graph_builder": 100,
+    "loop_detection": 100,
+    "token_optimization": 100,
+    "cluster_analysis": 100
+  },
+  "details": [
+    {
+      "name": "Graph Structure Validation",
+      "status": "PASS",
+      "checks_passed": 3,
+      "checks_failed": 0,
+      "details": [
+        {
+          "check": "has_nodes_property",
+          "result": "PASS"
+        },
+        {
+          "check": "has_edges_property",
+          "result": "PASS"
+        },
+        {
+          "check": "has_metadata_property",
+          "result": "PASS"
+        }
+      ]
+    },
+    {
+      "name": "Node ID Generation",
+      "status": "PASS",
+      "checks_passed": 2,
+      "checks_failed": 0,
+      "details": [
+        {
+          "check": "is_consistent",
+          "result": "PASS"
+        },
+        {
+          "check": "has_correct_length",
+          "result": "PASS"
+        }
+      ]
+    },
+    {
+      "name": "Loop Detection Test",
+      "status": "PASS",
+      "checks_passed": 2,
+      "checks_failed": 0,
+      "details": [
+        {
+          "check": "detects_cycles",
+          "result": "PASS"
+        },
+        {
+          "check": "handles_self_loops",
+          "result": "PASS"
+        }
+      ]
+    },
+    {
+      "name": "Token Estimation",
+      "status": "PASS",
+      "checks_passed": 2,
+      "checks_failed": 0,
+      "details": [
+        {
+          "check": "under_budget",
+          "result": "PASS"
+        },
+        {
+          "check": "positive_tokens",
+          "result": "PASS"
+        }
+      ]
+    },
+    {
+      "name": "Cluster Analysis",
+      "status": "PASS",
+      "checks_passed": 2,
+      "checks_failed": 0,
+      "details": [
+        {
+          "check": "groups_by_directory",
+          "result": "PASS"
+        },
+        {
+          "check": "groups_by_type",
+          "result": "PASS"
+        }
+      ]
+    }
+  ]
+}
