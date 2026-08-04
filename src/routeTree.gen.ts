@@ -36,6 +36,7 @@ import { Route as AuthenticatedHarnessRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedGovernanceRouteImport } from './routes/_authenticated/governance'
 import { Route as AuthenticatedExperimentsRouteImport } from './routes/_authenticated/experiments'
 import { Route as AuthenticatedEvaluationsRouteImport } from './routes/_authenticated/evaluations'
+import { Route as AuthenticatedEnforcementRouteImport } from './routes/_authenticated/enforcement'
 import { Route as AuthenticatedDeploymentsRouteImport } from './routes/_authenticated/deployments'
 import { Route as AuthenticatedDatasetsRouteImport } from './routes/_authenticated/datasets'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -184,6 +185,12 @@ const AuthenticatedEvaluationsRoute =
     path: '/evaluations',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedEnforcementRoute =
+  AuthenticatedEnforcementRouteImport.update({
+    id: '/enforcement',
+    path: '/enforcement',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDeploymentsRoute =
   AuthenticatedDeploymentsRouteImport.update({
     id: '/deployments',
@@ -244,6 +251,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/datasets': typeof AuthenticatedDatasetsRoute
   '/deployments': typeof AuthenticatedDeploymentsRoute
+  '/enforcement': typeof AuthenticatedEnforcementRoute
   '/evaluations': typeof AuthenticatedEvaluationsRoute
   '/experiments': typeof AuthenticatedExperimentsRoute
   '/governance': typeof AuthenticatedGovernanceRoute
@@ -280,6 +288,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/datasets': typeof AuthenticatedDatasetsRoute
   '/deployments': typeof AuthenticatedDeploymentsRoute
+  '/enforcement': typeof AuthenticatedEnforcementRoute
   '/evaluations': typeof AuthenticatedEvaluationsRoute
   '/experiments': typeof AuthenticatedExperimentsRoute
   '/governance': typeof AuthenticatedGovernanceRoute
@@ -319,6 +328,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/datasets': typeof AuthenticatedDatasetsRoute
   '/_authenticated/deployments': typeof AuthenticatedDeploymentsRoute
+  '/_authenticated/enforcement': typeof AuthenticatedEnforcementRoute
   '/_authenticated/evaluations': typeof AuthenticatedEvaluationsRoute
   '/_authenticated/experiments': typeof AuthenticatedExperimentsRoute
   '/_authenticated/governance': typeof AuthenticatedGovernanceRoute
@@ -359,6 +369,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/datasets'
     | '/deployments'
+    | '/enforcement'
     | '/evaluations'
     | '/experiments'
     | '/governance'
@@ -395,6 +406,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/datasets'
     | '/deployments'
+    | '/enforcement'
     | '/evaluations'
     | '/experiments'
     | '/governance'
@@ -433,6 +445,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/datasets'
     | '/_authenticated/deployments'
+    | '/_authenticated/enforcement'
     | '/_authenticated/evaluations'
     | '/_authenticated/experiments'
     | '/_authenticated/governance'
@@ -657,6 +670,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEvaluationsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/enforcement': {
+      id: '/_authenticated/enforcement'
+      path: '/enforcement'
+      fullPath: '/enforcement'
+      preLoaderRoute: typeof AuthenticatedEnforcementRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/deployments': {
       id: '/_authenticated/deployments'
       path: '/deployments'
@@ -733,6 +753,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDatasetsRoute: typeof AuthenticatedDatasetsRoute
   AuthenticatedDeploymentsRoute: typeof AuthenticatedDeploymentsRoute
+  AuthenticatedEnforcementRoute: typeof AuthenticatedEnforcementRoute
   AuthenticatedEvaluationsRoute: typeof AuthenticatedEvaluationsRoute
   AuthenticatedExperimentsRoute: typeof AuthenticatedExperimentsRoute
   AuthenticatedGovernanceRoute: typeof AuthenticatedGovernanceRoute
@@ -768,6 +789,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDatasetsRoute: AuthenticatedDatasetsRoute,
   AuthenticatedDeploymentsRoute: AuthenticatedDeploymentsRoute,
+  AuthenticatedEnforcementRoute: AuthenticatedEnforcementRoute,
   AuthenticatedEvaluationsRoute: AuthenticatedEvaluationsRoute,
   AuthenticatedExperimentsRoute: AuthenticatedExperimentsRoute,
   AuthenticatedGovernanceRoute: AuthenticatedGovernanceRoute,

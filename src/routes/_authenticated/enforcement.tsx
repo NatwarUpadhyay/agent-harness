@@ -289,7 +289,7 @@ function EnforcementView() {
             <div className="mt-3 flex items-start gap-2 rounded-md border border-[color:rgb(191_90_242_/_0.30)] bg-[color:rgb(191_90_242_/_0.06)] p-3">
               <Radar className="h-4 w-4 text-[var(--violet)] mt-0.5 shrink-0" />
               <p className="text-[11px] text-[var(--text-secondary)]">
-                {anomalies.length} burn-rate anomaly{anomalies.length > 1 ? "ies" : ""} detected (z-score > 2.2σ). Spikes at samples {anomalies.map((a) => `#${a.t}`).join(", ")}.
+                {anomalies.length} burn-rate anomaly{anomalies.length > 1 ? "ies" : ""} detected (z-score {">"} 2.2σ). Spikes at samples {anomalies.map((a) => `#${a.t}`).join(", ")}.
               </p>
             </div>
           )}
