@@ -2,7 +2,7 @@ import {
   LayoutDashboard, FolderKanban, Workflow, Bot, Brain, Database, BookOpen,
   Search, Boxes, FileText, Wrench, Plug, ShieldCheck, Activity, Beaker,
   Scale, FileStack, Rocket, FlaskConical, Settings, Cable, Library, Coins,
-  Shield, KeyRound, Sparkles, Building2, Compass, Bell, Wallet,
+  Shield, KeyRound, Sparkles, Building2, Compass, Bell, Wallet, ShieldX,
 } from "lucide-react";
 
 import type { LucideIcon } from "lucide-react";
@@ -63,6 +63,8 @@ export const navGroups: NavGroup[] = [
       { to: "/datasets", label: "Datasets", icon: FileStack },
       { to: "/usage", label: "Usage & Cost", icon: Coins },
       { to: "/budgets", label: "Budgets", icon: Wallet },
+      { to: "/enforcement", label: "Enforcement", icon: ShieldX },
+
 
       { to: "/audit", label: "Audit Log", icon: Shield },
     ],
