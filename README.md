@@ -68,6 +68,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 | **28** | **Optimizer — advanced RAG & memory tuning suggestions with impact estimates** | **Shipped** |
 | **29** | **Org control room + onboarding wizard — company-wide cost, latency, department roll-ups** | **Shipped** |
 | 30 | Regression test suite (Vitest + Testing Library) across canvas, dashboard, auth | Done |
+| **31** | **Spend enforcement — real-time budget breach enforcement & burn-rate anomaly detection** | **Shipped** |
 | **Next** | Enterprise auth (SSO/SCIM) and server-persisted org data behind Lovable Cloud | Planned |
 
 
@@ -96,6 +97,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 - **Org control room & onboarding** — Guided org setup plus company-wide KPI strip, spend charts, and department roll-ups.
 - **Governance** — Role capability matrix, member invites, SSO and IP-allowlist controls.
 - **Budgets & alerts** — Per-team spend caps with burn-down forecasting, plus rule-driven alerting and an incident triage console.
+- **Spend enforcement** — Real-time budget breach enforcement (notify / throttle / block) with a run simulator, z-score burn-rate anomaly detection, a live enforcement log, and CSV export.
 - **Integrations & library** — Vendor capability matrix with compatibility checks, and a community library for cloning public workflows.
 - **Collaboration** — Multi-cursor presence, activity stream, collaborative node editing, threaded node comments, and canvas snapshots.
 - **Share links** — Public read-only workflow views at `/share/:id`.
