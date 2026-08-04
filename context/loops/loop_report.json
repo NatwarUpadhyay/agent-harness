@@ -1,0 +1,16 @@
+{
+  "total_loops": 1,
+  "loop_structures": [
+    [
+      "6b3a77f27d56",
+      "6b3a77f27d56"
+    ]
+  ],
+  "loop_paths": [
+    [
+      "src/integrations/supabase/client.ts",
+      "src/integrations/supabase/client.ts"
+    ]
+  ],
+  "timestamp": "2026-08-04 17:58:29.383315"
+}
