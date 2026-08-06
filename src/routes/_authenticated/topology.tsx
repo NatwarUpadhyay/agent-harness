@@ -84,7 +84,7 @@ function toGraph(row: {
   const rawNodes = Array.isArray(row.nodes) ? row.nodes : [];
   const rawEdges = Array.isArray(row.edges) ? row.edges : [];
   const nodes: TopoNode[] = rawNodes
-    .map((n) => {
+    .map((n): TopoNode | null => {
       const obj = (n ?? {}) as { id?: string; data?: { label?: string; iconKey?: string } };
       if (!obj.id) return null;
       const type = obj.data?.iconKey ?? "";
@@ -93,7 +93,7 @@ function toGraph(row: {
         label: obj.data?.label ?? obj.id,
         type,
         latencyMs: LATENCY[type] ?? 200,
-      } satisfies TopoNode;
+      };
     })
     .filter((n): n is TopoNode => n !== null);
   const edges: TopoEdge[] = rawEdges
