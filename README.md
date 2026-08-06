@@ -197,9 +197,11 @@ The fastest way to understand Harness is to use the preview:
 
 - **Phase 31 — Spend enforcement.** A `/enforcement` page that turns budget caps into live action: trigger simulated agent runs against a team's cap and watch enforcement fire in real time (allow → throttle to 40% throughput → hard-block on breach). A 24-hour burn-rate chart runs z-score anomaly detection (σ > 2.2) and marks spikes on the graph; detected anomalies and enforcement actions stream into a live, exportable enforcement log.
 
+- **Phase 32 — Workflow topology audit.** A `/topology` page that runs the same graph + loop analysis used by the repo context tooling against your agent flows: cycle/self-loop detection, orphan and unreachable nodes, dead ends, high fan-out, an animated structural-health score, the highest-latency critical path, acknowledgeable findings and CSV export.
+
 ## Next up
 
-Wiring budget breaches into real server-side enforcement — blocking agent runs server-side when a team cap is exhausted, plus anomaly detection on burn-rate spikes.
+Server-side topology gates (block deploys with unresolved high findings) plus real server-side budget enforcement — blocking agent runs server-side when a team cap is exhausted, plus anomaly detection on burn-rate spikes.
 
 
 
