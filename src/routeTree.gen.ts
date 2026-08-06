@@ -15,6 +15,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as ShareIdRouteImport } from './routes/share/$id'
 import { Route as AuthenticatedUsageRouteImport } from './routes/_authenticated/usage'
+import { Route as AuthenticatedTopologyRouteImport } from './routes/_authenticated/topology'
 import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedRetrieverRouteImport } from './routes/_authenticated/retriever'
@@ -74,6 +75,11 @@ const ShareIdRoute = ShareIdRouteImport.update({
 const AuthenticatedUsageRoute = AuthenticatedUsageRouteImport.update({
   id: '/usage',
   path: '/usage',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedTopologyRoute = AuthenticatedTopologyRouteImport.update({
+  id: '/topology',
+  path: '/topology',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedToolsRoute = AuthenticatedToolsRouteImport.update({
@@ -273,6 +279,7 @@ export interface FileRoutesByFullPath {
   '/retriever': typeof AuthenticatedRetrieverRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/tools': typeof AuthenticatedToolsRoute
+  '/topology': typeof AuthenticatedTopologyRoute
   '/usage': typeof AuthenticatedUsageRoute
   '/share/$id': typeof ShareIdRoute
 }
@@ -310,6 +317,7 @@ export interface FileRoutesByTo {
   '/retriever': typeof AuthenticatedRetrieverRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/tools': typeof AuthenticatedToolsRoute
+  '/topology': typeof AuthenticatedTopologyRoute
   '/usage': typeof AuthenticatedUsageRoute
   '/share/$id': typeof ShareIdRoute
   '/': typeof AuthenticatedIndexRoute
@@ -350,6 +358,7 @@ export interface FileRoutesById {
   '/_authenticated/retriever': typeof AuthenticatedRetrieverRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/tools': typeof AuthenticatedToolsRoute
+  '/_authenticated/topology': typeof AuthenticatedTopologyRoute
   '/_authenticated/usage': typeof AuthenticatedUsageRoute
   '/share/$id': typeof ShareIdRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
@@ -391,6 +400,7 @@ export interface FileRouteTypes {
     | '/retriever'
     | '/settings'
     | '/tools'
+    | '/topology'
     | '/usage'
     | '/share/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -428,6 +438,7 @@ export interface FileRouteTypes {
     | '/retriever'
     | '/settings'
     | '/tools'
+    | '/topology'
     | '/usage'
     | '/share/$id'
     | '/'
@@ -467,6 +478,7 @@ export interface FileRouteTypes {
     | '/_authenticated/retriever'
     | '/_authenticated/settings'
     | '/_authenticated/tools'
+    | '/_authenticated/topology'
     | '/_authenticated/usage'
     | '/share/$id'
     | '/_authenticated/'
@@ -521,6 +533,13 @@ declare module '@tanstack/react-router' {
       path: '/usage'
       fullPath: '/usage'
       preLoaderRoute: typeof AuthenticatedUsageRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/topology': {
+      id: '/_authenticated/topology'
+      path: '/topology'
+      fullPath: '/topology'
+      preLoaderRoute: typeof AuthenticatedTopologyRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/tools': {
@@ -775,6 +794,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedRetrieverRoute: typeof AuthenticatedRetrieverRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedToolsRoute: typeof AuthenticatedToolsRoute
+  AuthenticatedTopologyRoute: typeof AuthenticatedTopologyRoute
   AuthenticatedUsageRoute: typeof AuthenticatedUsageRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
@@ -811,6 +831,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRetrieverRoute: AuthenticatedRetrieverRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedToolsRoute: AuthenticatedToolsRoute,
+  AuthenticatedTopologyRoute: AuthenticatedTopologyRoute,
   AuthenticatedUsageRoute: AuthenticatedUsageRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
@@ -827,13 +848,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
