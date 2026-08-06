@@ -14,8 +14,8 @@
       "id": "04c6e90faac2",
       "path": "README.md",
       "type": "md",
-      "size": 13770,
-      "tokens": 5497,
+      "size": 14186,
+      "tokens": 5659,
       "imports": [],
       "entities": [],
       "summary": "No summary"
@@ -330,6 +330,16 @@
       ],
       "summary": "#!/usr/bin/env python3 # Fallback: treat imports as ids when a pre-resolved graph is supplied."
     },
+    "c2d7682a455b": {
+      "id": "c2d7682a455b",
+      "path": "context/loops/loop_report.json",
+      "type": "json",
+      "size": 448,
+      "tokens": 143,
+      "imports": [],
+      "entities": [],
+      "summary": "No summary"
+    },
     "c374b92e1ce9": {
       "id": "c374b92e1ce9",
       "path": "docs/DEMO_TEST_PLAN.md",
@@ -344,8 +354,8 @@
       "id": "cb917d6ea6d1",
       "path": "src/routeTree.gen.ts",
       "type": "ts",
-      "size": 32151,
-      "tokens": 10307,
+      "size": 33014,
+      "tokens": 10581,
       "imports": [
         "./routes/__root",
         "./routes/reset-password",
@@ -354,6 +364,7 @@
         "./routes/_authenticated/index",
         "./routes/share/$id",
         "./routes/_authenticated/usage",
+        "./routes/_authenticated/topology",
         "./routes/_authenticated/tools",
         "./routes/_authenticated/settings",
         "./routes/_authenticated/retriever",
@@ -590,8 +601,8 @@
       "id": "3ca46b8444c1",
       "path": "src/components/layout/nav-config.ts",
       "type": "ts",
-      "size": 2913,
-      "tokens": 1111,
+      "size": 2993,
+      "tokens": 1141,
       "imports": [
         "lucide-react"
       ],
@@ -2189,13 +2200,128 @@
       "id": "1f35ff4e17df",
       "path": "src/lib/utils.ts",
       "type": "ts",
-      "size": 116,
-      "tokens": 44,
-      "imports": [],
+      "size": 166,
+      "tokens": 63,
+      "imports": [
+        "clsx",
+        "tailwind-merge"
+      ],
       "entities": [
         {
           "type": "function",
           "name": "cn"
+        }
+      ],
+      "summary": "No summary"
+    },
+    "4bf79662ef29": {
+      "id": "4bf79662ef29",
+      "path": "src/lib/context/graph.ts",
+      "type": "ts",
+      "size": 6383,
+      "tokens": 2331,
+      "imports": [
+        "node:crypto"
+      ],
+      "entities": [
+        {
+          "type": "function",
+          "name": "nodeId"
+        },
+        {
+          "type": "function",
+          "name": "estimateTokens"
+        },
+        {
+          "type": "function",
+          "name": "extractImports"
+        },
+        {
+          "type": "function",
+          "name": "resolveImport"
+        },
+        {
+          "type": "function",
+          "name": "buildEdges"
+        },
+        {
+          "type": "function",
+          "name": "detectLoops"
+        },
+        {
+          "type": "function",
+          "name": "buildClusters"
+        },
+        {
+          "type": "function",
+          "name": "findEntryPoints"
+        },
+        {
+          "type": "function",
+          "name": "push"
+        },
+        {
+          "type": "function",
+          "name": "dirname"
+        },
+        {
+          "type": "function",
+          "name": "record"
+        },
+        {
+          "type": "function",
+          "name": "walk"
+        },
+        {
+          "type": "function",
+          "name": "add"
+        }
+      ],
+      "summary": "No summary"
+    },
+    "f3dcdfdf0ba0": {
+      "id": "f3dcdfdf0ba0",
+      "path": "src/lib/context/topology.ts",
+      "type": "ts",
+      "size": 7086,
+      "tokens": 2637,
+      "imports": [],
+      "entities": [
+        {
+          "type": "function",
+          "name": "detectWorkflowCycles"
+        },
+        {
+          "type": "function",
+          "name": "longestPath"
+        },
+        {
+          "type": "function",
+          "name": "analyzeTopology"
+        },
+        {
+          "type": "function",
+          "name": "adjacency"
+        },
+        {
+          "type": "function",
+          "name": "record"
+        },
+        {
+          "type": "function",
+          "name": "walk"
+        },
+        {
+          "type": "function",
+          "name": "walk"
+        },
+        {
+          "type": "function",
+          "name": "next"
+        },
+        {
+          "type": "function",
+          "name": "name"
         }
       ],
       "summary": "No summary"
@@ -2603,71 +2729,6 @@
         }
       ],
       "summary": "// ---------- AGENTS ----------"
-    },
-    "4bf79662ef29": {
-      "id": "4bf79662ef29",
-      "path": "src/lib/context/graph.ts",
-      "type": "ts",
-      "size": 6383,
-      "tokens": 2331,
-      "imports": [
-        "node:crypto"
-      ],
-      "entities": [
-        {
-          "type": "function",
-          "name": "nodeId"
-        },
-        {
-          "type": "function",
-          "name": "estimateTokens"
-        },
-        {
-          "type": "function",
-          "name": "extractImports"
-        },
-        {
-          "type": "function",
-          "name": "resolveImport"
-        },
-        {
-          "type": "function",
-          "name": "buildEdges"
-        },
-        {
-          "type": "function",
-          "name": "detectLoops"
-        },
-        {
-          "type": "function",
-          "name": "buildClusters"
-        },
-        {
-          "type": "function",
-          "name": "findEntryPoints"
-        },
-        {
-          "type": "function",
-          "name": "push"
-        },
-        {
-          "type": "function",
-          "name": "dirname"
-        },
-        {
-          "type": "function",
-          "name": "record"
-        },
-        {
-          "type": "function",
-          "name": "walk"
-        },
-        {
-          "type": "function",
-          "name": "add"
-        }
-      ],
-      "summary": "No summary"
     },
     "03cfd8e49cfb": {
       "id": "03cfd8e49cfb",
@@ -4006,6 +4067,55 @@
       ],
       "summary": "No summary"
     },
+    "25bb647980db": {
+      "id": "25bb647980db",
+      "path": "src/routes/_authenticated/topology.tsx",
+      "type": "tsx",
+      "size": 15908,
+      "tokens": 5392,
+      "imports": [
+        "@tanstack/react-router",
+        "react",
+        "framer-motion",
+        "lucide-react",
+        "@/components/ui/page-header",
+        "@/components/ui/button",
+        "sonner",
+        "@/lib/hooks/use-entities",
+        "@/lib/context/topology"
+      ],
+      "entities": [
+        {
+          "type": "function",
+          "name": "toGraph"
+        },
+        {
+          "type": "function",
+          "name": "HealthRing"
+        },
+        {
+          "type": "function",
+          "name": "Stat"
+        },
+        {
+          "type": "function",
+          "name": "TopologyPage"
+        },
+        {
+          "type": "function",
+          "name": "key"
+        },
+        {
+          "type": "function",
+          "name": "label"
+        },
+        {
+          "type": "function",
+          "name": "exportCsv"
+        }
+      ],
+      "summary": "No summary"
+    },
     "458eeafc489c": {
       "id": "458eeafc489c",
       "path": "src/routes/_authenticated/usage.tsx",
@@ -4160,6 +4270,24 @@
       ],
       "summary": "No summary"
     },
+    "bd0a7a1f9271": {
+      "id": "bd0a7a1f9271",
+      "path": "src/tests/context/topology.test.ts",
+      "type": "ts",
+      "size": 2449,
+      "tokens": 906,
+      "imports": [
+        "vitest",
+        "@/lib/context/topology"
+      ],
+      "entities": [
+        {
+          "type": "function",
+          "name": "n"
+        }
+      ],
+      "summary": "No summary"
+    },
     "dfa5994c650c": {
       "id": "dfa5994c650c",
       "path": "src/tests/routes/agents.test.tsx",
@@ -4253,6 +4381,11 @@
     {
       "source": "cb917d6ea6d1",
       "target": "458eeafc489c",
+      "type": "imports"
+    },
+    {
+      "source": "cb917d6ea6d1",
+      "target": "25bb647980db",
       "type": "imports"
     },
     {
@@ -5401,6 +5534,26 @@
       "type": "imports"
     },
     {
+      "source": "25bb647980db",
+      "target": "5046d19dbc59",
+      "type": "imports"
+    },
+    {
+      "source": "25bb647980db",
+      "target": "58c82e04dfb4",
+      "type": "imports"
+    },
+    {
+      "source": "25bb647980db",
+      "target": "a3eb8a59be98",
+      "type": "imports"
+    },
+    {
+      "source": "25bb647980db",
+      "target": "f3dcdfdf0ba0",
+      "type": "imports"
+    },
+    {
       "source": "458eeafc489c",
       "target": "5046d19dbc59",
       "type": "imports"
@@ -5423,6 +5576,11 @@
     {
       "source": "95ac491ae90d",
       "target": "1f35ff4e17df",
+      "type": "imports"
+    },
+    {
+      "source": "bd0a7a1f9271",
+      "target": "f3dcdfdf0ba0",
       "type": "imports"
     },
     {
@@ -5464,7 +5622,8 @@
       "e5e546dd2eb0",
       "5f67972e0810",
       "e59e2c3bb898",
-      "2b766e759010"
+      "2b766e759010",
+      "c2d7682a455b"
     ],
     "type_js": [
       "e7f6d45c8af2"
@@ -5485,6 +5644,8 @@
       "0972d3e57f5d",
       "3d0197918ec1",
       "1f35ff4e17df",
+      "4bf79662ef29",
+      "f3dcdfdf0ba0",
       "f60d95381b9e",
       "b5c080c387a6",
       "ef98e05adabd",
@@ -5495,11 +5656,11 @@
       "d905e48cd75b",
       "91935f3f54cc",
       "a3eb8a59be98",
-      "4bf79662ef29",
       "93347ae7e8e6",
       "b9f33823aa79",
       "5160c6f4268d",
       "95ac491ae90d",
+      "bd0a7a1f9271",
       "6c58ae6ccad7"
     ],
     "dir_.lovable": [
@@ -5519,7 +5680,8 @@
       "9e785d52e86d"
     ],
     "dir_context/loops": [
-      "9e785d52e86d"
+      "9e785d52e86d",
+      "c2d7682a455b"
     ],
     "dir_docs": [
       "c374b92e1ce9"
@@ -5641,6 +5803,7 @@
       "54360f3c995b",
       "d81935b58d0c",
       "3b79d32d29e7",
+      "25bb647980db",
       "458eeafc489c",
       "30c9d26eafd0",
       "71fafdceb845",
@@ -5747,6 +5910,10 @@
       "3d0197918ec1",
       "1f35ff4e17df"
     ],
+    "dir_src/lib/context": [
+      "4bf79662ef29",
+      "f3dcdfdf0ba0"
+    ],
     "dir_src/lib/data": [
       "f60d95381b9e",
       "b5c080c387a6",
@@ -5760,9 +5927,6 @@
     ],
     "dir_src/lib/hooks": [
       "a3eb8a59be98"
-    ],
-    "dir_src/lib/context": [
-      "4bf79662ef29"
     ],
     "dir_src/routes": [
       "03cfd8e49cfb",
@@ -5804,6 +5968,7 @@
       "54360f3c995b",
       "d81935b58d0c",
       "3b79d32d29e7",
+      "25bb647980db",
       "458eeafc489c"
     ],
     "dir_src/routes/share": [
@@ -5818,7 +5983,8 @@
       "71fafdceb845"
     ],
     "dir_src/tests/context": [
-      "95ac491ae90d"
+      "95ac491ae90d",
+      "bd0a7a1f9271"
     ],
     "dir_src/tests/routes": [
       "dfa5994c650c",
@@ -5851,15 +6017,15 @@
     "80428a99bdf3",
     "2b766e759010",
     "9e785d52e86d",
+    "c2d7682a455b",
     "c374b92e1ce9",
     "ecd35492598a",
     "916156c48114",
-    "b86d9cde4c78",
-    "16180cbc4493"
+    "b86d9cde4c78"
   ],
   "metadata": {
     "root": ".",
-    "total_files": 162,
-    "total_tokens": 314433
+    "total_files": 166,
+    "total_tokens": 323996
   }
 }
