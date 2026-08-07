@@ -1,16 +1,26 @@
 {
-  "total_loops": 1,
+  "total_loops": 2,
   "loop_structures": [
     [
       "6b3a77f27d56",
       "6b3a77f27d56"
+    ],
+    [
+      "cb917d6ea6d1",
+      "ecd35492598a",
+      "cb917d6ea6d1"
     ]
   ],
   "loop_paths": [
     [
       "src/integrations/supabase/client.ts",
       "src/integrations/supabase/client.ts"
+    ],
+    [
+      "src/routeTree.gen.ts",
+      "src/router.tsx",
+      "src/routeTree.gen.ts"
     ]
   ],
-  "timestamp": "2026-08-06 13:16:21.756264"
+  "timestamp": "2026-08-07 13:58:38.769246"
 }
