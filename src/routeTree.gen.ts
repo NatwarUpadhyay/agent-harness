@@ -20,6 +20,7 @@ import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedRetrieverRouteImport } from './routes/_authenticated/retriever'
 import { Route as AuthenticatedResearchRouteImport } from './routes/_authenticated/research'
+import { Route as AuthenticatedReliabilityRouteImport } from './routes/_authenticated/reliability'
 import { Route as AuthenticatedPromptsRouteImport } from './routes/_authenticated/prompts'
 import { Route as AuthenticatedProjectsRouteImport } from './routes/_authenticated/projects'
 import { Route as AuthenticatedPoliciesRouteImport } from './routes/_authenticated/policies'
@@ -102,6 +103,12 @@ const AuthenticatedResearchRoute = AuthenticatedResearchRouteImport.update({
   path: '/research',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedReliabilityRoute =
+  AuthenticatedReliabilityRouteImport.update({
+    id: '/reliability',
+    path: '/reliability',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPromptsRoute = AuthenticatedPromptsRouteImport.update({
   id: '/prompts',
   path: '/prompts',
@@ -275,6 +282,7 @@ export interface FileRoutesByFullPath {
   '/policies': typeof AuthenticatedPoliciesRoute
   '/projects': typeof AuthenticatedProjectsRoute
   '/prompts': typeof AuthenticatedPromptsRoute
+  '/reliability': typeof AuthenticatedReliabilityRoute
   '/research': typeof AuthenticatedResearchRoute
   '/retriever': typeof AuthenticatedRetrieverRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -313,6 +321,7 @@ export interface FileRoutesByTo {
   '/policies': typeof AuthenticatedPoliciesRoute
   '/projects': typeof AuthenticatedProjectsRoute
   '/prompts': typeof AuthenticatedPromptsRoute
+  '/reliability': typeof AuthenticatedReliabilityRoute
   '/research': typeof AuthenticatedResearchRoute
   '/retriever': typeof AuthenticatedRetrieverRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -354,6 +363,7 @@ export interface FileRoutesById {
   '/_authenticated/policies': typeof AuthenticatedPoliciesRoute
   '/_authenticated/projects': typeof AuthenticatedProjectsRoute
   '/_authenticated/prompts': typeof AuthenticatedPromptsRoute
+  '/_authenticated/reliability': typeof AuthenticatedReliabilityRoute
   '/_authenticated/research': typeof AuthenticatedResearchRoute
   '/_authenticated/retriever': typeof AuthenticatedRetrieverRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
@@ -396,6 +406,7 @@ export interface FileRouteTypes {
     | '/policies'
     | '/projects'
     | '/prompts'
+    | '/reliability'
     | '/research'
     | '/retriever'
     | '/settings'
@@ -434,6 +445,7 @@ export interface FileRouteTypes {
     | '/policies'
     | '/projects'
     | '/prompts'
+    | '/reliability'
     | '/research'
     | '/retriever'
     | '/settings'
@@ -474,6 +486,7 @@ export interface FileRouteTypes {
     | '/_authenticated/policies'
     | '/_authenticated/projects'
     | '/_authenticated/prompts'
+    | '/_authenticated/reliability'
     | '/_authenticated/research'
     | '/_authenticated/retriever'
     | '/_authenticated/settings'
@@ -568,6 +581,13 @@ declare module '@tanstack/react-router' {
       path: '/research'
       fullPath: '/research'
       preLoaderRoute: typeof AuthenticatedResearchRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/reliability': {
+      id: '/_authenticated/reliability'
+      path: '/reliability'
+      fullPath: '/reliability'
+      preLoaderRoute: typeof AuthenticatedReliabilityRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/prompts': {
@@ -790,6 +810,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPoliciesRoute: typeof AuthenticatedPoliciesRoute
   AuthenticatedProjectsRoute: typeof AuthenticatedProjectsRoute
   AuthenticatedPromptsRoute: typeof AuthenticatedPromptsRoute
+  AuthenticatedReliabilityRoute: typeof AuthenticatedReliabilityRoute
   AuthenticatedResearchRoute: typeof AuthenticatedResearchRoute
   AuthenticatedRetrieverRoute: typeof AuthenticatedRetrieverRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
@@ -827,6 +848,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPoliciesRoute: AuthenticatedPoliciesRoute,
   AuthenticatedProjectsRoute: AuthenticatedProjectsRoute,
   AuthenticatedPromptsRoute: AuthenticatedPromptsRoute,
+  AuthenticatedReliabilityRoute: AuthenticatedReliabilityRoute,
   AuthenticatedResearchRoute: AuthenticatedResearchRoute,
   AuthenticatedRetrieverRoute: AuthenticatedRetrieverRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,

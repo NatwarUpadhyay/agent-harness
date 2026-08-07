@@ -199,9 +199,12 @@ The fastest way to understand Harness is to use the preview:
 
 - **Phase 32 — Workflow topology audit.** A `/topology` page that runs the same graph + loop analysis used by the repo context tooling against your agent flows: cycle/self-loop detection, orphan and unreachable nodes, dead ends, high fan-out, an animated structural-health score, the highest-latency critical path, acknowledgeable findings and CSV export.
 
+- **Phase 33 — Reliability SLOs & error budgets.** A `/reliability` page with per-service objectives (availability and p95 latency), rolling 28-day error budgets, burn-rate math (`bad / requests ÷ allowed`), time-to-exhaustion forecasts, severity escalation at 2x / 6x burn, an error-budget burn-down chart against the ideal pace line, per-objective recommended actions, acknowledgement, and CSV export. Budget math lives in `src/lib/data/slo.ts` as pure functions with unit tests.
+
 ## Next up
 
-Server-side topology gates (block deploys with unresolved high findings) plus real server-side budget enforcement — blocking agent runs server-side when a team cap is exhausted, plus anomaly detection on burn-rate spikes.
+Wire SLO burn rates into deployments as automatic canary halts, then server-side topology gates (block deploys with unresolved high findings) and real server-side budget enforcement.
+
 
 
 

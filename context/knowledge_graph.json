@@ -14,8 +14,8 @@
       "id": "04c6e90faac2",
       "path": "README.md",
       "type": "md",
-      "size": 14186,
-      "tokens": 5659,
+      "size": 14632,
+      "tokens": 5830,
       "imports": [],
       "entities": [],
       "summary": "No summary"
@@ -354,8 +354,8 @@
       "id": "cb917d6ea6d1",
       "path": "src/routeTree.gen.ts",
       "type": "ts",
-      "size": 33014,
-      "tokens": 10581,
+      "size": 33959,
+      "tokens": 10875,
       "imports": [
         "./routes/__root",
         "./routes/reset-password",
@@ -369,6 +369,7 @@
         "./routes/_authenticated/settings",
         "./routes/_authenticated/retriever",
         "./routes/_authenticated/research",
+        "./routes/_authenticated/reliability",
         "./routes/_authenticated/prompts",
         "./routes/_authenticated/projects",
         "./routes/_authenticated/policies",
@@ -601,8 +602,8 @@
       "id": "3ca46b8444c1",
       "path": "src/components/layout/nav-config.ts",
       "type": "ts",
-      "size": 2993,
-      "tokens": 1141,
+      "size": 3081,
+      "tokens": 1173,
       "imports": [
         "lucide-react"
       ],
@@ -2583,6 +2584,53 @@
       ],
       "summary": "No summary"
     },
+    "c583c0ed2078": {
+      "id": "c583c0ed2078",
+      "path": "src/lib/data/slo.ts",
+      "type": "ts",
+      "size": 6370,
+      "tokens": 2485,
+      "imports": [],
+      "entities": [
+        {
+          "type": "function",
+          "name": "errorBudget"
+        },
+        {
+          "type": "function",
+          "name": "burnRate"
+        },
+        {
+          "type": "function",
+          "name": "severityFor"
+        },
+        {
+          "type": "function",
+          "name": "trailing"
+        },
+        {
+          "type": "function",
+          "name": "evaluateSlo"
+        },
+        {
+          "type": "function",
+          "name": "burnDown"
+        },
+        {
+          "type": "function",
+          "name": "pseudo"
+        },
+        {
+          "type": "function",
+          "name": "makeSamples"
+        },
+        {
+          "type": "function",
+          "name": "clamp"
+        }
+      ],
+      "summary": "No summary"
+    },
     "d905e48cd75b": {
       "id": "d905e48cd75b",
       "path": "src/lib/data/synthetic.ts",
@@ -3933,6 +3981,43 @@
       ],
       "summary": "// Editor buffer // Auto-select first prompt after mount // Load selected prompt into editor"
     },
+    "a471a38da82c": {
+      "id": "a471a38da82c",
+      "path": "src/routes/_authenticated/reliability.tsx",
+      "type": "tsx",
+      "size": 13970,
+      "tokens": 4632,
+      "imports": [
+        "@tanstack/react-router",
+        "react",
+        "framer-motion",
+        "lucide-react",
+        "recharts",
+        "@/components/ui/page-header",
+        "@/components/ui/metric-card",
+        "sonner",
+        "@/lib/data/slo"
+      ],
+      "entities": [
+        {
+          "type": "function",
+          "name": "ReliabilityPage"
+        },
+        {
+          "type": "function",
+          "name": "fmtHours"
+        },
+        {
+          "type": "function",
+          "name": "exportCsv"
+        },
+        {
+          "type": "function",
+          "name": "ack"
+        }
+      ],
+      "summary": "No summary"
+    },
     "f6397194991c": {
       "id": "f6397194991c",
       "path": "src/routes/_authenticated/research.tsx",
@@ -4336,6 +4421,19 @@
       "entities": [],
       "summary": "No summary"
     },
+    "6bb110d79401": {
+      "id": "6bb110d79401",
+      "path": "src/tests/data/slo.test.ts",
+      "type": "ts",
+      "size": 2962,
+      "tokens": 1058,
+      "imports": [
+        "vitest",
+        "@/lib/data/slo"
+      ],
+      "entities": [],
+      "summary": "No summary"
+    },
     "6c58ae6ccad7": {
       "id": "6c58ae6ccad7",
       "path": "src/types/index.ts",
@@ -4406,6 +4504,11 @@
     {
       "source": "cb917d6ea6d1",
       "target": "f6397194991c",
+      "type": "imports"
+    },
+    {
+      "source": "cb917d6ea6d1",
+      "target": "a471a38da82c",
       "type": "imports"
     },
     {
@@ -5494,6 +5597,21 @@
       "type": "imports"
     },
     {
+      "source": "a471a38da82c",
+      "target": "5046d19dbc59",
+      "type": "imports"
+    },
+    {
+      "source": "a471a38da82c",
+      "target": "41acedb62d9e",
+      "type": "imports"
+    },
+    {
+      "source": "a471a38da82c",
+      "target": "c583c0ed2078",
+      "type": "imports"
+    },
+    {
       "source": "f6397194991c",
       "target": "5046d19dbc59",
       "type": "imports"
@@ -5597,6 +5715,11 @@
       "source": "3540fb8a67e2",
       "target": "ba8f84e76c8f",
       "type": "imports"
+    },
+    {
+      "source": "6bb110d79401",
+      "target": "c583c0ed2078",
+      "type": "imports"
     }
   ],
   "clusters": {
@@ -5653,6 +5776,7 @@
       "a47caffdf054",
       "a8befb0d8b84",
       "a7edcc8e4d61",
+      "c583c0ed2078",
       "d905e48cd75b",
       "91935f3f54cc",
       "a3eb8a59be98",
@@ -5661,6 +5785,7 @@
       "5160c6f4268d",
       "95ac491ae90d",
       "bd0a7a1f9271",
+      "6bb110d79401",
       "6c58ae6ccad7"
     ],
     "dir_.lovable": [
@@ -5798,6 +5923,7 @@
       "7b6194180544",
       "ba8f84e76c8f",
       "3611d9be83ec",
+      "a471a38da82c",
       "f6397194991c",
       "97fac48a1137",
       "54360f3c995b",
@@ -5922,6 +6048,7 @@
       "a47caffdf054",
       "a8befb0d8b84",
       "a7edcc8e4d61",
+      "c583c0ed2078",
       "d905e48cd75b",
       "91935f3f54cc"
     ],
@@ -5963,6 +6090,7 @@
       "7b6194180544",
       "ba8f84e76c8f",
       "3611d9be83ec",
+      "a471a38da82c",
       "f6397194991c",
       "97fac48a1137",
       "54360f3c995b",
@@ -5990,6 +6118,9 @@
       "dfa5994c650c",
       "7cd4d456811b",
       "3540fb8a67e2"
+    ],
+    "dir_src/tests/data": [
+      "6bb110d79401"
     ],
     "dir_src/types": [
       "6c58ae6ccad7"
@@ -6025,7 +6156,7 @@
   ],
   "metadata": {
     "root": ".",
-    "total_files": 166,
-    "total_tokens": 323996
+    "total_files": 169,
+    "total_tokens": 332668
   }
 }
