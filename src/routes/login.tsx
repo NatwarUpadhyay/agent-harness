@@ -1,8 +1,9 @@
 import { createFileRoute, useNavigate, useSearch, Link } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
-import { Hexagon, Loader2, KeyRound, Mail } from "lucide-react";
+import { Hexagon, Loader2, KeyRound, Mail, Building2 } from "lucide-react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { loadEnterpriseAuth, isSsoEnforced, getPrimarySsoDomain } from "@/lib/data/enterprise-auth";
 
 const searchSchema = z.object({
   redirect: z.string().optional(),
