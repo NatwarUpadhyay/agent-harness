@@ -125,6 +125,44 @@ function LoginPage() {
     }
   };
 
+  const onSsoSignIn = async (domain?: string) => {
+    setError(null);
+    setInfo(null);
+    const target = domain || ssoDomain;
+    if (!target) {
+      setError("No SSO provider configured. Contact your admin.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithSSO({ domain: target });
+      if (error) throw error;
+      if (data?.url) {
+        window.location.assign(data.url);
+        return;
+      }
+      setInfo("SSO ready. Redirecting…");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "SSO sign-in failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Detect SSO-only domain while typing
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+    const cfg = loadEnterpriseAuth();
+    if (isSsoEnforced(cfg, value) && !ssoOnly) {
+      setSsoOnly(true);
+      setSsoDomain(getPrimarySsoDomain(cfg));
+    } else if (!cfg.passwordLoginEnabled && cfg.sso.length > 0) {
+      setSsoOnly(true);
+    } else if (!isSsoEnforced(cfg, value) && cfg.passwordLoginEnabled) {
+      setSsoOnly(false);
+    }
+  };
+
   const hasError = !!error;
   const inputCls = (bad: boolean) =>
     `w-full h-10 px-3 rounded-md bg-[var(--bg-elevated)] border text-[14px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] focus:border-[var(--accent)] transition-colors ${
