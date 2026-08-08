@@ -99,6 +99,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 - **Retriever, Models, Research, Deployments** — Interactive control surfaces with live metrics, filters, and persisted local state.
 - **Org control room & onboarding** — Guided org setup plus company-wide KPI strip, spend charts, and department roll-ups.
 - **Governance** — Role capability matrix, member invites, SSO and IP-allowlist controls.
+- **Enterprise SSO/SCIM** — SAML/OIDC admin console, SCIM directory-sync endpoints, domain-based enforcement, and Just-in-Time provisioning.
 - **Budgets & alerts** — Per-team spend caps with burn-down forecasting, plus rule-driven alerting and an incident triage console.
 - **Spend enforcement** — Real-time budget breach enforcement (notify / throttle / block) with a run simulator, z-score burn-rate anomaly detection, a live enforcement log, and CSV export.
 - **Integrations & library** — Vendor capability matrix with compatibility checks, and a community library for cloning public workflows.
