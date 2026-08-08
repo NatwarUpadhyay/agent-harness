@@ -289,7 +289,7 @@ function LoginPage() {
                       : "Email me a sign-in link"}
           </button>
 
-          {mode === "otp" && codeSent && (
+          {!ssoOnly && mode === "otp" && codeSent && (
             <button
               type="button"
               onClick={() => {
@@ -304,52 +304,73 @@ function LoginPage() {
             </button>
           )}
 
-          <div className="flex items-center justify-between pt-1">
-            <button
-              type="button"
-              onClick={onForgot}
-              disabled={loading}
-              className="text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-            >
-              Forgot password?
-            </button>
+          {!ssoOnly && (
+            <div className="flex items-center justify-between pt-1">
+              <button
+                type="button"
+                onClick={onForgot}
+                disabled={loading}
+                className="text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+              >
+                Forgot password?
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMode(mode === "signin" ? "signup" : "signin");
+                  setError(null);
+                  setInfo(null);
+                }}
+                className="text-[12px] text-[var(--text-accent)] hover:text-[var(--accent-hover)] transition-colors"
+              >
+                {mode === "signup" ? "Have an account? Sign in" : "Create account"}
+              </button>
+            </div>
+          )}
+        </form>
+
+        {!ssoOnly && (
+          <div className="mt-6 pt-5 border-t border-[var(--border-subtle)]">
             <button
               type="button"
               onClick={() => {
-                setMode(mode === "signin" ? "signup" : "signin");
+                setMode(mode === "otp" ? "signin" : "otp");
+                setCodeSent(false);
+                setCode("");
                 setError(null);
                 setInfo(null);
               }}
-              className="text-[12px] text-[var(--text-accent)] hover:text-[var(--accent-hover)] transition-colors"
+              className="w-full h-10 rounded-md border border-[var(--border-default)] bg-[var(--bg-elevated)] text-[13px] font-medium text-[var(--text-primary)] hover:border-[var(--accent)] flex items-center justify-center gap-2 transition-colors"
             >
-              {mode === "signup" ? "Have an account? Sign in" : "Create account"}
+              {mode === "otp" ? (
+                <>
+                  <KeyRound className="h-4 w-4" /> Use email + password instead
+                </>
+              ) : (
+                <>
+                  <Mail className="h-4 w-4" /> Continue with an email sign-in link
+                </>
+              )}
             </button>
           </div>
-        </form>
+        )}
 
-        <div className="mt-6 pt-5 border-t border-[var(--border-subtle)]">
-          <button
-            type="button"
-            onClick={() => {
-              setMode(mode === "otp" ? "signin" : "otp");
-              setCodeSent(false);
-              setCode("");
-              setError(null);
-              setInfo(null);
-            }}
-            className="w-full h-10 rounded-md border border-[var(--border-default)] bg-[var(--bg-elevated)] text-[13px] font-medium text-[var(--text-primary)] hover:border-[var(--accent)] flex items-center justify-center gap-2 transition-colors"
-          >
-            {mode === "otp" ? (
-              <>
-                <KeyRound className="h-4 w-4" /> Use email + password instead
-              </>
-            ) : (
-              <>
-                <Mail className="h-4 w-4" /> Continue with an email sign-in link
-              </>
-            )}
-          </button>
-        </div>
+        {ssoOnly && (
+          <div className="mt-6 pt-5 border-t border-[var(--border-subtle)] text-center">
+            <p className="text-[12px] text-[var(--text-secondary)]">
+              SSO is enforced for {ssoDomain || "your organization"}.{" "}
+              {loadEnterpriseAuth().passwordLoginEnabled && (
+                <button
+                  type="button"
+                  onClick={() => setSsoOnly(false)}
+                  className="text-[var(--text-accent)] hover:underline"
+                >
+                  Use admin password
+                </button>
+              )}
+            </p>
+          </div>
+        )}
 
         <div className="mt-6 pt-4 border-t border-[var(--border-subtle)] text-center">
           <Link to="/" className="text-[11px] text-[var(--text-muted)] hover:text-[var(--text-secondary)]">
