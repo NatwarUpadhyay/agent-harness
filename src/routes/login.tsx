@@ -211,7 +211,7 @@ function LoginPage() {
               autoComplete="email"
               required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => handleEmailChange(e.target.value)}
               disabled={loading || (mode === "otp" && codeSent)}
               className={inputCls(hasError)}
               placeholder="you@company.com"
