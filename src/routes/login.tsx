@@ -169,14 +169,16 @@ function LoginPage() {
       bad ? "border-[var(--danger)]" : "border-[var(--border-default)]"
     }`;
 
-  const title =
-    mode === "signin"
+  const title = ssoOnly
+    ? "Sign in with SSO"
+    : mode === "signin"
       ? "Sign in to your workspace"
       : mode === "signup"
         ? "Create your account"
         : "Sign in with an email code";
-  const subtitle =
-    mode === "signin"
+  const subtitle = ssoOnly
+    ? "Your organization requires single sign-on through your identity provider."
+    : mode === "signin"
       ? "Enter your email and password to continue."
       : mode === "signup"
         ? "Sign up with email and password to get started."
