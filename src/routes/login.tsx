@@ -29,6 +29,14 @@ function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [ssoDomain, setSsoDomain] = useState<string | undefined>();
+  const [ssoOnly, setSsoOnly] = useState(false);
+
+  useEffect(() => {
+    const cfg = loadEnterpriseAuth();
+    setSsoDomain(getPrimarySsoDomain(cfg));
+    setSsoOnly(!cfg.passwordLoginEnabled && cfg.sso.length > 0);
+  }, []);
 
   // If a recovery link lands here (hash or ?code=), forward it to /reset-password.
   useEffect(() => {
