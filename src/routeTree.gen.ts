@@ -49,6 +49,9 @@ import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedApiKeysRouteImport } from './routes/_authenticated/api-keys'
 import { Route as AuthenticatedAlertsRouteImport } from './routes/_authenticated/alerts'
 import { Route as AuthenticatedAgentsRouteImport } from './routes/_authenticated/agents'
+import { Route as ApiPublicScimV2RouteImport } from './routes/api/public/scim/v2'
+import { Route as ApiPublicScimV2UsersRouteImport } from './routes/api/public/scim/v2/Users'
+import { Route as ApiPublicScimV2UsersIdRouteImport } from './routes/api/public/scim/v2/Users/$id'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -257,6 +260,21 @@ const AuthenticatedAgentsRoute = AuthenticatedAgentsRouteImport.update({
   path: '/agents',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicScimV2Route = ApiPublicScimV2RouteImport.update({
+  id: '/api/public/scim/v2',
+  path: '/api/public/scim/v2',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicScimV2UsersRoute = ApiPublicScimV2UsersRouteImport.update({
+  id: '/Users',
+  path: '/Users',
+  getParentRoute: () => ApiPublicScimV2Route,
+} as any)
+const ApiPublicScimV2UsersIdRoute = ApiPublicScimV2UsersIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiPublicScimV2UsersRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -298,6 +316,9 @@ export interface FileRoutesByFullPath {
   '/topology': typeof AuthenticatedTopologyRoute
   '/usage': typeof AuthenticatedUsageRoute
   '/share/$id': typeof ShareIdRoute
+  '/api/public/scim/v2': typeof ApiPublicScimV2RouteWithChildren
+  '/api/public/scim/v2/Users': typeof ApiPublicScimV2UsersRouteWithChildren
+  '/api/public/scim/v2/Users/$id': typeof ApiPublicScimV2UsersIdRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -339,6 +360,9 @@ export interface FileRoutesByTo {
   '/usage': typeof AuthenticatedUsageRoute
   '/share/$id': typeof ShareIdRoute
   '/': typeof AuthenticatedIndexRoute
+  '/api/public/scim/v2': typeof ApiPublicScimV2RouteWithChildren
+  '/api/public/scim/v2/Users': typeof ApiPublicScimV2UsersRouteWithChildren
+  '/api/public/scim/v2/Users/$id': typeof ApiPublicScimV2UsersIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -382,6 +406,9 @@ export interface FileRoutesById {
   '/_authenticated/usage': typeof AuthenticatedUsageRoute
   '/share/$id': typeof ShareIdRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/api/public/scim/v2': typeof ApiPublicScimV2RouteWithChildren
+  '/api/public/scim/v2/Users': typeof ApiPublicScimV2UsersRouteWithChildren
+  '/api/public/scim/v2/Users/$id': typeof ApiPublicScimV2UsersIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -425,6 +452,9 @@ export interface FileRouteTypes {
     | '/topology'
     | '/usage'
     | '/share/$id'
+    | '/api/public/scim/v2'
+    | '/api/public/scim/v2/Users'
+    | '/api/public/scim/v2/Users/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -466,6 +496,9 @@ export interface FileRouteTypes {
     | '/usage'
     | '/share/$id'
     | '/'
+    | '/api/public/scim/v2'
+    | '/api/public/scim/v2/Users'
+    | '/api/public/scim/v2/Users/$id'
   id:
     | '__root__'
     | '/_authenticated'
@@ -508,6 +541,9 @@ export interface FileRouteTypes {
     | '/_authenticated/usage'
     | '/share/$id'
     | '/_authenticated/'
+    | '/api/public/scim/v2'
+    | '/api/public/scim/v2/Users'
+    | '/api/public/scim/v2/Users/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -515,6 +551,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ShareIdRoute: typeof ShareIdRoute
+  ApiPublicScimV2Route: typeof ApiPublicScimV2RouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -799,6 +836,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAgentsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/scim/v2': {
+      id: '/api/public/scim/v2'
+      path: '/api/public/scim/v2'
+      fullPath: '/api/public/scim/v2'
+      preLoaderRoute: typeof ApiPublicScimV2RouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/scim/v2/Users': {
+      id: '/api/public/scim/v2/Users'
+      path: '/Users'
+      fullPath: '/api/public/scim/v2/Users'
+      preLoaderRoute: typeof ApiPublicScimV2UsersRouteImport
+      parentRoute: typeof ApiPublicScimV2Route
+    }
+    '/api/public/scim/v2/Users/$id': {
+      id: '/api/public/scim/v2/Users/$id'
+      path: '/$id'
+      fullPath: '/api/public/scim/v2/Users/$id'
+      preLoaderRoute: typeof ApiPublicScimV2UsersIdRouteImport
+      parentRoute: typeof ApiPublicScimV2UsersRoute
+    }
   }
 }
 
@@ -883,11 +941,35 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface ApiPublicScimV2UsersRouteChildren {
+  ApiPublicScimV2UsersIdRoute: typeof ApiPublicScimV2UsersIdRoute
+}
+
+const ApiPublicScimV2UsersRouteChildren: ApiPublicScimV2UsersRouteChildren = {
+  ApiPublicScimV2UsersIdRoute: ApiPublicScimV2UsersIdRoute,
+}
+
+const ApiPublicScimV2UsersRouteWithChildren =
+  ApiPublicScimV2UsersRoute._addFileChildren(ApiPublicScimV2UsersRouteChildren)
+
+interface ApiPublicScimV2RouteChildren {
+  ApiPublicScimV2UsersRoute: typeof ApiPublicScimV2UsersRouteWithChildren
+}
+
+const ApiPublicScimV2RouteChildren: ApiPublicScimV2RouteChildren = {
+  ApiPublicScimV2UsersRoute: ApiPublicScimV2UsersRouteWithChildren,
+}
+
+const ApiPublicScimV2RouteWithChildren = ApiPublicScimV2Route._addFileChildren(
+  ApiPublicScimV2RouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ShareIdRoute: ShareIdRoute,
+  ApiPublicScimV2Route: ApiPublicScimV2RouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

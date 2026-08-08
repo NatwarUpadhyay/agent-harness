@@ -1,15 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { motion } from "framer-motion";
 import {
-  KeyRound, Users, ShieldCheck, Globe, Copy, Check, RefreshCw, ExternalLink, TestTube, Lock, Unlock, Building2,
+  KeyRound, Users, ShieldCheck, Globe, Copy, Check, RefreshCw, ExternalLink, TestTube, Lock, Unlock, Building2, Cloud,
 } from "lucide-react";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { toast } from "sonner";
 import {
   type EnterpriseAuth, type SsoProvider, type ScimConfig,
-  loadEnterpriseAuth, saveEnterpriseAuth, defaultSsoProvider, makeScimEndpoint, isSsoEnforced,
+  loadEnterpriseAuth, saveEnterpriseAuth as saveEnterpriseAuthLocal, defaultSsoProvider, makeScimEndpoint, isSsoEnforced,
 } from "@/lib/data/enterprise-auth";
+import { getEnterpriseAuth, saveEnterpriseAuth } from "@/lib/data/enterprise-auth.functions";
 
 const PROVIDERS = [
   { id: "generic", label: "Generic SAML 2.0" },
@@ -74,10 +77,40 @@ function EnterpriseAuthPage() {
   const [draft, setDraft] = useState<SsoProvider>(() => defaultSsoProvider());
   const [copied, setCopied] = useState<string | null>(null);
   const [testing, setTesting] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [baseUrl, setBaseUrl] = useState(() => (typeof window !== "undefined" ? window.location.origin : "https://harness-flow-control.lovable.app"));
+  const queryClient = useQueryClient();
+  const fetchConfig = useServerFn(getEnterpriseAuth);
+  const saveConfig = useServerFn(saveEnterpriseAuth);
+
+  const { data: serverConfig } = useQuery({
+    queryKey: ["enterprise-auth"],
+    queryFn: () => fetchConfig(),
+    staleTime: 60 * 1000,
+  });
 
   useEffect(() => { setHydrated(true); }, []);
-  useEffect(() => { if (hydrated) saveEnterpriseAuth(config); }, [config, hydrated]);
+  useEffect(() => {
+    if (!serverConfig) return;
+    if (JSON.stringify(serverConfig) !== JSON.stringify(config)) {
+      setConfig(serverConfig);
+      saveEnterpriseAuthLocal(serverConfig);
+    }
+  }, [serverConfig]);
+  useEffect(() => {
+    if (!hydrated) return;
+    const timer = setTimeout(() => {
+      setSaving(true);
+      saveConfig({ data: config })
+        .then(() => {
+          queryClient.setQueryData(["enterprise-auth"], config);
+        })
+        .catch((err) => toast.error(err instanceof Error ? err.message : "Could not save settings"))
+        .finally(() => setSaving(false));
+      saveEnterpriseAuthLocal(config);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [config, hydrated, saveConfig, queryClient]);
 
   const active = config.sso[0];
   const scimEndpoint = useMemo(() => makeScimEndpoint(baseUrl), [baseUrl]);
@@ -168,12 +201,19 @@ function EnterpriseAuthPage() {
         title="Enterprise auth"
         subtitle="SAML single sign-on, SCIM provisioning, and just-in-time access controls"
         actions={
-          <Link
-            to="/governance"
-            className="inline-flex items-center gap-1.5 h-9 px-3 rounded-md border border-[var(--border-default)] text-[13px] hover:border-[var(--border-strong)]"
-          >
-            <Building2 className="h-3.5 w-3.5" /> Governance
-          </Link>
+          <div className="flex items-center gap-3">
+            {saving && (
+              <span className="text-[11px] text-[var(--text-secondary)] inline-flex items-center gap-1.5">
+                <Cloud className="h-3 w-3 animate-pulse" /> Syncing…
+              </span>
+            )}
+            <Link
+              to="/governance"
+              className="inline-flex items-center gap-1.5 h-9 px-3 rounded-md border border-[var(--border-default)] text-[13px] hover:border-[var(--border-strong)]"
+            >
+              <Building2 className="h-3.5 w-3.5" /> Governance
+            </Link>
+          </div>
         }
       />
 

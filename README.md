@@ -72,7 +72,8 @@ It is built for teams who want a shared visual language for AI systems before wr
 | **32** | **Workflow topology audit — cycle detection, orphans, critical path** | **Shipped** |
 | **33** | **Reliability SLOs & error budgets — per-service burn-down, time-to-exhaustion** | **Shipped** |
 | **34** | **Enterprise SSO/SCIM — SAML/OIDC admin console, directory sync, domain enforcement** | **Shipped** |
-| **Next** | Server-persisted org data and Lovable Cloud integration for live SCIM provisioning | Planned |
+| **35** | **Server-persisted org data + live SCIM provisioning endpoint** | **Shipped** |
+| **Next** | Production execution engine — run harness workflows against live LLMs and tools | Planned |
 
 
 ---
@@ -99,7 +100,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 - **Retriever, Models, Research, Deployments** — Interactive control surfaces with live metrics, filters, and persisted local state.
 - **Org control room & onboarding** — Guided org setup plus company-wide KPI strip, spend charts, and department roll-ups.
 - **Governance** — Role capability matrix, member invites, SSO and IP-allowlist controls.
-- **Enterprise SSO/SCIM** — SAML/OIDC admin console, SCIM directory-sync endpoints, domain-based enforcement, and Just-in-Time provisioning.
+- **Enterprise SSO/SCIM** — SAML/OIDC admin console with domain enforcement, server-persisted organization settings, and a live SCIM 2.0 `/api/public/scim/v2` provisioning endpoint for Okta, Entra, and Google Workspace directories.
 - **Budgets & alerts** — Per-team spend caps with burn-down forecasting, plus rule-driven alerting and an incident triage console.
 - **Spend enforcement** — Real-time budget breach enforcement (notify / throttle / block) with a run simulator, z-score burn-rate anomaly detection, a live enforcement log, and CSV export.
 - **Integrations & library** — Vendor capability matrix with compatibility checks, and a community library for cloning public workflows.
@@ -205,9 +206,11 @@ The fastest way to understand Harness is to use the preview:
 
 - **Phase 33 — Reliability SLOs & error budgets.** A `/reliability` page with per-service objectives (availability and p95 latency), rolling 28-day error budgets, burn-rate math (`bad / requests ÷ allowed`), time-to-exhaustion forecasts, severity escalation at 2x / 6x burn, an error-budget burn-down chart against the ideal pace line, per-objective recommended actions, acknowledgement, and CSV export. Budget math lives in `src/lib/data/slo.ts` as pure functions with unit tests.
 
+- **Phase 35 — Server-persisted org data + live SCIM provisioning.** Enterprise Auth settings now sync to Lovable Cloud (`org_settings` table) with RLS, so configuration survives across devices and sessions. A public SCIM 2.0 endpoint is live at `/api/public/scim/v2` (Users CRUD, ServiceProviderConfig) for Okta/Entra/Google Workspace directory sync, backed by the same org settings row.
+
 ## Next up
 
-Wire SLO burn rates into deployments as automatic canary halts, then server-side topology gates (block deploys with unresolved high findings) and real server-side budget enforcement.
+Wire the harness canvas into a real execution engine: run nodes against live LLM/tool providers, stream results back to the canvas, and persist execution traces so teams can move from simulation to production in one click.
 
 
 
