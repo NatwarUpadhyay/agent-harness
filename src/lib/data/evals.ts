@@ -78,7 +78,7 @@ function buildRun(i: number, opts?: Partial<EvalRun>): EvalRun {
   const startedAt = new Date(Date.now() - i * 1000 * 60 * 60 * 5).toISOString();
   return {
     id: `run_${(i + 1).toString().padStart(4, "0")}`,
-    name: `Nightly · ${new Date(startedAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}`,
+    name: `Nightly ${(i + 1).toString().padStart(2, "0")} · ${new Date(startedAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}`,
     agentId: agents[i % agents.length].id,
     datasetId: datasets[i % datasets.length].id,
     rubricIds,
