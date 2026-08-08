@@ -262,26 +262,31 @@ function LoginPage() {
           {info && !error && <p className="text-[12px] text-[var(--text-accent)]">{info}</p>}
 
           <button
-            type="submit"
+            type={ssoOnly ? "button" : "submit"}
+            onClick={ssoOnly ? () => onSsoSignIn() : undefined}
             disabled={loading}
             className="w-full h-10 rounded-md bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--bg-base)] text-[14px] font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-            {mode === "signin"
+            {ssoOnly
               ? loading
-                ? "Signing in…"
-                : "Sign in"
-              : mode === "signup"
+                ? "Redirecting to SSO…"
+                : "Sign in with SSO"
+              : mode === "signin"
                 ? loading
-                  ? "Creating account…"
-                  : "Sign up"
-                : codeSent
+                  ? "Signing in…"
+                  : "Sign in"
+                : mode === "signup"
                   ? loading
-                    ? "Verifying…"
-                    : "Verify code"
-                  : loading
-                    ? "Sending code…"
-                    : "Email me a sign-in link"}
+                    ? "Creating account…"
+                    : "Sign up"
+                  : codeSent
+                    ? loading
+                      ? "Verifying…"
+                      : "Verify code"
+                    : loading
+                      ? "Sending code…"
+                      : "Email me a sign-in link"}
           </button>
 
           {mode === "otp" && codeSent && (
