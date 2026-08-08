@@ -268,6 +268,7 @@ function LoginPage() {
             className="w-full h-10 rounded-md bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-[var(--bg-base)] text-[14px] font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+            {!loading && ssoOnly && <Building2 className="h-4 w-4" />}
             {ssoOnly
               ? loading
                 ? "Redirecting to SSO…"
