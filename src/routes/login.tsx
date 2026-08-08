@@ -220,7 +220,7 @@ function LoginPage() {
             />
           </div>
 
-          {mode !== "otp" && (
+          {!ssoOnly && mode !== "otp" && (
             <div>
               <label className="block text-[12px] font-medium text-[var(--text-secondary)] mb-1.5">
                 Password
