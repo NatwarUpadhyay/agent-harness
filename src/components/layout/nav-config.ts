@@ -83,6 +83,7 @@ export const navGroups: NavGroup[] = [
     label: "System",
     items: [
       { to: "/governance", label: "Governance", icon: Scale },
+      { to: "/enterprise-auth", label: "Enterprise auth", icon: KeyRound },
       { to: "/api-keys", label: "API Keys", icon: KeyRound },
       { to: "/settings", label: "Settings", icon: Settings },
     ],

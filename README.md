@@ -69,7 +69,10 @@ It is built for teams who want a shared visual language for AI systems before wr
 | **29** | **Org control room + onboarding wizard — company-wide cost, latency, department roll-ups** | **Shipped** |
 | 30 | Regression test suite (Vitest + Testing Library) across canvas, dashboard, auth | Done |
 | **31** | **Spend enforcement — real-time budget breach enforcement & burn-rate anomaly detection** | **Shipped** |
-| **Next** | Enterprise auth (SSO/SCIM) and server-persisted org data behind Lovable Cloud | Planned |
+| **32** | **Workflow topology audit — cycle detection, orphans, critical path** | **Shipped** |
+| **33** | **Reliability SLOs & error budgets — per-service burn-down, time-to-exhaustion** | **Shipped** |
+| **34** | **Enterprise SSO/SCIM — SAML/OIDC admin console, directory sync, domain enforcement** | **Shipped** |
+| **Next** | Server-persisted org data and Lovable Cloud integration for live SCIM provisioning | Planned |
 
 
 ---
@@ -96,6 +99,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 - **Retriever, Models, Research, Deployments** — Interactive control surfaces with live metrics, filters, and persisted local state.
 - **Org control room & onboarding** — Guided org setup plus company-wide KPI strip, spend charts, and department roll-ups.
 - **Governance** — Role capability matrix, member invites, SSO and IP-allowlist controls.
+- **Enterprise SSO/SCIM** — SAML/OIDC admin console, SCIM directory-sync endpoints, domain-based enforcement, and Just-in-Time provisioning.
 - **Budgets & alerts** — Per-team spend caps with burn-down forecasting, plus rule-driven alerting and an incident triage console.
 - **Spend enforcement** — Real-time budget breach enforcement (notify / throttle / block) with a run simulator, z-score burn-rate anomaly detection, a live enforcement log, and CSV export.
 - **Integrations & library** — Vendor capability matrix with compatibility checks, and a community library for cloning public workflows.
