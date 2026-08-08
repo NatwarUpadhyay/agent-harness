@@ -38,6 +38,7 @@ import { Route as AuthenticatedHarnessRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedGovernanceRouteImport } from './routes/_authenticated/governance'
 import { Route as AuthenticatedExperimentsRouteImport } from './routes/_authenticated/experiments'
 import { Route as AuthenticatedEvaluationsRouteImport } from './routes/_authenticated/evaluations'
+import { Route as AuthenticatedEnterpriseAuthRouteImport } from './routes/_authenticated/enterprise-auth'
 import { Route as AuthenticatedEnforcementRouteImport } from './routes/_authenticated/enforcement'
 import { Route as AuthenticatedDeploymentsRouteImport } from './routes/_authenticated/deployments'
 import { Route as AuthenticatedDatasetsRouteImport } from './routes/_authenticated/datasets'
@@ -198,6 +199,12 @@ const AuthenticatedEvaluationsRoute =
     path: '/evaluations',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedEnterpriseAuthRoute =
+  AuthenticatedEnterpriseAuthRouteImport.update({
+    id: '/enterprise-auth',
+    path: '/enterprise-auth',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedEnforcementRoute =
   AuthenticatedEnforcementRouteImport.update({
     id: '/enforcement',
@@ -265,6 +272,7 @@ export interface FileRoutesByFullPath {
   '/datasets': typeof AuthenticatedDatasetsRoute
   '/deployments': typeof AuthenticatedDeploymentsRoute
   '/enforcement': typeof AuthenticatedEnforcementRoute
+  '/enterprise-auth': typeof AuthenticatedEnterpriseAuthRoute
   '/evaluations': typeof AuthenticatedEvaluationsRoute
   '/experiments': typeof AuthenticatedExperimentsRoute
   '/governance': typeof AuthenticatedGovernanceRoute
@@ -304,6 +312,7 @@ export interface FileRoutesByTo {
   '/datasets': typeof AuthenticatedDatasetsRoute
   '/deployments': typeof AuthenticatedDeploymentsRoute
   '/enforcement': typeof AuthenticatedEnforcementRoute
+  '/enterprise-auth': typeof AuthenticatedEnterpriseAuthRoute
   '/evaluations': typeof AuthenticatedEvaluationsRoute
   '/experiments': typeof AuthenticatedExperimentsRoute
   '/governance': typeof AuthenticatedGovernanceRoute
@@ -346,6 +355,7 @@ export interface FileRoutesById {
   '/_authenticated/datasets': typeof AuthenticatedDatasetsRoute
   '/_authenticated/deployments': typeof AuthenticatedDeploymentsRoute
   '/_authenticated/enforcement': typeof AuthenticatedEnforcementRoute
+  '/_authenticated/enterprise-auth': typeof AuthenticatedEnterpriseAuthRoute
   '/_authenticated/evaluations': typeof AuthenticatedEvaluationsRoute
   '/_authenticated/experiments': typeof AuthenticatedExperimentsRoute
   '/_authenticated/governance': typeof AuthenticatedGovernanceRoute
@@ -389,6 +399,7 @@ export interface FileRouteTypes {
     | '/datasets'
     | '/deployments'
     | '/enforcement'
+    | '/enterprise-auth'
     | '/evaluations'
     | '/experiments'
     | '/governance'
@@ -428,6 +439,7 @@ export interface FileRouteTypes {
     | '/datasets'
     | '/deployments'
     | '/enforcement'
+    | '/enterprise-auth'
     | '/evaluations'
     | '/experiments'
     | '/governance'
@@ -469,6 +481,7 @@ export interface FileRouteTypes {
     | '/_authenticated/datasets'
     | '/_authenticated/deployments'
     | '/_authenticated/enforcement'
+    | '/_authenticated/enterprise-auth'
     | '/_authenticated/evaluations'
     | '/_authenticated/experiments'
     | '/_authenticated/governance'
@@ -709,6 +722,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEvaluationsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/enterprise-auth': {
+      id: '/_authenticated/enterprise-auth'
+      path: '/enterprise-auth'
+      fullPath: '/enterprise-auth'
+      preLoaderRoute: typeof AuthenticatedEnterpriseAuthRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/enforcement': {
       id: '/_authenticated/enforcement'
       path: '/enforcement'
@@ -793,6 +813,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDatasetsRoute: typeof AuthenticatedDatasetsRoute
   AuthenticatedDeploymentsRoute: typeof AuthenticatedDeploymentsRoute
   AuthenticatedEnforcementRoute: typeof AuthenticatedEnforcementRoute
+  AuthenticatedEnterpriseAuthRoute: typeof AuthenticatedEnterpriseAuthRoute
   AuthenticatedEvaluationsRoute: typeof AuthenticatedEvaluationsRoute
   AuthenticatedExperimentsRoute: typeof AuthenticatedExperimentsRoute
   AuthenticatedGovernanceRoute: typeof AuthenticatedGovernanceRoute
@@ -831,6 +852,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDatasetsRoute: AuthenticatedDatasetsRoute,
   AuthenticatedDeploymentsRoute: AuthenticatedDeploymentsRoute,
   AuthenticatedEnforcementRoute: AuthenticatedEnforcementRoute,
+  AuthenticatedEnterpriseAuthRoute: AuthenticatedEnterpriseAuthRoute,
   AuthenticatedEvaluationsRoute: AuthenticatedEvaluationsRoute,
   AuthenticatedExperimentsRoute: AuthenticatedExperimentsRoute,
   AuthenticatedGovernanceRoute: AuthenticatedGovernanceRoute,
@@ -870,13 +892,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
