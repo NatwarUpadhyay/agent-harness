@@ -239,7 +239,7 @@ function LoginPage() {
             </div>
           )}
 
-          {mode === "otp" && codeSent && (
+          {!ssoOnly && mode === "otp" && codeSent && (
             <div>
               <label className="block text-[12px] font-medium text-[var(--text-secondary)] mb-1.5">
                 6-digit code (optional)
