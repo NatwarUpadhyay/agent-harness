@@ -18,6 +18,7 @@ import { Route as AuthenticatedUsageRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedTopologyRouteImport } from './routes/_authenticated/topology'
 import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedRunsRouteImport } from './routes/_authenticated/runs'
 import { Route as AuthenticatedRetrieverRouteImport } from './routes/_authenticated/retriever'
 import { Route as AuthenticatedResearchRouteImport } from './routes/_authenticated/research'
 import { Route as AuthenticatedReliabilityRouteImport } from './routes/_authenticated/reliability'
@@ -95,6 +96,11 @@ const AuthenticatedToolsRoute = AuthenticatedToolsRouteImport.update({
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRunsRoute = AuthenticatedRunsRouteImport.update({
+  id: '/runs',
+  path: '/runs',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedRetrieverRoute = AuthenticatedRetrieverRouteImport.update({
@@ -311,6 +317,7 @@ export interface FileRoutesByFullPath {
   '/reliability': typeof AuthenticatedReliabilityRoute
   '/research': typeof AuthenticatedResearchRoute
   '/retriever': typeof AuthenticatedRetrieverRoute
+  '/runs': typeof AuthenticatedRunsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/tools': typeof AuthenticatedToolsRoute
   '/topology': typeof AuthenticatedTopologyRoute
@@ -354,6 +361,7 @@ export interface FileRoutesByTo {
   '/reliability': typeof AuthenticatedReliabilityRoute
   '/research': typeof AuthenticatedResearchRoute
   '/retriever': typeof AuthenticatedRetrieverRoute
+  '/runs': typeof AuthenticatedRunsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/tools': typeof AuthenticatedToolsRoute
   '/topology': typeof AuthenticatedTopologyRoute
@@ -400,6 +408,7 @@ export interface FileRoutesById {
   '/_authenticated/reliability': typeof AuthenticatedReliabilityRoute
   '/_authenticated/research': typeof AuthenticatedResearchRoute
   '/_authenticated/retriever': typeof AuthenticatedRetrieverRoute
+  '/_authenticated/runs': typeof AuthenticatedRunsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/tools': typeof AuthenticatedToolsRoute
   '/_authenticated/topology': typeof AuthenticatedTopologyRoute
@@ -447,6 +456,7 @@ export interface FileRouteTypes {
     | '/reliability'
     | '/research'
     | '/retriever'
+    | '/runs'
     | '/settings'
     | '/tools'
     | '/topology'
@@ -490,6 +500,7 @@ export interface FileRouteTypes {
     | '/reliability'
     | '/research'
     | '/retriever'
+    | '/runs'
     | '/settings'
     | '/tools'
     | '/topology'
@@ -535,6 +546,7 @@ export interface FileRouteTypes {
     | '/_authenticated/reliability'
     | '/_authenticated/research'
     | '/_authenticated/retriever'
+    | '/_authenticated/runs'
     | '/_authenticated/settings'
     | '/_authenticated/tools'
     | '/_authenticated/topology'
@@ -617,6 +629,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/runs': {
+      id: '/_authenticated/runs'
+      path: '/runs'
+      fullPath: '/runs'
+      preLoaderRoute: typeof AuthenticatedRunsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/retriever': {
@@ -892,6 +911,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedReliabilityRoute: typeof AuthenticatedReliabilityRoute
   AuthenticatedResearchRoute: typeof AuthenticatedResearchRoute
   AuthenticatedRetrieverRoute: typeof AuthenticatedRetrieverRoute
+  AuthenticatedRunsRoute: typeof AuthenticatedRunsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedToolsRoute: typeof AuthenticatedToolsRoute
   AuthenticatedTopologyRoute: typeof AuthenticatedTopologyRoute
@@ -931,6 +951,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedReliabilityRoute: AuthenticatedReliabilityRoute,
   AuthenticatedResearchRoute: AuthenticatedResearchRoute,
   AuthenticatedRetrieverRoute: AuthenticatedRetrieverRoute,
+  AuthenticatedRunsRoute: AuthenticatedRunsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedToolsRoute: AuthenticatedToolsRoute,
   AuthenticatedTopologyRoute: AuthenticatedTopologyRoute,
@@ -974,13 +995,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
