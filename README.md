@@ -208,9 +208,11 @@ The fastest way to understand Harness is to use the preview:
 
 - **Phase 35 — Server-persisted org data + live SCIM provisioning.** Enterprise Auth settings now sync to Lovable Cloud (`org_settings` table) with RLS, so configuration survives across devices and sessions. A public SCIM 2.0 endpoint is live at `/api/public/scim/v2` (Users CRUD, ServiceProviderConfig) for Okta/Entra/Google Workspace directory sync, backed by the same org settings row.
 
+- **Phase 36 — Production execution engine.** A `/runs` page that executes any saved harness workflow against live models through the Lovable AI gateway: nodes run in topological order, each stage's system prompt is derived from its node type, and every step's output, tokens, latency and cost are persisted to a `workflow_runs` table with RLS. Failed nodes short-circuit downstream stages (marked `skipped`), and the history view expands into a full per-node trace with the final output.
+
 ## Next up
 
-Wire the harness canvas into a real execution engine: run nodes against live LLM/tool providers, stream results back to the canvas, and persist execution traces so teams can move from simulation to production in one click.
+Scheduled and triggered runs: cron schedules, webhook triggers and alert hooks on top of the execution engine, so workflows fire without a human in the loop.
 
 
 
