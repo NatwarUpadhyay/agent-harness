@@ -8,7 +8,6 @@ import {
   Play, Loader2, ChevronRight, Trash2, Coins, Timer, Cpu, CheckCircle2, XCircle, MinusCircle,
 } from "lucide-react";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
-import { MetricCard } from "@/components/ui/metric-card";
 import { useWorkflows } from "@/lib/hooks/use-entities";
 import { listRuns, runWorkflow, deleteRun } from "@/lib/data/runs.functions";
 
