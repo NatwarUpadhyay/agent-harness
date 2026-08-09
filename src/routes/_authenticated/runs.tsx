@@ -127,10 +127,26 @@ function RunsView() {
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <MetricCard label="Runs (last 25)" value={String(stats.total)} icon={Play} />
-        <MetricCard label="Success rate" value={`${stats.successRate}%`} icon={CheckCircle2} />
-        <MetricCard label="Tokens used" value={stats.tokens.toLocaleString()} icon={Cpu} />
-        <MetricCard label="Spend" value={money(stats.spend)} icon={Coins} />
+        {[
+          { label: "Runs (last 25)", value: String(stats.total), Icon: Play },
+          { label: "Success rate", value: `${stats.successRate}%`, Icon: CheckCircle2 },
+          { label: "Tokens used", value: stats.tokens.toLocaleString(), Icon: Cpu },
+          { label: "Median latency", value: `${stats.p50} ms`, Icon: Timer },
+          { label: "Spend", value: money(stats.spend), Icon: Coins },
+        ].slice(0, 4).map((s, i) => (
+          <motion.div
+            key={s.label}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: i * 0.04 }}
+            className="rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-5"
+          >
+            <div className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-[var(--text-muted)]">
+              <s.Icon className="h-3 w-3" /> {s.label}
+            </div>
+            <div className="mt-2 text-[22px] font-semibold tracking-tight">{s.value}</div>
+          </motion.div>
+        ))}
       </div>
 
       <div className="rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface)] p-5 mb-8">
