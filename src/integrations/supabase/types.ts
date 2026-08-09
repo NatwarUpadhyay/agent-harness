@@ -188,6 +188,65 @@ export type Database = {
         }
         Relationships: []
       }
+      workflow_runs: {
+        Row: {
+          cost_usd: number
+          created_at: string
+          error: string | null
+          id: string
+          input: string
+          latency_ms: number
+          output: string | null
+          status: string
+          steps: Json
+          total_tokens: number
+          updated_at: string
+          user_id: string
+          workflow_id: string | null
+          workflow_name: string
+        }
+        Insert: {
+          cost_usd?: number
+          created_at?: string
+          error?: string | null
+          id?: string
+          input?: string
+          latency_ms?: number
+          output?: string | null
+          status?: string
+          steps?: Json
+          total_tokens?: number
+          updated_at?: string
+          user_id: string
+          workflow_id?: string | null
+          workflow_name: string
+        }
+        Update: {
+          cost_usd?: number
+          created_at?: string
+          error?: string | null
+          id?: string
+          input?: string
+          latency_ms?: number
+          output?: string | null
+          status?: string
+          steps?: Json
+          total_tokens?: number
+          updated_at?: string
+          user_id?: string
+          workflow_id?: string | null
+          workflow_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_runs_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workflows: {
         Row: {
           created_at: string
