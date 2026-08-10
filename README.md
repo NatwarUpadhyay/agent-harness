@@ -73,7 +73,9 @@ It is built for teams who want a shared visual language for AI systems before wr
 | **33** | **Reliability SLOs & error budgets — per-service burn-down, time-to-exhaustion** | **Shipped** |
 | **34** | **Enterprise SSO/SCIM — SAML/OIDC admin console, directory sync, domain enforcement** | **Shipped** |
 | **35** | **Server-persisted org data + live SCIM provisioning endpoint** | **Shipped** |
-| **Next** | Production execution engine — run harness workflows against live LLMs and tools | Planned |
+| **36** | **Production execution engine — run harness workflows against live models, full traces** | **Shipped** |
+| **37** | **Scheduled & triggered runs — cron windows, inbound webhooks, manual fire** | **Shipped** |
+| **Next** | Alert-driven triggers & run retries with backoff | Planned |
 
 
 ---
@@ -210,9 +212,11 @@ The fastest way to understand Harness is to use the preview:
 
 - **Phase 36 — Production execution engine.** A `/runs` page that executes any saved harness workflow against live models through the Lovable AI gateway: nodes run in topological order, each stage's system prompt is derived from its node type, and every step's output, tokens, latency and cost are persisted to a `workflow_runs` table with RLS. Failed nodes short-circuit downstream stages (marked `skipped`), and the history view expands into a full per-node trace with the final output.
 
+- **Phase 37 — Scheduled and triggered runs.** A `/schedules` page that fires workflows without a human in the loop: recurring triggers (15m / hourly / 6h / daily / weekly, shown with their cron expression), inbound webhook triggers with a per-trigger token URL and optional `{ input }` body, pause/resume, one-click manual fire, and next/last-run forecasts. Triggers persist in `workflow_schedules` with RLS; a signed scheduler tick endpoint (`/api/public/scheduler/tick`, `x-scheduler-secret`) executes everything due, and every fired run lands in Runs with its full per-node trace.
+
 ## Next up
 
-Scheduled and triggered runs: cron schedules, webhook triggers and alert hooks on top of the execution engine, so workflows fire without a human in the loop.
+Alert-driven triggers and run retries: hook the alerts console into the trigger engine and retry failed nodes with exponential backoff.
 
 
 
