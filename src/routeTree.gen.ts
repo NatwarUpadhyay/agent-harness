@@ -18,6 +18,7 @@ import { Route as AuthenticatedUsageRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedTopologyRouteImport } from './routes/_authenticated/topology'
 import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedSchedulesRouteImport } from './routes/_authenticated/schedules'
 import { Route as AuthenticatedRunsRouteImport } from './routes/_authenticated/runs'
 import { Route as AuthenticatedRetrieverRouteImport } from './routes/_authenticated/retriever'
 import { Route as AuthenticatedResearchRouteImport } from './routes/_authenticated/research'
@@ -50,7 +51,9 @@ import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedApiKeysRouteImport } from './routes/_authenticated/api-keys'
 import { Route as AuthenticatedAlertsRouteImport } from './routes/_authenticated/alerts'
 import { Route as AuthenticatedAgentsRouteImport } from './routes/_authenticated/agents'
+import { Route as ApiPublicTriggersTokenRouteImport } from './routes/api/public/triggers/$token'
 import { Route as ApiPublicScimV2RouteImport } from './routes/api/public/scim/v2'
+import { Route as ApiPublicSchedulerTickRouteImport } from './routes/api/public/scheduler/tick'
 import { Route as ApiPublicScimV2UsersRouteImport } from './routes/api/public/scim/v2/Users'
 import { Route as ApiPublicScimV2UsersIdRouteImport } from './routes/api/public/scim/v2/Users/$id'
 
@@ -96,6 +99,11 @@ const AuthenticatedToolsRoute = AuthenticatedToolsRouteImport.update({
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSchedulesRoute = AuthenticatedSchedulesRouteImport.update({
+  id: '/schedules',
+  path: '/schedules',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedRunsRoute = AuthenticatedRunsRouteImport.update({
@@ -266,9 +274,19 @@ const AuthenticatedAgentsRoute = AuthenticatedAgentsRouteImport.update({
   path: '/agents',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicTriggersTokenRoute = ApiPublicTriggersTokenRouteImport.update({
+  id: '/api/public/triggers/$token',
+  path: '/api/public/triggers/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicScimV2Route = ApiPublicScimV2RouteImport.update({
   id: '/api/public/scim/v2',
   path: '/api/public/scim/v2',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicSchedulerTickRoute = ApiPublicSchedulerTickRouteImport.update({
+  id: '/api/public/scheduler/tick',
+  path: '/api/public/scheduler/tick',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicScimV2UsersRoute = ApiPublicScimV2UsersRouteImport.update({
@@ -318,12 +336,15 @@ export interface FileRoutesByFullPath {
   '/research': typeof AuthenticatedResearchRoute
   '/retriever': typeof AuthenticatedRetrieverRoute
   '/runs': typeof AuthenticatedRunsRoute
+  '/schedules': typeof AuthenticatedSchedulesRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/tools': typeof AuthenticatedToolsRoute
   '/topology': typeof AuthenticatedTopologyRoute
   '/usage': typeof AuthenticatedUsageRoute
   '/share/$id': typeof ShareIdRoute
+  '/api/public/scheduler/tick': typeof ApiPublicSchedulerTickRoute
   '/api/public/scim/v2': typeof ApiPublicScimV2RouteWithChildren
+  '/api/public/triggers/$token': typeof ApiPublicTriggersTokenRoute
   '/api/public/scim/v2/Users': typeof ApiPublicScimV2UsersRouteWithChildren
   '/api/public/scim/v2/Users/$id': typeof ApiPublicScimV2UsersIdRoute
 }
@@ -362,13 +383,16 @@ export interface FileRoutesByTo {
   '/research': typeof AuthenticatedResearchRoute
   '/retriever': typeof AuthenticatedRetrieverRoute
   '/runs': typeof AuthenticatedRunsRoute
+  '/schedules': typeof AuthenticatedSchedulesRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/tools': typeof AuthenticatedToolsRoute
   '/topology': typeof AuthenticatedTopologyRoute
   '/usage': typeof AuthenticatedUsageRoute
   '/share/$id': typeof ShareIdRoute
   '/': typeof AuthenticatedIndexRoute
+  '/api/public/scheduler/tick': typeof ApiPublicSchedulerTickRoute
   '/api/public/scim/v2': typeof ApiPublicScimV2RouteWithChildren
+  '/api/public/triggers/$token': typeof ApiPublicTriggersTokenRoute
   '/api/public/scim/v2/Users': typeof ApiPublicScimV2UsersRouteWithChildren
   '/api/public/scim/v2/Users/$id': typeof ApiPublicScimV2UsersIdRoute
 }
@@ -409,13 +433,16 @@ export interface FileRoutesById {
   '/_authenticated/research': typeof AuthenticatedResearchRoute
   '/_authenticated/retriever': typeof AuthenticatedRetrieverRoute
   '/_authenticated/runs': typeof AuthenticatedRunsRoute
+  '/_authenticated/schedules': typeof AuthenticatedSchedulesRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/tools': typeof AuthenticatedToolsRoute
   '/_authenticated/topology': typeof AuthenticatedTopologyRoute
   '/_authenticated/usage': typeof AuthenticatedUsageRoute
   '/share/$id': typeof ShareIdRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/api/public/scheduler/tick': typeof ApiPublicSchedulerTickRoute
   '/api/public/scim/v2': typeof ApiPublicScimV2RouteWithChildren
+  '/api/public/triggers/$token': typeof ApiPublicTriggersTokenRoute
   '/api/public/scim/v2/Users': typeof ApiPublicScimV2UsersRouteWithChildren
   '/api/public/scim/v2/Users/$id': typeof ApiPublicScimV2UsersIdRoute
 }
@@ -457,12 +484,15 @@ export interface FileRouteTypes {
     | '/research'
     | '/retriever'
     | '/runs'
+    | '/schedules'
     | '/settings'
     | '/tools'
     | '/topology'
     | '/usage'
     | '/share/$id'
+    | '/api/public/scheduler/tick'
     | '/api/public/scim/v2'
+    | '/api/public/triggers/$token'
     | '/api/public/scim/v2/Users'
     | '/api/public/scim/v2/Users/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -501,13 +531,16 @@ export interface FileRouteTypes {
     | '/research'
     | '/retriever'
     | '/runs'
+    | '/schedules'
     | '/settings'
     | '/tools'
     | '/topology'
     | '/usage'
     | '/share/$id'
     | '/'
+    | '/api/public/scheduler/tick'
     | '/api/public/scim/v2'
+    | '/api/public/triggers/$token'
     | '/api/public/scim/v2/Users'
     | '/api/public/scim/v2/Users/$id'
   id:
@@ -547,13 +580,16 @@ export interface FileRouteTypes {
     | '/_authenticated/research'
     | '/_authenticated/retriever'
     | '/_authenticated/runs'
+    | '/_authenticated/schedules'
     | '/_authenticated/settings'
     | '/_authenticated/tools'
     | '/_authenticated/topology'
     | '/_authenticated/usage'
     | '/share/$id'
     | '/_authenticated/'
+    | '/api/public/scheduler/tick'
     | '/api/public/scim/v2'
+    | '/api/public/triggers/$token'
     | '/api/public/scim/v2/Users'
     | '/api/public/scim/v2/Users/$id'
   fileRoutesById: FileRoutesById
@@ -563,7 +599,9 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ShareIdRoute: typeof ShareIdRoute
+  ApiPublicSchedulerTickRoute: typeof ApiPublicSchedulerTickRoute
   ApiPublicScimV2Route: typeof ApiPublicScimV2RouteWithChildren
+  ApiPublicTriggersTokenRoute: typeof ApiPublicTriggersTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -629,6 +667,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/schedules': {
+      id: '/_authenticated/schedules'
+      path: '/schedules'
+      fullPath: '/schedules'
+      preLoaderRoute: typeof AuthenticatedSchedulesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/runs': {
@@ -855,11 +900,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAgentsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/triggers/$token': {
+      id: '/api/public/triggers/$token'
+      path: '/api/public/triggers/$token'
+      fullPath: '/api/public/triggers/$token'
+      preLoaderRoute: typeof ApiPublicTriggersTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/scim/v2': {
       id: '/api/public/scim/v2'
       path: '/api/public/scim/v2'
       fullPath: '/api/public/scim/v2'
       preLoaderRoute: typeof ApiPublicScimV2RouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/scheduler/tick': {
+      id: '/api/public/scheduler/tick'
+      path: '/api/public/scheduler/tick'
+      fullPath: '/api/public/scheduler/tick'
+      preLoaderRoute: typeof ApiPublicSchedulerTickRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/scim/v2/Users': {
@@ -912,6 +971,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedResearchRoute: typeof AuthenticatedResearchRoute
   AuthenticatedRetrieverRoute: typeof AuthenticatedRetrieverRoute
   AuthenticatedRunsRoute: typeof AuthenticatedRunsRoute
+  AuthenticatedSchedulesRoute: typeof AuthenticatedSchedulesRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedToolsRoute: typeof AuthenticatedToolsRoute
   AuthenticatedTopologyRoute: typeof AuthenticatedTopologyRoute
@@ -952,6 +1012,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedResearchRoute: AuthenticatedResearchRoute,
   AuthenticatedRetrieverRoute: AuthenticatedRetrieverRoute,
   AuthenticatedRunsRoute: AuthenticatedRunsRoute,
+  AuthenticatedSchedulesRoute: AuthenticatedSchedulesRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedToolsRoute: AuthenticatedToolsRoute,
   AuthenticatedTopologyRoute: AuthenticatedTopologyRoute,
@@ -990,18 +1051,10 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ShareIdRoute: ShareIdRoute,
+  ApiPublicSchedulerTickRoute: ApiPublicSchedulerTickRoute,
   ApiPublicScimV2Route: ApiPublicScimV2RouteWithChildren,
+  ApiPublicTriggersTokenRoute: ApiPublicTriggersTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
