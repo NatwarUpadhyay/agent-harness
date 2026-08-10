@@ -247,6 +247,60 @@ export type Database = {
           },
         ]
       }
+      workflow_schedules: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          id: string
+          input: string
+          last_run_at: string | null
+          name: string
+          next_run_at: string
+          recurrence: string
+          run_count: number
+          trigger_kind: string
+          updated_at: string
+          user_id: string
+          webhook_token: string
+          workflow_id: string
+          workflow_name: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          input?: string
+          last_run_at?: string | null
+          name: string
+          next_run_at?: string
+          recurrence?: string
+          run_count?: number
+          trigger_kind?: string
+          updated_at?: string
+          user_id: string
+          webhook_token?: string
+          workflow_id: string
+          workflow_name: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          input?: string
+          last_run_at?: string | null
+          name?: string
+          next_run_at?: string
+          recurrence?: string
+          run_count?: number
+          trigger_kind?: string
+          updated_at?: string
+          user_id?: string
+          webhook_token?: string
+          workflow_id?: string
+          workflow_name?: string
+        }
+        Relationships: []
+      }
       workflows: {
         Row: {
           created_at: string
