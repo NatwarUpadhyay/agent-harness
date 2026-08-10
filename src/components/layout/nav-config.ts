@@ -35,6 +35,8 @@ export const navGroups: NavGroup[] = [
     items: [
       { to: "/harness", label: "Harness", icon: Workflow },
       { to: "/runs", label: "Runs", icon: PlayCircle },
+      { to: "/schedules", label: "Schedules", icon: CalendarClock },
+
       { to: "/agents", label: "Agents", icon: Bot },
       { to: "/planner", label: "Planner", icon: Brain },
       { to: "/memory", label: "Memory", icon: Database },
