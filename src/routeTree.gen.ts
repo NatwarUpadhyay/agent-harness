@@ -18,6 +18,7 @@ import { Route as AuthenticatedUsageRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedTopologyRouteImport } from './routes/_authenticated/topology'
 import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedSchedulesRouteImport } from './routes/_authenticated/schedules'
 import { Route as AuthenticatedRunsRouteImport } from './routes/_authenticated/runs'
 import { Route as AuthenticatedRetrieverRouteImport } from './routes/_authenticated/retriever'
 import { Route as AuthenticatedResearchRouteImport } from './routes/_authenticated/research'
@@ -98,6 +99,11 @@ const AuthenticatedToolsRoute = AuthenticatedToolsRouteImport.update({
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSchedulesRoute = AuthenticatedSchedulesRouteImport.update({
+  id: '/schedules',
+  path: '/schedules',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedRunsRoute = AuthenticatedRunsRouteImport.update({
@@ -330,6 +336,7 @@ export interface FileRoutesByFullPath {
   '/research': typeof AuthenticatedResearchRoute
   '/retriever': typeof AuthenticatedRetrieverRoute
   '/runs': typeof AuthenticatedRunsRoute
+  '/schedules': typeof AuthenticatedSchedulesRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/tools': typeof AuthenticatedToolsRoute
   '/topology': typeof AuthenticatedTopologyRoute
@@ -376,6 +383,7 @@ export interface FileRoutesByTo {
   '/research': typeof AuthenticatedResearchRoute
   '/retriever': typeof AuthenticatedRetrieverRoute
   '/runs': typeof AuthenticatedRunsRoute
+  '/schedules': typeof AuthenticatedSchedulesRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/tools': typeof AuthenticatedToolsRoute
   '/topology': typeof AuthenticatedTopologyRoute
@@ -425,6 +433,7 @@ export interface FileRoutesById {
   '/_authenticated/research': typeof AuthenticatedResearchRoute
   '/_authenticated/retriever': typeof AuthenticatedRetrieverRoute
   '/_authenticated/runs': typeof AuthenticatedRunsRoute
+  '/_authenticated/schedules': typeof AuthenticatedSchedulesRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/tools': typeof AuthenticatedToolsRoute
   '/_authenticated/topology': typeof AuthenticatedTopologyRoute
@@ -475,6 +484,7 @@ export interface FileRouteTypes {
     | '/research'
     | '/retriever'
     | '/runs'
+    | '/schedules'
     | '/settings'
     | '/tools'
     | '/topology'
@@ -521,6 +531,7 @@ export interface FileRouteTypes {
     | '/research'
     | '/retriever'
     | '/runs'
+    | '/schedules'
     | '/settings'
     | '/tools'
     | '/topology'
@@ -569,6 +580,7 @@ export interface FileRouteTypes {
     | '/_authenticated/research'
     | '/_authenticated/retriever'
     | '/_authenticated/runs'
+    | '/_authenticated/schedules'
     | '/_authenticated/settings'
     | '/_authenticated/tools'
     | '/_authenticated/topology'
@@ -655,6 +667,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/schedules': {
+      id: '/_authenticated/schedules'
+      path: '/schedules'
+      fullPath: '/schedules'
+      preLoaderRoute: typeof AuthenticatedSchedulesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/runs': {
@@ -952,6 +971,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedResearchRoute: typeof AuthenticatedResearchRoute
   AuthenticatedRetrieverRoute: typeof AuthenticatedRetrieverRoute
   AuthenticatedRunsRoute: typeof AuthenticatedRunsRoute
+  AuthenticatedSchedulesRoute: typeof AuthenticatedSchedulesRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedToolsRoute: typeof AuthenticatedToolsRoute
   AuthenticatedTopologyRoute: typeof AuthenticatedTopologyRoute
@@ -992,6 +1012,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedResearchRoute: AuthenticatedResearchRoute,
   AuthenticatedRetrieverRoute: AuthenticatedRetrieverRoute,
   AuthenticatedRunsRoute: AuthenticatedRunsRoute,
+  AuthenticatedSchedulesRoute: AuthenticatedSchedulesRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedToolsRoute: AuthenticatedToolsRoute,
   AuthenticatedTopologyRoute: AuthenticatedTopologyRoute,
