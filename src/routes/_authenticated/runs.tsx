@@ -6,10 +6,11 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
   Play, Loader2, ChevronRight, Trash2, Coins, Timer, Cpu, CheckCircle2, XCircle, MinusCircle,
+  RotateCcw,
 } from "lucide-react";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { useWorkflows } from "@/lib/hooks/use-entities";
-import { listRuns, runWorkflow, deleteRun } from "@/lib/data/runs.functions";
+import { listRuns, runWorkflow, deleteRun, retryRun } from "@/lib/data/runs.functions";
 
 export const Route = createFileRoute("/_authenticated/runs")({
   head: () => ({
@@ -41,6 +42,7 @@ interface Step {
   tokens: number;
   latencyMs: number;
   costUsd: number;
+  attempts?: number;
 }
 
 const money = (n: number) => `$${n < 0.01 ? n.toFixed(4) : n.toFixed(2)}`;
@@ -57,6 +59,7 @@ function RunsView() {
   const fetchRuns = useServerFn(listRuns);
   const execute = useServerFn(runWorkflow);
   const removeRun = useServerFn(deleteRun);
+  const retry = useServerFn(retryRun);
 
   const [workflowId, setWorkflowId] = useState("");
   const [input, setInput] = useState(
@@ -80,6 +83,19 @@ function RunsView() {
       qc.invalidateQueries({ queryKey: ["workflow-runs"] });
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : "Run failed"),
+  });
+
+  const retryMutation = useMutation({
+    mutationFn: (id: string) => retry({ data: { id } }),
+    onSuccess: (row) => {
+      toast[row.status === "succeeded" ? "success" : "error"](
+        row.status === "succeeded" ? "Retry succeeded" : "Retry failed again",
+        { description: `${row.workflow_name} · ${row.total_tokens} tokens · ${row.latency_ms} ms` },
+      );
+      setOpen(row.id);
+      qc.invalidateQueries({ queryKey: ["workflow-runs"] });
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Retry failed"),
   });
 
   const deleteMutation = useMutation({
@@ -171,7 +187,8 @@ function RunsView() {
         </div>
         <p className="mt-3 text-[11px] text-[var(--text-muted)]">
           Every node runs in topological order; each stage receives the previous stage's output. Tokens,
-          latency and cost are recorded per node.
+          latency and cost are recorded per node. Transient gateway failures are retried automatically
+          with exponential backoff, and any failed run can be replayed from history.
         </p>
       </div>
 
@@ -214,6 +231,21 @@ function RunsView() {
                     <span className="inline-flex items-center gap-1"><Coins className="h-3 w-3" />{money(Number(run.cost_usd))}</span>
                   </span>
                 </button>
+                {run.status !== "succeeded" && (
+                  <button
+                    onClick={() => retryMutation.mutate(run.id)}
+                    disabled={retryMutation.isPending}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-[var(--border-default)] px-2 py-1 text-[11px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-50"
+                    aria-label={`Retry run of ${run.workflow_name}`}
+                  >
+                    {retryMutation.isPending && retryMutation.variables === run.id ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <RotateCcw className="h-3 w-3" />
+                    )}
+                    Retry
+                  </button>
+                )}
                 <button
                   onClick={() => deleteMutation.mutate(run.id)}
                   className="p-1.5 rounded text-[var(--text-muted)] hover:text-[#EF4444]"
@@ -244,6 +276,9 @@ function RunsView() {
                             <span className="text-[10px] text-[var(--text-muted)]">{s.typeName}</span>
                             <span className="ml-auto text-[11px] text-[var(--text-secondary)]">
                               {s.tokens} tok · {s.latencyMs} ms
+                              {typeof s.attempts === "number" && s.attempts > 1
+                                ? ` · ${s.attempts} attempts`
+                                : ""}
                             </span>
                           </div>
                           <pre className="text-[12px] text-[var(--text-secondary)] whitespace-pre-wrap font-sans">
