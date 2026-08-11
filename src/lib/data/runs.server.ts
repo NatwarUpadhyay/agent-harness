@@ -31,6 +31,7 @@ export interface RunStep {
   tokens: number;
   latencyMs: number;
   costUsd: number;
+  attempts?: number;
 }
 
 const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
@@ -56,6 +57,8 @@ const SYSTEM_PROMPTS: Record<string, string> = {
 };
 
 /** Kahn topological order; falls back to declaration order when the graph cycles. */
+import { withRetries, MAX_ATTEMPTS } from "./retry";
+
 export function topologicalOrder(nodes: FlowNode[], edges: FlowEdge[]): FlowNode[] {
   const byId = new Map(nodes.map((n) => [n.id, n]));
   const indegree = new Map(nodes.map((n) => [n.id, 0]));
@@ -166,7 +169,8 @@ export async function executeGraph(
 
     try {
       const user = `Original request:\n${input}\n\nContext from the previous stage:\n${carry}`;
-      const { content, tokens } = await callGateway(system, user, temperature);
+      const { value, attempts } = await withRetries(() => callGateway(system, user, temperature));
+      const { content, tokens } = value;
       totalTokens += tokens;
       carry = content || carry;
       steps.push({
@@ -178,6 +182,7 @@ export async function executeGraph(
         tokens,
         latencyMs: Date.now() - stepStart,
         costUsd: (tokens / 1000) * COST_PER_1K,
+        attempts,
       });
     } catch (err) {
       failure = err instanceof Error ? err.message : "Unknown execution error";
@@ -190,6 +195,7 @@ export async function executeGraph(
         tokens: 0,
         latencyMs: Date.now() - stepStart,
         costUsd: 0,
+        attempts: MAX_ATTEMPTS,
       });
     }
   }
