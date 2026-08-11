@@ -214,31 +214,8 @@ The fastest way to understand Harness is to use the preview:
 
 - **Phase 37 — Scheduled and triggered runs.** A `/schedules` page that fires workflows without a human in the loop: recurring triggers (15m / hourly / 6h / daily / weekly, shown with their cron expression), inbound webhook triggers with a per-trigger token URL and optional `{ input }` body, pause/resume, one-click manual fire, and next/last-run forecasts. Triggers persist in `workflow_schedules` with RLS; a signed scheduler tick endpoint (`/api/public/scheduler/tick`, `x-scheduler-secret`) executes everything due, and every fired run lands in Runs with its full per-node trace.
 
+- **Phase 38 — Run retries and backoff.** The execution engine now distinguishes transient gateway failures (429, upstream 5xx, network resets) from deterministic ones (bad request, exhausted credits, misconfiguration): transient failures are retried up to three times with exponential backoff and full jitter, and the attempt count is recorded on each step's trace. Any failed run can be replayed from Execution history with one click, re-running the same workflow and input as a fresh, fully traced run.
+
 ## Next up
 
-Alert-driven triggers and run retries: hook the alerts console into the trigger engine and retry failed nodes with exponential backoff.
-
-
-
-
----
-
-## Contributing
-
-This project is developed inside [Lovable](https://lovable.dev) with two-way GitHub sync. You can:
-
-- Edit in Lovable — changes push to `main` automatically.
-- Or clone locally, push to GitHub — changes sync back to Lovable.
-
-```bash
-git clone <your-repo-url>
-cd harness
-bun install
-bun dev
-```
-
----
-
-## License
-
-MIT — use it, extend it, and build better flows.
+Alert-driven triggers: hook the alerts console into the trigger engine so an SLO breach or anomaly can fire a remediation workflow automatically.
