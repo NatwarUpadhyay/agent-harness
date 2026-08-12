@@ -1,19 +1,23 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useServerFn } from "@tanstack/react-start";
 import {
   Bell, Plus, Trash2, Zap, Check, X, Filter, Flame, ShieldAlert, Activity,
-  DollarSign, Clock, ShieldCheck, Mail, Slack, Webhook,
+  DollarSign, Clock, ShieldCheck, Mail, Slack, Webhook, Wand2, Loader2,
 } from "lucide-react";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { StatusDot } from "@/components/ui/status-badge";
 import { toast } from "sonner";
+import { useWorkflows } from "@/lib/hooks/use-entities";
+import { runWorkflow } from "@/lib/data/runs.functions";
 
 type Metric = "cost" | "latency" | "error_rate" | "audit_anomaly";
 type Operator = ">" | ">=" | "<" | "<=";
 type Severity = "critical" | "warning" | "info";
 type Channel = "slack" | "email" | "pagerduty" | "webhook";
 type IncidentStatus = "firing" | "acknowledged" | "resolved";
+type RemediationStatus = "running" | "succeeded" | "failed";
 
 interface AlertRule {
   id: string;
@@ -26,6 +30,8 @@ interface AlertRule {
   channel: Channel;
   enabled: boolean;
   created: string;
+  /** Workflow fired automatically when this rule breaches. */
+  remediationWorkflowId?: string;
 }
 
 interface Incident {
@@ -40,6 +46,9 @@ interface Incident {
   fired: string;
   resolved?: string;
   message: string;
+  remediation?: RemediationStatus;
+  remediationWorkflowName?: string;
+  remediationError?: string;
 }
 
 const METRICS: { value: Metric; label: string; unit: string; icon: typeof DollarSign }[] = [
@@ -119,6 +128,10 @@ function AlertsView() {
   });
   const [sevFilter, setSevFilter] = useState<Severity | "all">("all");
   const [statusFilter, setStatusFilter] = useState<IncidentStatus | "all">("all");
+  const { data: workflows = [] } = useWorkflows();
+  const execute = useServerFn(runWorkflow);
+
+
 
   useEffect(() => { localStorage.setItem(RULE_KEY, JSON.stringify(rules)); }, [rules]);
   useEffect(() => { localStorage.setItem(INCIDENT_KEY, JSON.stringify(incidents)); }, [incidents]);
@@ -159,11 +172,41 @@ function AlertsView() {
       channel: (draft.channel as Channel) ?? "slack",
       enabled: true,
       created: new Date().toISOString().slice(0, 10),
+      remediationWorkflowId: draft.remediationWorkflowId || undefined,
     };
     setRules((rs) => [rule, ...rs]);
     setCreating(false);
     setDraft({ name: "", metric: "cost", operator: ">", threshold: 100, window: "15m", severity: "warning", channel: "slack" });
     toast.success(`Rule "${rule.name}" created`);
+  };
+
+  const setRemediation = (ruleId: string, workflowId: string) =>
+    setRules((rs) => rs.map((r) => (r.id === ruleId ? { ...r, remediationWorkflowId: workflowId || undefined } : r)));
+
+  const patchIncident = (id: string, patch: Partial<Incident>) =>
+    setIncidents((is) => is.map((i) => (i.id === id ? { ...i, ...patch } : i)));
+
+  /** Fires the rule's remediation workflow through the execution engine. */
+  const remediate = async (incident: Incident, workflowId: string) => {
+    const workflow = workflows.find((w) => w.id === workflowId);
+    if (!workflow) { toast.error("Remediation workflow no longer exists"); return; }
+    patchIncident(incident.id, { remediation: "running", remediationWorkflowName: workflow.name, remediationError: undefined });
+    try {
+      const run = await execute({
+        data: {
+          workflowId,
+          input: `Incident remediation request.\nRule: ${incident.ruleName}\nSeverity: ${incident.severity}\nMetric: ${incident.metric}\nObserved: ${incident.observed} (threshold ${incident.threshold})\nDetail: ${incident.message}\n\nDiagnose the likely cause and produce a concrete remediation plan.`,
+        },
+      });
+      const ok = (run as { status?: string })?.status === "succeeded";
+      patchIncident(incident.id, { remediation: ok ? "succeeded" : "failed" });
+      if (ok) toast.success(`Remediation ran: ${workflow.name}`, { description: "Full trace available in Runs" });
+      else toast.error("Remediation run failed", { description: "See the trace in Runs" });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Remediation failed";
+      patchIncident(incident.id, { remediation: "failed", remediationError: message });
+      toast.error("Remediation failed", { description: message });
+    }
   };
 
   // Simulate a rule firing: pick a plausible observed value just past the threshold.
@@ -187,7 +230,9 @@ function AlertsView() {
     };
     setIncidents((is) => [inc, ...is]);
     toast.error(`Alert firing: ${rule.name}`, { description: `Routed to ${rule.channel}` });
+    if (rule.remediationWorkflowId) void remediate(inc, rule.remediationWorkflowId);
   };
+
 
   const setIncidentStatus = (id: string, status: IncidentStatus) => {
     setIncidents((is) => is.map((i) => (i.id === id ? { ...i, status, resolved: status === "resolved" ? "just now" : i.resolved } : i)));
@@ -278,6 +323,16 @@ function AlertsView() {
                     {CHANNELS.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
                   </select>
                 </Field>
+                <Field label="Auto-remediation workflow" full>
+                  <select
+                    value={draft.remediationWorkflowId ?? ""}
+                    onChange={(e) => setDraft((d) => ({ ...d, remediationWorkflowId: e.target.value }))}
+                    className="w-full h-9 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-default)] px-2 text-[13px] focus:outline-none focus:border-[var(--accent)]"
+                  >
+                    <option value="">None — notify only</option>
+                    {workflows.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
+                  </select>
+                </Field>
               </div>
               <div className="mt-5 flex items-center justify-end gap-2">
                 <button onClick={() => setCreating(false)} className="h-9 px-3 rounded-md text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)]">Cancel</button>
@@ -324,6 +379,15 @@ function AlertsView() {
                   >
                     {r.severity}
                   </span>
+                  <select
+                    value={r.remediationWorkflowId ?? ""}
+                    onChange={(e) => setRemediation(r.id, e.target.value)}
+                    title="Workflow fired automatically when this rule breaches"
+                    className="hidden md:block h-7 max-w-[170px] rounded-md bg-[var(--bg-elevated)] border border-[var(--border-default)] px-2 text-[11px] focus:outline-none focus:border-[var(--accent)]"
+                  >
+                    <option value="">No auto-remediation</option>
+                    {workflows.map((w) => <option key={w.id} value={w.id}>↺ {w.name}</option>)}
+                  </select>
                   <button
                     onClick={() => fireRule(r)}
                     disabled={!r.enabled}
@@ -400,8 +464,30 @@ function AlertsView() {
                         <span>fired {inc.fired}</span>
                         {inc.resolved && <><span>·</span><span>resolved {inc.resolved}</span></>}
                       </div>
+                      {inc.remediation && (
+                        <div className="mt-1.5 inline-flex items-center gap-1.5 text-[10.5px] px-1.5 py-0.5 rounded-sm border border-[var(--border-subtle)] bg-[var(--bg-elevated)]">
+                          {inc.remediation === "running"
+                            ? <Loader2 className="h-3 w-3 animate-spin text-[var(--text-accent)]" />
+                            : <Wand2 className={`h-3 w-3 ${inc.remediation === "succeeded" ? "text-[var(--success)]" : "text-[var(--danger)]"}`} />}
+                          <span className="text-[var(--text-secondary)]">
+                            {inc.remediation === "running" ? "Remediation running" : `Remediation ${inc.remediation}`}
+                            {inc.remediationWorkflowName ? ` · ${inc.remediationWorkflowName}` : ""}
+                          </span>
+                          <Link to="/runs" className="text-[var(--text-accent)] hover:underline">trace →</Link>
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
+                      {(() => {
+                        const rule = rules.find((r) => r.id === inc.ruleId);
+                        const wfId = rule?.remediationWorkflowId;
+                        if (!wfId || inc.status === "resolved" || inc.remediation === "running") return null;
+                        return (
+                          <button onClick={() => void remediate(inc, wfId)} className="h-7 px-2.5 rounded-md text-[11.5px] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-accent)] hover:border-[var(--accent-border)] inline-flex items-center gap-1" title="Run the remediation workflow now">
+                            <Wand2 className="h-3 w-3" /> Remediate
+                          </button>
+                        );
+                      })()}
                       {inc.status === "firing" && (
                         <button onClick={() => setIncidentStatus(inc.id, "acknowledged")} className="h-7 px-2.5 rounded-md text-[11.5px] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--warning)] hover:border-[var(--warning)]/40 inline-flex items-center gap-1">
                           <Activity className="h-3 w-3" /> Ack
