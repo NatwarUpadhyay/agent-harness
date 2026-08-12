@@ -6,7 +6,6 @@ import { Header } from "./Header";
 import { CommandPalette } from "@/components/ui/command-palette";
 import { ShortcutOverlay } from "@/components/ui/shortcut-overlay";
 import { useUiStore } from "@/stores/ui";
-import { Toaster } from "@/components/ui/sonner";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const collapsed = useUiStore((s) => s.sidebarCollapsed);
@@ -65,7 +64,6 @@ export function AppShell({ children }: { children: ReactNode }) {
       </div>
       <CommandPalette />
       <ShortcutOverlay open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
-      <Toaster theme="dark" position="bottom-right" />
     </div>
   );
 }
