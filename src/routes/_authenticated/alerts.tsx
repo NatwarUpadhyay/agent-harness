@@ -323,6 +323,16 @@ function AlertsView() {
                     {CHANNELS.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
                   </select>
                 </Field>
+                <Field label="Auto-remediation workflow" full>
+                  <select
+                    value={draft.remediationWorkflowId ?? ""}
+                    onChange={(e) => setDraft((d) => ({ ...d, remediationWorkflowId: e.target.value }))}
+                    className="w-full h-9 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-default)] px-2 text-[13px] focus:outline-none focus:border-[var(--accent)]"
+                  >
+                    <option value="">None — notify only</option>
+                    {workflows.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
+                  </select>
+                </Field>
               </div>
               <div className="mt-5 flex items-center justify-end gap-2">
                 <button onClick={() => setCreating(false)} className="h-9 px-3 rounded-md text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)]">Cancel</button>
