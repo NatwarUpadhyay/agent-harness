@@ -464,8 +464,30 @@ function AlertsView() {
                         <span>fired {inc.fired}</span>
                         {inc.resolved && <><span>·</span><span>resolved {inc.resolved}</span></>}
                       </div>
+                      {inc.remediation && (
+                        <div className="mt-1.5 inline-flex items-center gap-1.5 text-[10.5px] px-1.5 py-0.5 rounded-sm border border-[var(--border-subtle)] bg-[var(--bg-elevated)]">
+                          {inc.remediation === "running"
+                            ? <Loader2 className="h-3 w-3 animate-spin text-[var(--text-accent)]" />
+                            : <Wand2 className={`h-3 w-3 ${inc.remediation === "succeeded" ? "text-[var(--success)]" : "text-[var(--danger)]"}`} />}
+                          <span className="text-[var(--text-secondary)]">
+                            {inc.remediation === "running" ? "Remediation running" : `Remediation ${inc.remediation}`}
+                            {inc.remediationWorkflowName ? ` · ${inc.remediationWorkflowName}` : ""}
+                          </span>
+                          <Link to="/runs" className="text-[var(--text-accent)] hover:underline">trace →</Link>
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
+                      {(() => {
+                        const rule = rules.find((r) => r.id === inc.ruleId);
+                        const wfId = rule?.remediationWorkflowId;
+                        if (!wfId || inc.status === "resolved" || inc.remediation === "running") return null;
+                        return (
+                          <button onClick={() => void remediate(inc, wfId)} className="h-7 px-2.5 rounded-md text-[11.5px] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-accent)] hover:border-[var(--accent-border)] inline-flex items-center gap-1" title="Run the remediation workflow now">
+                            <Wand2 className="h-3 w-3" /> Remediate
+                          </button>
+                        );
+                      })()}
                       {inc.status === "firing" && (
                         <button onClick={() => setIncidentStatus(inc.id, "acknowledged")} className="h-7 px-2.5 rounded-md text-[11.5px] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--warning)] hover:border-[var(--warning)]/40 inline-flex items-center gap-1">
                           <Activity className="h-3 w-3" /> Ack
