@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { seedIfEmpty } from "@/lib/data/seed";
+import { AppShell } from "@/components/layout/AppShell";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -25,5 +26,9 @@ export const Route = createFileRoute("/_authenticated")({
     seedIfEmpty(data.user.id).catch(() => {});
     return { user: data.user };
   },
-  component: () => <Outlet />,
+  component: () => (
+    <AppShell>
+      <Outlet />
+    </AppShell>
+  ),
 });
