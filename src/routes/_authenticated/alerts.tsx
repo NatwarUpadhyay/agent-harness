@@ -128,6 +128,10 @@ function AlertsView() {
   });
   const [sevFilter, setSevFilter] = useState<Severity | "all">("all");
   const [statusFilter, setStatusFilter] = useState<IncidentStatus | "all">("all");
+  const { data: workflows = [] } = useWorkflows();
+  const execute = useServerFn(runWorkflow);
+
+
 
   useEffect(() => { localStorage.setItem(RULE_KEY, JSON.stringify(rules)); }, [rules]);
   useEffect(() => { localStorage.setItem(INCIDENT_KEY, JSON.stringify(incidents)); }, [incidents]);
