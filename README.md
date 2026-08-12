@@ -216,6 +216,8 @@ The fastest way to understand Harness is to use the preview:
 
 - **Phase 38 — Run retries and backoff.** The execution engine now distinguishes transient gateway failures (429, upstream 5xx, network resets) from deterministic ones (bad request, exhausted credits, misconfiguration): transient failures are retried up to three times with exponential backoff and full jitter, and the attempt count is recorded on each step's trace. Any failed run can be replayed from Execution history with one click, re-running the same workflow and input as a fresh, fully traced run.
 
+- **Phase 39 — Alert-driven auto-remediation.** Any alert rule can now be bound to a remediation workflow: when the rule breaches, the incident console fires that workflow through the production execution engine with the full incident context (rule, severity, observed vs threshold), and shows live remediation status (running / succeeded / failed) with a link to the per-node trace in Runs. Firing incidents can also be remediated manually with one click.
+
 ## Next up
 
-Alert-driven triggers: hook the alerts console into the trigger engine so an SLO breach or anomaly can fire a remediation workflow automatically.
+Remediation policy guardrails: approval gates and rate limits so auto-remediation can be trusted in production.
