@@ -37,9 +37,6 @@ export function AppShell({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [setCommandOpen, commandOpen]);
 
-  if (pathname === "/login" || pathname.startsWith("/share/")) {
-    return <>{children}</>;
-  }
 
 
   return (
