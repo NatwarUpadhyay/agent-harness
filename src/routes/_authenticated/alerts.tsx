@@ -1,19 +1,23 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useServerFn } from "@tanstack/react-start";
 import {
   Bell, Plus, Trash2, Zap, Check, X, Filter, Flame, ShieldAlert, Activity,
-  DollarSign, Clock, ShieldCheck, Mail, Slack, Webhook,
+  DollarSign, Clock, ShieldCheck, Mail, Slack, Webhook, Wand2, Loader2,
 } from "lucide-react";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { StatusDot } from "@/components/ui/status-badge";
 import { toast } from "sonner";
+import { useWorkflows } from "@/lib/hooks/use-entities";
+import { runWorkflow } from "@/lib/data/runs.functions";
 
 type Metric = "cost" | "latency" | "error_rate" | "audit_anomaly";
 type Operator = ">" | ">=" | "<" | "<=";
 type Severity = "critical" | "warning" | "info";
 type Channel = "slack" | "email" | "pagerduty" | "webhook";
 type IncidentStatus = "firing" | "acknowledged" | "resolved";
+type RemediationStatus = "running" | "succeeded" | "failed";
 
 interface AlertRule {
   id: string;
@@ -26,6 +30,8 @@ interface AlertRule {
   channel: Channel;
   enabled: boolean;
   created: string;
+  /** Workflow fired automatically when this rule breaches. */
+  remediationWorkflowId?: string;
 }
 
 interface Incident {
@@ -40,6 +46,9 @@ interface Incident {
   fired: string;
   resolved?: string;
   message: string;
+  remediation?: RemediationStatus;
+  remediationWorkflowName?: string;
+  remediationError?: string;
 }
 
 const METRICS: { value: Metric; label: string; unit: string; icon: typeof DollarSign }[] = [
