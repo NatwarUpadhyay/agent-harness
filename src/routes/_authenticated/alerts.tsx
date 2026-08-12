@@ -172,11 +172,41 @@ function AlertsView() {
       channel: (draft.channel as Channel) ?? "slack",
       enabled: true,
       created: new Date().toISOString().slice(0, 10),
+      remediationWorkflowId: draft.remediationWorkflowId || undefined,
     };
     setRules((rs) => [rule, ...rs]);
     setCreating(false);
     setDraft({ name: "", metric: "cost", operator: ">", threshold: 100, window: "15m", severity: "warning", channel: "slack" });
     toast.success(`Rule "${rule.name}" created`);
+  };
+
+  const setRemediation = (ruleId: string, workflowId: string) =>
+    setRules((rs) => rs.map((r) => (r.id === ruleId ? { ...r, remediationWorkflowId: workflowId || undefined } : r)));
+
+  const patchIncident = (id: string, patch: Partial<Incident>) =>
+    setIncidents((is) => is.map((i) => (i.id === id ? { ...i, ...patch } : i)));
+
+  /** Fires the rule's remediation workflow through the execution engine. */
+  const remediate = async (incident: Incident, workflowId: string) => {
+    const workflow = workflows.find((w) => w.id === workflowId);
+    if (!workflow) { toast.error("Remediation workflow no longer exists"); return; }
+    patchIncident(incident.id, { remediation: "running", remediationWorkflowName: workflow.name, remediationError: undefined });
+    try {
+      const run = await execute({
+        data: {
+          workflowId,
+          input: `Incident remediation request.\nRule: ${incident.ruleName}\nSeverity: ${incident.severity}\nMetric: ${incident.metric}\nObserved: ${incident.observed} (threshold ${incident.threshold})\nDetail: ${incident.message}\n\nDiagnose the likely cause and produce a concrete remediation plan.`,
+        },
+      });
+      const ok = (run as { status?: string })?.status === "succeeded";
+      patchIncident(incident.id, { remediation: ok ? "succeeded" : "failed" });
+      if (ok) toast.success(`Remediation ran: ${workflow.name}`, { description: "Full trace available in Runs" });
+      else toast.error("Remediation run failed", { description: "See the trace in Runs" });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Remediation failed";
+      patchIncident(incident.id, { remediation: "failed", remediationError: message });
+      toast.error("Remediation failed", { description: message });
+    }
   };
 
   // Simulate a rule firing: pick a plausible observed value just past the threshold.
@@ -200,7 +230,9 @@ function AlertsView() {
     };
     setIncidents((is) => [inc, ...is]);
     toast.error(`Alert firing: ${rule.name}`, { description: `Routed to ${rule.channel}` });
+    if (rule.remediationWorkflowId) void remediate(inc, rule.remediationWorkflowId);
   };
+
 
   const setIncidentStatus = (id: string, status: IncidentStatus) => {
     setIncidents((is) => is.map((i) => (i.id === id ? { ...i, status, resolved: status === "resolved" ? "just now" : i.resolved } : i)));
