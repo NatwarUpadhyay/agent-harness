@@ -379,6 +379,15 @@ function AlertsView() {
                   >
                     {r.severity}
                   </span>
+                  <select
+                    value={r.remediationWorkflowId ?? ""}
+                    onChange={(e) => setRemediation(r.id, e.target.value)}
+                    title="Workflow fired automatically when this rule breaches"
+                    className="hidden md:block h-7 max-w-[170px] rounded-md bg-[var(--bg-elevated)] border border-[var(--border-default)] px-2 text-[11px] focus:outline-none focus:border-[var(--accent)]"
+                  >
+                    <option value="">No auto-remediation</option>
+                    {workflows.map((w) => <option key={w.id} value={w.id}>↺ {w.name}</option>)}
+                  </select>
                   <button
                     onClick={() => fireRule(r)}
                     disabled={!r.enabled}
