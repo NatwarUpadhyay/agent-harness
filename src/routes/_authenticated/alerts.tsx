@@ -190,6 +190,7 @@ function AlertsView() {
       enabled: true,
       created: new Date().toISOString().slice(0, 10),
       remediationWorkflowId: draft.remediationWorkflowId || undefined,
+      remediationPolicy: normalizePolicy(draft.remediationPolicy),
     };
     setRules((rs) => [rule, ...rs]);
     setCreating(false);
@@ -390,6 +391,18 @@ function AlertsView() {
                     {workflows.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
                   </select>
                 </Field>
+                <Field label="Remediation guardrail">
+                  <select
+                    value={(draft.remediationPolicy ?? defaultRemediationPolicy).mode}
+                    onChange={(e) => setDraft((d) => ({
+                      ...d,
+                      remediationPolicy: normalizePolicy({ ...(d.remediationPolicy ?? defaultRemediationPolicy), mode: e.target.value as RemediationMode }),
+                    }))}
+                    className="w-full h-9 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-default)] px-2 text-[13px] focus:outline-none focus:border-[var(--accent)]"
+                  >
+                    {MODES.map((m) => <option key={m.value} value={m.value}>{m.label} — {m.hint}</option>)}
+                  </select>
+                </Field>
               </div>
               <div className="mt-5 flex items-center justify-end gap-2">
                 <button onClick={() => setCreating(false)} className="h-9 px-3 rounded-md text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)]">Cancel</button>
@@ -416,7 +429,8 @@ function AlertsView() {
               const meta = metricMeta(r.metric);
               const ChannelIcon = CHANNELS.find((c) => c.value === r.channel)!.icon;
               return (
-                <div key={r.id} className="px-5 py-3 flex items-center gap-4">
+                <div key={r.id} className="px-5 py-3">
+                  <div className="flex items-center gap-4">
                   <StatusDot status={r.enabled ? "active" : "idle"} />
                   <div className="flex-1 min-w-0">
                     <div className="text-[13.5px] font-medium truncate">{r.name}</div>
@@ -471,6 +485,45 @@ function AlertsView() {
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
+                  </div>
+                  {r.remediationWorkflowId && (() => {
+                    const policy = normalizePolicy(r.remediationPolicy);
+                    const used = attemptsInWindow(attempts[r.id] ?? [], Date.now());
+                    return (
+                      <div className="mt-2 flex items-center gap-2 flex-wrap pl-5 text-[11px] text-[var(--text-muted)]">
+                        <span className="inline-flex items-center gap-1"><ShieldCheck className="h-3 w-3" /> Guardrails</span>
+                        <select
+                          value={policy.mode}
+                          onChange={(e) => setPolicy(r.id, { mode: e.target.value as RemediationMode })}
+                          aria-label={`Remediation mode for ${r.name}`}
+                          className="h-7 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-default)] px-2 text-[11px] focus:outline-none focus:border-[var(--accent)]"
+                        >
+                          {MODES.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
+                        </select>
+                        <label className="inline-flex items-center gap-1">
+                          <Gauge className="h-3 w-3" />
+                          <input
+                            type="number" min={1} max={60} value={policy.maxPerHour}
+                            onChange={(e) => setPolicy(r.id, { maxPerHour: Number(e.target.value) })}
+                            aria-label={`Max remediations per hour for ${r.name}`}
+                            className="w-12 h-7 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-default)] px-1.5 text-[11px] font-mono-tabular focus:outline-none focus:border-[var(--accent)]"
+                          />
+                          /hr
+                        </label>
+                        <label className="inline-flex items-center gap-1">
+                          <Timer className="h-3 w-3" />
+                          <input
+                            type="number" min={0} max={720} value={policy.cooldownMinutes}
+                            onChange={(e) => setPolicy(r.id, { cooldownMinutes: Number(e.target.value) })}
+                            aria-label={`Cooldown minutes for ${r.name}`}
+                            className="w-12 h-7 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-default)] px-1.5 text-[11px] font-mono-tabular focus:outline-none focus:border-[var(--accent)]"
+                          />
+                          m cooldown
+                        </label>
+                        <span className="font-mono-tabular">used {used}/{policy.maxPerHour} this hour</span>
+                      </div>
+                    );
+                  })()}
                 </div>
               );
             })}
@@ -525,12 +578,25 @@ function AlertsView() {
                         <div className="mt-1.5 inline-flex items-center gap-1.5 text-[10.5px] px-1.5 py-0.5 rounded-sm border border-[var(--border-subtle)] bg-[var(--bg-elevated)]">
                           {inc.remediation === "running"
                             ? <Loader2 className="h-3 w-3 animate-spin text-[var(--text-accent)]" />
-                            : <Wand2 className={`h-3 w-3 ${inc.remediation === "succeeded" ? "text-[var(--success)]" : "text-[var(--danger)]"}`} />}
+                            : inc.remediation === "awaiting_approval"
+                              ? <ShieldCheck className="h-3 w-3 text-[var(--warning)]" />
+                              : inc.remediation === "blocked"
+                                ? <Ban className="h-3 w-3 text-[var(--warning)]" />
+                                : <Wand2 className={`h-3 w-3 ${inc.remediation === "succeeded" ? "text-[var(--success)]" : "text-[var(--danger)]"}`} />}
                           <span className="text-[var(--text-secondary)]">
-                            {inc.remediation === "running" ? "Remediation running" : `Remediation ${inc.remediation}`}
+                            {inc.remediation === "running"
+                              ? "Remediation running"
+                              : inc.remediation === "awaiting_approval"
+                                ? "Remediation awaiting approval"
+                                : inc.remediation === "blocked"
+                                  ? "Remediation blocked by policy"
+                                  : `Remediation ${inc.remediation}`}
                             {inc.remediationWorkflowName ? ` · ${inc.remediationWorkflowName}` : ""}
+                            {inc.remediationNote ? ` · ${inc.remediationNote}` : ""}
                           </span>
-                          <Link to="/runs" className="text-[var(--text-accent)] hover:underline">trace →</Link>
+                          {inc.remediation !== "awaiting_approval" && inc.remediation !== "blocked" && (
+                            <Link to="/runs" className="text-[var(--text-accent)] hover:underline">trace →</Link>
+                          )}
                         </div>
                       )}
                     </div>
@@ -539,8 +605,20 @@ function AlertsView() {
                         const rule = rules.find((r) => r.id === inc.ruleId);
                         const wfId = rule?.remediationWorkflowId;
                         if (!wfId || inc.status === "resolved" || inc.remediation === "running") return null;
+                        if (inc.remediation === "awaiting_approval") {
+                          return (
+                            <>
+                              <button onClick={() => void remediate(inc, wfId, true)} className="h-7 px-2.5 rounded-md text-[11.5px] border border-[var(--success)]/40 text-[var(--success)] hover:bg-[color:rgb(48_209_88_/_0.10)] inline-flex items-center gap-1" title="Approve and run the remediation workflow">
+                                <Check className="h-3 w-3" /> Approve
+                              </button>
+                              <button onClick={() => patchIncident(inc.id, { remediation: "blocked", remediationNote: "Approval denied by operator" })} className="h-7 px-2.5 rounded-md text-[11.5px] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--danger)] hover:border-[var(--danger)]/40 inline-flex items-center gap-1">
+                                <Ban className="h-3 w-3" /> Deny
+                              </button>
+                            </>
+                          );
+                        }
                         return (
-                          <button onClick={() => void remediate(inc, wfId)} className="h-7 px-2.5 rounded-md text-[11.5px] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-accent)] hover:border-[var(--accent-border)] inline-flex items-center gap-1" title="Run the remediation workflow now">
+                          <button onClick={() => void remediate(inc, wfId, true)} className="h-7 px-2.5 rounded-md text-[11.5px] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-accent)] hover:border-[var(--accent-border)] inline-flex items-center gap-1" title="Run the remediation workflow now (guardrails still apply)">
                             <Wand2 className="h-3 w-3" /> Remediate
                           </button>
                         );
