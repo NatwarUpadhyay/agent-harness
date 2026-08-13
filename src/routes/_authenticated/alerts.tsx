@@ -4,20 +4,24 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useServerFn } from "@tanstack/react-start";
 import {
   Bell, Plus, Trash2, Zap, Check, X, Filter, Flame, ShieldAlert, Activity,
-  DollarSign, Clock, ShieldCheck, Mail, Slack, Webhook, Wand2, Loader2,
+  DollarSign, Clock, ShieldCheck, Mail, Slack, Webhook, Wand2, Loader2, Ban, Timer, Gauge,
 } from "lucide-react";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { StatusDot } from "@/components/ui/status-badge";
 import { toast } from "sonner";
 import { useWorkflows } from "@/lib/hooks/use-entities";
 import { runWorkflow } from "@/lib/data/runs.functions";
+import {
+  type RemediationPolicy, type RemediationMode,
+  defaultRemediationPolicy, evaluateRemediation, normalizePolicy, attemptsInWindow, formatRetryAfter,
+} from "@/lib/data/remediation-policy";
 
 type Metric = "cost" | "latency" | "error_rate" | "audit_anomaly";
 type Operator = ">" | ">=" | "<" | "<=";
 type Severity = "critical" | "warning" | "info";
 type Channel = "slack" | "email" | "pagerduty" | "webhook";
 type IncidentStatus = "firing" | "acknowledged" | "resolved";
-type RemediationStatus = "running" | "succeeded" | "failed";
+type RemediationStatus = "running" | "succeeded" | "failed" | "awaiting_approval" | "blocked";
 
 interface AlertRule {
   id: string;
@@ -32,6 +36,8 @@ interface AlertRule {
   created: string;
   /** Workflow fired automatically when this rule breaches. */
   remediationWorkflowId?: string;
+  /** Guardrails: approval gate, hourly cap and cooldown for that workflow. */
+  remediationPolicy?: RemediationPolicy;
 }
 
 interface Incident {
@@ -49,6 +55,8 @@ interface Incident {
   remediation?: RemediationStatus;
   remediationWorkflowName?: string;
   remediationError?: string;
+  /** Why remediation is pending or was refused by the policy. */
+  remediationNote?: string;
 }
 
 const METRICS: { value: Metric; label: string; unit: string; icon: typeof DollarSign }[] = [
@@ -73,6 +81,13 @@ const CHANNELS: { value: Channel; label: string; icon: typeof Slack }[] = [
 
 const RULE_KEY = "harness.alerts.rules";
 const INCIDENT_KEY = "harness.alerts.incidents";
+const ATTEMPT_KEY = "harness.alerts.remediation-attempts.v1";
+
+const MODES: { value: RemediationMode; label: string; hint: string }[] = [
+  { value: "manual", label: "Manual only", hint: "Never fires itself" },
+  { value: "approval", label: "Approval gate", hint: "Waits for an operator" },
+  { value: "auto", label: "Fully automatic", hint: "Fires on breach" },
+];
 
 const seedRules: AlertRule[] = [
   { id: "ar1", name: "Daily cost breach", metric: "cost", operator: ">", threshold: 150, window: "24h", severity: "critical", channel: "slack", enabled: true, created: "2025-07-02" },
@@ -128,6 +143,7 @@ function AlertsView() {
   });
   const [sevFilter, setSevFilter] = useState<Severity | "all">("all");
   const [statusFilter, setStatusFilter] = useState<IncidentStatus | "all">("all");
+  const [attempts, setAttempts] = useState<Record<string, number[]>>(() => load(ATTEMPT_KEY, {}));
   const { data: workflows = [] } = useWorkflows();
   const execute = useServerFn(runWorkflow);
 
@@ -135,6 +151,7 @@ function AlertsView() {
 
   useEffect(() => { localStorage.setItem(RULE_KEY, JSON.stringify(rules)); }, [rules]);
   useEffect(() => { localStorage.setItem(INCIDENT_KEY, JSON.stringify(incidents)); }, [incidents]);
+  useEffect(() => { localStorage.setItem(ATTEMPT_KEY, JSON.stringify(attempts)); }, [attempts]);
 
   const activeRules = rules.filter((r) => r.enabled).length;
   const firing = incidents.filter((i) => i.status === "firing").length;
@@ -183,14 +200,54 @@ function AlertsView() {
   const setRemediation = (ruleId: string, workflowId: string) =>
     setRules((rs) => rs.map((r) => (r.id === ruleId ? { ...r, remediationWorkflowId: workflowId || undefined } : r)));
 
+  const setPolicy = (ruleId: string, patch: Partial<RemediationPolicy>) =>
+    setRules((rs) => rs.map((r) => (
+      r.id === ruleId ? { ...r, remediationPolicy: normalizePolicy({ ...normalizePolicy(r.remediationPolicy), ...patch }) } : r
+    )));
+
   const patchIncident = (id: string, patch: Partial<Incident>) =>
     setIncidents((is) => is.map((i) => (i.id === id ? { ...i, ...patch } : i)));
 
-  /** Fires the rule's remediation workflow through the execution engine. */
-  const remediate = async (incident: Incident, workflowId: string) => {
+  /**
+   * Fires the rule's remediation workflow — but only if the rule's guardrails
+   * (mode, hourly cap, cooldown) permit it. Human-initiated calls bypass the
+   * approval gate but never the rate limit or cooldown.
+   */
+  const remediate = async (incident: Incident, workflowId: string, humanInitiated = false) => {
     const workflow = workflows.find((w) => w.id === workflowId);
     if (!workflow) { toast.error("Remediation workflow no longer exists"); return; }
-    patchIncident(incident.id, { remediation: "running", remediationWorkflowName: workflow.name, remediationError: undefined });
+
+    const rule = rules.find((r) => r.id === incident.ruleId);
+    const policy = normalizePolicy(rule?.remediationPolicy);
+    const now = Date.now();
+    const decision = evaluateRemediation({ policy, history: attempts[incident.ruleId] ?? [], now, humanInitiated });
+
+    if (decision.outcome === "blocked") {
+      patchIncident(incident.id, {
+        remediation: "blocked",
+        remediationWorkflowName: workflow.name,
+        remediationNote: decision.retryAfterMs
+          ? `${decision.reason} · retry in ${formatRetryAfter(decision.retryAfterMs)}`
+          : decision.reason,
+      });
+      toast.error("Remediation blocked by policy", { description: decision.reason });
+      return;
+    }
+    if (decision.outcome === "needs_approval") {
+      patchIncident(incident.id, {
+        remediation: "awaiting_approval",
+        remediationWorkflowName: workflow.name,
+        remediationNote: decision.reason,
+      });
+      toast.warning("Remediation awaiting approval", { description: `${workflow.name} — approve it in the incident console` });
+      return;
+    }
+
+    setAttempts((a) => ({
+      ...a,
+      [incident.ruleId]: [...(a[incident.ruleId] ?? []).filter((t) => now - t < 24 * 60 * 60 * 1000), now],
+    }));
+    patchIncident(incident.id, { remediation: "running", remediationWorkflowName: workflow.name, remediationError: undefined, remediationNote: undefined });
     try {
       const run = await execute({
         data: {
