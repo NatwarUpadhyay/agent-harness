@@ -4,20 +4,24 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useServerFn } from "@tanstack/react-start";
 import {
   Bell, Plus, Trash2, Zap, Check, X, Filter, Flame, ShieldAlert, Activity,
-  DollarSign, Clock, ShieldCheck, Mail, Slack, Webhook, Wand2, Loader2,
+  DollarSign, Clock, ShieldCheck, Mail, Slack, Webhook, Wand2, Loader2, Ban, Timer, Gauge,
 } from "lucide-react";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { StatusDot } from "@/components/ui/status-badge";
 import { toast } from "sonner";
 import { useWorkflows } from "@/lib/hooks/use-entities";
 import { runWorkflow } from "@/lib/data/runs.functions";
+import {
+  type RemediationPolicy, type RemediationMode,
+  defaultRemediationPolicy, evaluateRemediation, normalizePolicy, attemptsInWindow, formatRetryAfter,
+} from "@/lib/data/remediation-policy";
 
 type Metric = "cost" | "latency" | "error_rate" | "audit_anomaly";
 type Operator = ">" | ">=" | "<" | "<=";
 type Severity = "critical" | "warning" | "info";
 type Channel = "slack" | "email" | "pagerduty" | "webhook";
 type IncidentStatus = "firing" | "acknowledged" | "resolved";
-type RemediationStatus = "running" | "succeeded" | "failed";
+type RemediationStatus = "running" | "succeeded" | "failed" | "awaiting_approval" | "blocked";
 
 interface AlertRule {
   id: string;
@@ -32,6 +36,8 @@ interface AlertRule {
   created: string;
   /** Workflow fired automatically when this rule breaches. */
   remediationWorkflowId?: string;
+  /** Guardrails: approval gate, hourly cap and cooldown for that workflow. */
+  remediationPolicy?: RemediationPolicy;
 }
 
 interface Incident {
@@ -49,6 +55,8 @@ interface Incident {
   remediation?: RemediationStatus;
   remediationWorkflowName?: string;
   remediationError?: string;
+  /** Why remediation is pending or was refused by the policy. */
+  remediationNote?: string;
 }
 
 const METRICS: { value: Metric; label: string; unit: string; icon: typeof DollarSign }[] = [
@@ -73,6 +81,13 @@ const CHANNELS: { value: Channel; label: string; icon: typeof Slack }[] = [
 
 const RULE_KEY = "harness.alerts.rules";
 const INCIDENT_KEY = "harness.alerts.incidents";
+const ATTEMPT_KEY = "harness.alerts.remediation-attempts.v1";
+
+const MODES: { value: RemediationMode; label: string; hint: string }[] = [
+  { value: "manual", label: "Manual only", hint: "Never fires itself" },
+  { value: "approval", label: "Approval gate", hint: "Waits for an operator" },
+  { value: "auto", label: "Fully automatic", hint: "Fires on breach" },
+];
 
 const seedRules: AlertRule[] = [
   { id: "ar1", name: "Daily cost breach", metric: "cost", operator: ">", threshold: 150, window: "24h", severity: "critical", channel: "slack", enabled: true, created: "2025-07-02" },
@@ -128,6 +143,7 @@ function AlertsView() {
   });
   const [sevFilter, setSevFilter] = useState<Severity | "all">("all");
   const [statusFilter, setStatusFilter] = useState<IncidentStatus | "all">("all");
+  const [attempts, setAttempts] = useState<Record<string, number[]>>(() => load(ATTEMPT_KEY, {}));
   const { data: workflows = [] } = useWorkflows();
   const execute = useServerFn(runWorkflow);
 
@@ -135,6 +151,7 @@ function AlertsView() {
 
   useEffect(() => { localStorage.setItem(RULE_KEY, JSON.stringify(rules)); }, [rules]);
   useEffect(() => { localStorage.setItem(INCIDENT_KEY, JSON.stringify(incidents)); }, [incidents]);
+  useEffect(() => { localStorage.setItem(ATTEMPT_KEY, JSON.stringify(attempts)); }, [attempts]);
 
   const activeRules = rules.filter((r) => r.enabled).length;
   const firing = incidents.filter((i) => i.status === "firing").length;
@@ -173,6 +190,7 @@ function AlertsView() {
       enabled: true,
       created: new Date().toISOString().slice(0, 10),
       remediationWorkflowId: draft.remediationWorkflowId || undefined,
+      remediationPolicy: normalizePolicy(draft.remediationPolicy),
     };
     setRules((rs) => [rule, ...rs]);
     setCreating(false);
@@ -183,14 +201,54 @@ function AlertsView() {
   const setRemediation = (ruleId: string, workflowId: string) =>
     setRules((rs) => rs.map((r) => (r.id === ruleId ? { ...r, remediationWorkflowId: workflowId || undefined } : r)));
 
+  const setPolicy = (ruleId: string, patch: Partial<RemediationPolicy>) =>
+    setRules((rs) => rs.map((r) => (
+      r.id === ruleId ? { ...r, remediationPolicy: normalizePolicy({ ...normalizePolicy(r.remediationPolicy), ...patch }) } : r
+    )));
+
   const patchIncident = (id: string, patch: Partial<Incident>) =>
     setIncidents((is) => is.map((i) => (i.id === id ? { ...i, ...patch } : i)));
 
-  /** Fires the rule's remediation workflow through the execution engine. */
-  const remediate = async (incident: Incident, workflowId: string) => {
+  /**
+   * Fires the rule's remediation workflow — but only if the rule's guardrails
+   * (mode, hourly cap, cooldown) permit it. Human-initiated calls bypass the
+   * approval gate but never the rate limit or cooldown.
+   */
+  const remediate = async (incident: Incident, workflowId: string, humanInitiated = false) => {
     const workflow = workflows.find((w) => w.id === workflowId);
     if (!workflow) { toast.error("Remediation workflow no longer exists"); return; }
-    patchIncident(incident.id, { remediation: "running", remediationWorkflowName: workflow.name, remediationError: undefined });
+
+    const rule = rules.find((r) => r.id === incident.ruleId);
+    const policy = normalizePolicy(rule?.remediationPolicy);
+    const now = Date.now();
+    const decision = evaluateRemediation({ policy, history: attempts[incident.ruleId] ?? [], now, humanInitiated });
+
+    if (decision.outcome === "blocked") {
+      patchIncident(incident.id, {
+        remediation: "blocked",
+        remediationWorkflowName: workflow.name,
+        remediationNote: decision.retryAfterMs
+          ? `${decision.reason} · retry in ${formatRetryAfter(decision.retryAfterMs)}`
+          : decision.reason,
+      });
+      toast.error("Remediation blocked by policy", { description: decision.reason });
+      return;
+    }
+    if (decision.outcome === "needs_approval") {
+      patchIncident(incident.id, {
+        remediation: "awaiting_approval",
+        remediationWorkflowName: workflow.name,
+        remediationNote: decision.reason,
+      });
+      toast.warning("Remediation awaiting approval", { description: `${workflow.name} — approve it in the incident console` });
+      return;
+    }
+
+    setAttempts((a) => ({
+      ...a,
+      [incident.ruleId]: [...(a[incident.ruleId] ?? []).filter((t) => now - t < 24 * 60 * 60 * 1000), now],
+    }));
+    patchIncident(incident.id, { remediation: "running", remediationWorkflowName: workflow.name, remediationError: undefined, remediationNote: undefined });
     try {
       const run = await execute({
         data: {
@@ -333,6 +391,18 @@ function AlertsView() {
                     {workflows.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
                   </select>
                 </Field>
+                <Field label="Remediation guardrail">
+                  <select
+                    value={(draft.remediationPolicy ?? defaultRemediationPolicy).mode}
+                    onChange={(e) => setDraft((d) => ({
+                      ...d,
+                      remediationPolicy: normalizePolicy({ ...(d.remediationPolicy ?? defaultRemediationPolicy), mode: e.target.value as RemediationMode }),
+                    }))}
+                    className="w-full h-9 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-default)] px-2 text-[13px] focus:outline-none focus:border-[var(--accent)]"
+                  >
+                    {MODES.map((m) => <option key={m.value} value={m.value}>{m.label} — {m.hint}</option>)}
+                  </select>
+                </Field>
               </div>
               <div className="mt-5 flex items-center justify-end gap-2">
                 <button onClick={() => setCreating(false)} className="h-9 px-3 rounded-md text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)]">Cancel</button>
@@ -359,7 +429,8 @@ function AlertsView() {
               const meta = metricMeta(r.metric);
               const ChannelIcon = CHANNELS.find((c) => c.value === r.channel)!.icon;
               return (
-                <div key={r.id} className="px-5 py-3 flex items-center gap-4">
+                <div key={r.id} className="px-5 py-3">
+                  <div className="flex items-center gap-4">
                   <StatusDot status={r.enabled ? "active" : "idle"} />
                   <div className="flex-1 min-w-0">
                     <div className="text-[13.5px] font-medium truncate">{r.name}</div>
@@ -414,6 +485,45 @@ function AlertsView() {
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
+                  </div>
+                  {r.remediationWorkflowId && (() => {
+                    const policy = normalizePolicy(r.remediationPolicy);
+                    const used = attemptsInWindow(attempts[r.id] ?? [], Date.now());
+                    return (
+                      <div className="mt-2 flex items-center gap-2 flex-wrap pl-5 text-[11px] text-[var(--text-muted)]">
+                        <span className="inline-flex items-center gap-1"><ShieldCheck className="h-3 w-3" /> Guardrails</span>
+                        <select
+                          value={policy.mode}
+                          onChange={(e) => setPolicy(r.id, { mode: e.target.value as RemediationMode })}
+                          aria-label={`Remediation mode for ${r.name}`}
+                          className="h-7 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-default)] px-2 text-[11px] focus:outline-none focus:border-[var(--accent)]"
+                        >
+                          {MODES.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
+                        </select>
+                        <label className="inline-flex items-center gap-1">
+                          <Gauge className="h-3 w-3" />
+                          <input
+                            type="number" min={1} max={60} value={policy.maxPerHour}
+                            onChange={(e) => setPolicy(r.id, { maxPerHour: Number(e.target.value) })}
+                            aria-label={`Max remediations per hour for ${r.name}`}
+                            className="w-12 h-7 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-default)] px-1.5 text-[11px] font-mono-tabular focus:outline-none focus:border-[var(--accent)]"
+                          />
+                          /hr
+                        </label>
+                        <label className="inline-flex items-center gap-1">
+                          <Timer className="h-3 w-3" />
+                          <input
+                            type="number" min={0} max={720} value={policy.cooldownMinutes}
+                            onChange={(e) => setPolicy(r.id, { cooldownMinutes: Number(e.target.value) })}
+                            aria-label={`Cooldown minutes for ${r.name}`}
+                            className="w-12 h-7 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-default)] px-1.5 text-[11px] font-mono-tabular focus:outline-none focus:border-[var(--accent)]"
+                          />
+                          m cooldown
+                        </label>
+                        <span className="font-mono-tabular">used {used}/{policy.maxPerHour} this hour</span>
+                      </div>
+                    );
+                  })()}
                 </div>
               );
             })}
@@ -468,12 +578,25 @@ function AlertsView() {
                         <div className="mt-1.5 inline-flex items-center gap-1.5 text-[10.5px] px-1.5 py-0.5 rounded-sm border border-[var(--border-subtle)] bg-[var(--bg-elevated)]">
                           {inc.remediation === "running"
                             ? <Loader2 className="h-3 w-3 animate-spin text-[var(--text-accent)]" />
-                            : <Wand2 className={`h-3 w-3 ${inc.remediation === "succeeded" ? "text-[var(--success)]" : "text-[var(--danger)]"}`} />}
+                            : inc.remediation === "awaiting_approval"
+                              ? <ShieldCheck className="h-3 w-3 text-[var(--warning)]" />
+                              : inc.remediation === "blocked"
+                                ? <Ban className="h-3 w-3 text-[var(--warning)]" />
+                                : <Wand2 className={`h-3 w-3 ${inc.remediation === "succeeded" ? "text-[var(--success)]" : "text-[var(--danger)]"}`} />}
                           <span className="text-[var(--text-secondary)]">
-                            {inc.remediation === "running" ? "Remediation running" : `Remediation ${inc.remediation}`}
+                            {inc.remediation === "running"
+                              ? "Remediation running"
+                              : inc.remediation === "awaiting_approval"
+                                ? "Remediation awaiting approval"
+                                : inc.remediation === "blocked"
+                                  ? "Remediation blocked by policy"
+                                  : `Remediation ${inc.remediation}`}
                             {inc.remediationWorkflowName ? ` · ${inc.remediationWorkflowName}` : ""}
+                            {inc.remediationNote ? ` · ${inc.remediationNote}` : ""}
                           </span>
-                          <Link to="/runs" className="text-[var(--text-accent)] hover:underline">trace →</Link>
+                          {inc.remediation !== "awaiting_approval" && inc.remediation !== "blocked" && (
+                            <Link to="/runs" className="text-[var(--text-accent)] hover:underline">trace →</Link>
+                          )}
                         </div>
                       )}
                     </div>
@@ -482,8 +605,20 @@ function AlertsView() {
                         const rule = rules.find((r) => r.id === inc.ruleId);
                         const wfId = rule?.remediationWorkflowId;
                         if (!wfId || inc.status === "resolved" || inc.remediation === "running") return null;
+                        if (inc.remediation === "awaiting_approval") {
+                          return (
+                            <>
+                              <button onClick={() => void remediate(inc, wfId, true)} className="h-7 px-2.5 rounded-md text-[11.5px] border border-[var(--success)]/40 text-[var(--success)] hover:bg-[color:rgb(48_209_88_/_0.10)] inline-flex items-center gap-1" title="Approve and run the remediation workflow">
+                                <Check className="h-3 w-3" /> Approve
+                              </button>
+                              <button onClick={() => patchIncident(inc.id, { remediation: "blocked", remediationNote: "Approval denied by operator" })} className="h-7 px-2.5 rounded-md text-[11.5px] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--danger)] hover:border-[var(--danger)]/40 inline-flex items-center gap-1">
+                                <Ban className="h-3 w-3" /> Deny
+                              </button>
+                            </>
+                          );
+                        }
                         return (
-                          <button onClick={() => void remediate(inc, wfId)} className="h-7 px-2.5 rounded-md text-[11.5px] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-accent)] hover:border-[var(--accent-border)] inline-flex items-center gap-1" title="Run the remediation workflow now">
+                          <button onClick={() => void remediate(inc, wfId, true)} className="h-7 px-2.5 rounded-md text-[11.5px] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-accent)] hover:border-[var(--accent-border)] inline-flex items-center gap-1" title="Run the remediation workflow now (guardrails still apply)">
                             <Wand2 className="h-3 w-3" /> Remediate
                           </button>
                         );

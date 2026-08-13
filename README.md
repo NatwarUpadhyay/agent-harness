@@ -75,7 +75,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 | **35** | **Server-persisted org data + live SCIM provisioning endpoint** | **Shipped** |
 | **36** | **Production execution engine — run harness workflows against live models, full traces** | **Shipped** |
 | **37** | **Scheduled & triggered runs — cron windows, inbound webhooks, manual fire** | **Shipped** |
-| **Next** | Alert-driven triggers & run retries with backoff | Planned |
+| **Next** | Server-side remediation policy enforcement | Planned |
 
 
 ---
@@ -218,6 +218,8 @@ The fastest way to understand Harness is to use the preview:
 
 - **Phase 39 — Alert-driven auto-remediation.** Any alert rule can now be bound to a remediation workflow: when the rule breaches, the incident console fires that workflow through the production execution engine with the full incident context (rule, severity, observed vs threshold), and shows live remediation status (running / succeeded / failed) with a link to the per-node trace in Runs. Firing incidents can also be remediated manually with one click.
 
+- **Phase 40 — Remediation policy guardrails.** Auto-remediation is now governed per rule: a mode (manual only / approval gate / fully automatic), an hourly attempt cap, and a cooldown between attempts. Breaches evaluate the guardrails before anything runs — blocked attempts show the reason and the retry window, approval-gated ones park the incident in an "awaiting approval" state with Approve / Deny actions, and the hourly budget used is shown live next to each rule. Rate limit and cooldown apply to human-initiated runs too; only the approval gate can be bypassed by an operator. Decision logic lives in `src/lib/data/remediation-policy.ts` as pure, unit-tested functions.
+
 ## Next up
 
-Remediation policy guardrails: approval gates and rate limits so auto-remediation can be trusted in production.
+Server-side remediation policy enforcement so scheduled and webhook-triggered remediations obey the same guardrails.
