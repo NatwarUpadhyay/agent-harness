@@ -83,29 +83,45 @@ function EnterpriseAuthPage() {
   const fetchConfig = useServerFn(getEnterpriseAuth);
   const saveConfig = useServerFn(saveEnterpriseAuth);
 
-  const { data: serverConfig } = useQuery({
+  const { data: serverConfig, isFetched } = useQuery({
     queryKey: ["enterprise-auth"],
     queryFn: () => fetchConfig(),
     staleTime: 60 * 1000,
   });
 
-  useEffect(() => { setHydrated(true); }, []);
+  // Never write to the server before the saved config has been read back:
+  // otherwise freshly-generated local defaults (new SCIM token, empty SSO list)
+  // can overwrite a real org configuration.
+  const lastPersisted = useRef<string | null>(null);
+
   useEffect(() => {
-    if (!serverConfig) return;
-    if (JSON.stringify(serverConfig) !== JSON.stringify(config)) {
-      setConfig(serverConfig);
-      saveEnterpriseAuthLocal(serverConfig);
+    if (!isFetched) return;
+    if (serverConfig) {
+      const remote = JSON.stringify(serverConfig);
+      lastPersisted.current = remote;
+      if (remote !== JSON.stringify(config)) {
+        setConfig(serverConfig);
+        saveEnterpriseAuthLocal(serverConfig);
+      }
     }
-  }, [serverConfig]);
+    setHydrated(true);
+  }, [serverConfig, isFetched]);
+
   useEffect(() => {
     if (!hydrated) return;
+    const serialized = JSON.stringify(config);
+    if (serialized === lastPersisted.current) return;
     const timer = setTimeout(() => {
       setSaving(true);
+      lastPersisted.current = serialized;
       saveConfig({ data: config })
         .then(() => {
           queryClient.setQueryData(["enterprise-auth"], config);
         })
-        .catch((err) => toast.error(err instanceof Error ? err.message : "Could not save settings"))
+        .catch((err) => {
+          lastPersisted.current = null;
+          toast.error(err instanceof Error ? err.message : "Could not save settings");
+        })
         .finally(() => setSaving(false));
       saveEnterpriseAuthLocal(config);
     }, 300);
