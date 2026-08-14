@@ -83,7 +83,6 @@ const CHANNELS: { value: Channel; label: string; icon: typeof Slack }[] = [
 
 const RULE_KEY = "harness.alerts.rules";
 const INCIDENT_KEY = "harness.alerts.incidents";
-const ATTEMPT_KEY = "harness.alerts.remediation-attempts.v1";
 
 const MODES: { value: RemediationMode; label: string; hint: string }[] = [
   { value: "manual", label: "Manual only", hint: "Never fires itself" },
