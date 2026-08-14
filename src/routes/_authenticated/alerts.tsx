@@ -223,9 +223,9 @@ function AlertsView() {
     setIncidents((is) => is.map((i) => (i.id === id ? { ...i, ...patch } : i)));
 
   /**
-   * Fires the rule's remediation workflow — but only if the rule's guardrails
-   * (mode, hourly cap, cooldown) permit it. Human-initiated calls bypass the
-   * approval gate but never the rate limit or cooldown.
+   * Asks the server to remediate. Guardrails (mode, hourly cap, cooldown) are
+   * enforced server-side against the persisted attempt ledger — the client only
+   * renders the decision it gets back.
    */
   const remediate = async (incident: Incident, workflowId: string, humanInitiated = false) => {
     const workflow = workflows.find((w) => w.id === workflowId);
@@ -233,45 +233,43 @@ function AlertsView() {
 
     const rule = rules.find((r) => r.id === incident.ruleId);
     const policy = normalizePolicy(rule?.remediationPolicy);
-    const now = Date.now();
-    const decision = evaluateRemediation({ policy, history: attempts[incident.ruleId] ?? [], now, humanInitiated });
 
-    if (decision.outcome === "blocked") {
-      patchIncident(incident.id, {
-        remediation: "blocked",
-        remediationWorkflowName: workflow.name,
-        remediationNote: decision.retryAfterMs
-          ? `${decision.reason} · retry in ${formatRetryAfter(decision.retryAfterMs)}`
-          : decision.reason,
-      });
-      toast.error("Remediation blocked by policy", { description: decision.reason });
-      return;
-    }
-    if (decision.outcome === "needs_approval") {
-      patchIncident(incident.id, {
-        remediation: "awaiting_approval",
-        remediationWorkflowName: workflow.name,
-        remediationNote: decision.reason,
-      });
-      toast.warning("Remediation awaiting approval", { description: `${workflow.name} — approve it in the incident console` });
-      return;
-    }
-
-    setAttempts((a) => ({
-      ...a,
-      [incident.ruleId]: [...(a[incident.ruleId] ?? []).filter((t) => now - t < 24 * 60 * 60 * 1000), now],
-    }));
     patchIncident(incident.id, { remediation: "running", remediationWorkflowName: workflow.name, remediationError: undefined, remediationNote: undefined });
     try {
-      const run = await execute({
+      const res = await requestRemediationFn({
         data: {
+          ruleId: incident.ruleId,
+          ruleName: incident.ruleName,
           workflowId,
+          policy,
+          humanInitiated,
           input: `Incident remediation request.\nRule: ${incident.ruleName}\nSeverity: ${incident.severity}\nMetric: ${incident.metric}\nObserved: ${incident.observed} (threshold ${incident.threshold})\nDetail: ${incident.message}\n\nDiagnose the likely cause and produce a concrete remediation plan.`,
         },
       });
-      const ok = (run as { status?: string })?.status === "succeeded";
+      void attemptsQuery.refetch();
+
+      if (res.outcome === "blocked") {
+        patchIncident(incident.id, {
+          remediation: "blocked",
+          remediationWorkflowName: res.workflowName,
+          remediationNote: res.retryAfterMs ? `${res.reason} · retry in ${formatRetryAfter(res.retryAfterMs)}` : res.reason,
+        });
+        toast.error("Remediation blocked by policy", { description: res.reason });
+        return;
+      }
+      if (res.outcome === "needs_approval") {
+        patchIncident(incident.id, {
+          remediation: "awaiting_approval",
+          remediationWorkflowName: res.workflowName,
+          remediationNote: res.reason,
+        });
+        toast.warning("Remediation awaiting approval", { description: `${res.workflowName} — approve it in the incident console` });
+        return;
+      }
+
+      const ok = (res.run as { status?: string } | null)?.status === "succeeded";
       patchIncident(incident.id, { remediation: ok ? "succeeded" : "failed" });
-      if (ok) toast.success(`Remediation ran: ${workflow.name}`, { description: "Full trace available in Runs" });
+      if (ok) toast.success(`Remediation ran: ${res.workflowName}`, { description: "Full trace available in Runs" });
       else toast.error("Remediation run failed", { description: "See the trace in Runs" });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Remediation failed";
@@ -279,6 +277,7 @@ function AlertsView() {
       toast.error("Remediation failed", { description: message });
     }
   };
+
 
   // Simulate a rule firing: pick a plausible observed value just past the threshold.
   const fireRule = (rule: AlertRule) => {
