@@ -143,15 +143,28 @@ function AlertsView() {
   });
   const [sevFilter, setSevFilter] = useState<Severity | "all">("all");
   const [statusFilter, setStatusFilter] = useState<IncidentStatus | "all">("all");
-  const [attempts, setAttempts] = useState<Record<string, number[]>>(() => load(ATTEMPT_KEY, {}));
   const { data: workflows = [] } = useWorkflows();
-  const execute = useServerFn(runWorkflow);
+  const requestRemediationFn = useServerFn(requestRemediation);
+  const listAttemptsFn = useServerFn(listRemediationAttempts);
+  const attemptsQuery = useQuery({
+    queryKey: ["remediation-attempts"],
+    queryFn: () => listAttemptsFn({}),
+    staleTime: 30_000,
+  });
 
-
+  /** Allowed attempts per rule, timestamps in epoch-ms — server ledger is the source of truth. */
+  const attempts = useMemo(() => {
+    const map: Record<string, number[]> = {};
+    for (const a of attemptsQuery.data ?? []) {
+      if (a.outcome !== "allow") continue;
+      (map[a.rule_id] ??= []).push(new Date(a.created_at).getTime());
+    }
+    return map;
+  }, [attemptsQuery.data]);
 
   useEffect(() => { localStorage.setItem(RULE_KEY, JSON.stringify(rules)); }, [rules]);
   useEffect(() => { localStorage.setItem(INCIDENT_KEY, JSON.stringify(incidents)); }, [incidents]);
-  useEffect(() => { localStorage.setItem(ATTEMPT_KEY, JSON.stringify(attempts)); }, [attempts]);
+
 
   const activeRules = rules.filter((r) => r.enabled).length;
   const firing = incidents.filter((i) => i.status === "firing").length;
