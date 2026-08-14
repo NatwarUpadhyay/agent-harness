@@ -119,6 +119,51 @@ export type Database = {
         }
         Relationships: []
       }
+      remediation_attempts: {
+        Row: {
+          created_at: string
+          human_initiated: boolean
+          id: string
+          outcome: string
+          reason: string
+          rule_id: string
+          rule_name: string
+          run_id: string | null
+          run_status: string | null
+          user_id: string
+          workflow_id: string | null
+          workflow_name: string | null
+        }
+        Insert: {
+          created_at?: string
+          human_initiated?: boolean
+          id?: string
+          outcome: string
+          reason: string
+          rule_id: string
+          rule_name: string
+          run_id?: string | null
+          run_status?: string | null
+          user_id: string
+          workflow_id?: string | null
+          workflow_name?: string | null
+        }
+        Update: {
+          created_at?: string
+          human_initiated?: boolean
+          id?: string
+          outcome?: string
+          reason?: string
+          rule_id?: string
+          rule_name?: string
+          run_id?: string | null
+          run_status?: string | null
+          user_id?: string
+          workflow_id?: string | null
+          workflow_name?: string | null
+        }
+        Relationships: []
+      }
       tools: {
         Row: {
           call_count: number
