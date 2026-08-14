@@ -75,7 +75,8 @@ It is built for teams who want a shared visual language for AI systems before wr
 | **35** | **Server-persisted org data + live SCIM provisioning endpoint** | **Shipped** |
 | **36** | **Production execution engine — run harness workflows against live models, full traces** | **Shipped** |
 | **37** | **Scheduled & triggered runs — cron windows, inbound webhooks, manual fire** | **Shipped** |
-| **Next** | Server-side remediation policy enforcement | Planned |
+| **41** | **Server-enforced remediation guardrails — persisted attempt ledger, server-side policy decisions** | **Shipped** |
+| **Next** | Remediation ledger analytics + org-wide guardrail defaults | Planned |
 
 
 ---
@@ -220,6 +221,8 @@ The fastest way to understand Harness is to use the preview:
 
 - **Phase 40 — Remediation policy guardrails.** Auto-remediation is now governed per rule: a mode (manual only / approval gate / fully automatic), an hourly attempt cap, and a cooldown between attempts. Breaches evaluate the guardrails before anything runs — blocked attempts show the reason and the retry window, approval-gated ones park the incident in an "awaiting approval" state with Approve / Deny actions, and the hourly budget used is shown live next to each rule. Rate limit and cooldown apply to human-initiated runs too; only the approval gate can be bypassed by an operator. Decision logic lives in `src/lib/data/remediation-policy.ts` as pure, unit-tested functions.
 
+- **Phase 41 — Server-enforced remediation guardrails.** Guardrails are no longer a client-side courtesy. Every remediation request goes through a server function that reads the rule's attempt history from a persisted ledger (`remediation_attempts`, row-level secured per user), evaluates the same pure policy on the server, records the outcome (allow / needs approval / blocked) with its reason, and only then executes the workflow — linking the resulting run back to the attempt. The incident console renders the server's decision and reads the live hourly budget from the ledger instead of localStorage, so cooldowns and rate limits survive a refresh, a different browser, or a direct API call.
+
 ## Next up
 
-Server-side remediation policy enforcement so scheduled and webhook-triggered remediations obey the same guardrails.
+Remediation ledger analytics (MTTR, success rate per rule) and org-wide guardrail defaults enforced across all members.
