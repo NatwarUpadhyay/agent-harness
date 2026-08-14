@@ -9,12 +9,14 @@ import {
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { StatusDot } from "@/components/ui/status-badge";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
 import { useWorkflows } from "@/lib/hooks/use-entities";
-import { runWorkflow } from "@/lib/data/runs.functions";
+import { listRemediationAttempts, requestRemediation } from "@/lib/data/remediation.functions";
 import {
   type RemediationPolicy, type RemediationMode,
-  defaultRemediationPolicy, evaluateRemediation, normalizePolicy, attemptsInWindow, formatRetryAfter,
+  defaultRemediationPolicy, normalizePolicy, attemptsInWindow, formatRetryAfter,
 } from "@/lib/data/remediation-policy";
+
 
 type Metric = "cost" | "latency" | "error_rate" | "audit_anomaly";
 type Operator = ">" | ">=" | "<" | "<=";
@@ -81,7 +83,6 @@ const CHANNELS: { value: Channel; label: string; icon: typeof Slack }[] = [
 
 const RULE_KEY = "harness.alerts.rules";
 const INCIDENT_KEY = "harness.alerts.incidents";
-const ATTEMPT_KEY = "harness.alerts.remediation-attempts.v1";
 
 const MODES: { value: RemediationMode; label: string; hint: string }[] = [
   { value: "manual", label: "Manual only", hint: "Never fires itself" },
@@ -143,15 +144,28 @@ function AlertsView() {
   });
   const [sevFilter, setSevFilter] = useState<Severity | "all">("all");
   const [statusFilter, setStatusFilter] = useState<IncidentStatus | "all">("all");
-  const [attempts, setAttempts] = useState<Record<string, number[]>>(() => load(ATTEMPT_KEY, {}));
   const { data: workflows = [] } = useWorkflows();
-  const execute = useServerFn(runWorkflow);
+  const requestRemediationFn = useServerFn(requestRemediation);
+  const listAttemptsFn = useServerFn(listRemediationAttempts);
+  const attemptsQuery = useQuery({
+    queryKey: ["remediation-attempts"],
+    queryFn: () => listAttemptsFn({}),
+    staleTime: 30_000,
+  });
 
-
+  /** Allowed attempts per rule, timestamps in epoch-ms — server ledger is the source of truth. */
+  const attempts = useMemo(() => {
+    const map: Record<string, number[]> = {};
+    for (const a of attemptsQuery.data ?? []) {
+      if (a.outcome !== "allow") continue;
+      (map[a.rule_id] ??= []).push(new Date(a.created_at).getTime());
+    }
+    return map;
+  }, [attemptsQuery.data]);
 
   useEffect(() => { localStorage.setItem(RULE_KEY, JSON.stringify(rules)); }, [rules]);
   useEffect(() => { localStorage.setItem(INCIDENT_KEY, JSON.stringify(incidents)); }, [incidents]);
-  useEffect(() => { localStorage.setItem(ATTEMPT_KEY, JSON.stringify(attempts)); }, [attempts]);
+
 
   const activeRules = rules.filter((r) => r.enabled).length;
   const firing = incidents.filter((i) => i.status === "firing").length;
@@ -210,9 +224,9 @@ function AlertsView() {
     setIncidents((is) => is.map((i) => (i.id === id ? { ...i, ...patch } : i)));
 
   /**
-   * Fires the rule's remediation workflow — but only if the rule's guardrails
-   * (mode, hourly cap, cooldown) permit it. Human-initiated calls bypass the
-   * approval gate but never the rate limit or cooldown.
+   * Asks the server to remediate. Guardrails (mode, hourly cap, cooldown) are
+   * enforced server-side against the persisted attempt ledger — the client only
+   * renders the decision it gets back.
    */
   const remediate = async (incident: Incident, workflowId: string, humanInitiated = false) => {
     const workflow = workflows.find((w) => w.id === workflowId);
@@ -220,45 +234,43 @@ function AlertsView() {
 
     const rule = rules.find((r) => r.id === incident.ruleId);
     const policy = normalizePolicy(rule?.remediationPolicy);
-    const now = Date.now();
-    const decision = evaluateRemediation({ policy, history: attempts[incident.ruleId] ?? [], now, humanInitiated });
 
-    if (decision.outcome === "blocked") {
-      patchIncident(incident.id, {
-        remediation: "blocked",
-        remediationWorkflowName: workflow.name,
-        remediationNote: decision.retryAfterMs
-          ? `${decision.reason} · retry in ${formatRetryAfter(decision.retryAfterMs)}`
-          : decision.reason,
-      });
-      toast.error("Remediation blocked by policy", { description: decision.reason });
-      return;
-    }
-    if (decision.outcome === "needs_approval") {
-      patchIncident(incident.id, {
-        remediation: "awaiting_approval",
-        remediationWorkflowName: workflow.name,
-        remediationNote: decision.reason,
-      });
-      toast.warning("Remediation awaiting approval", { description: `${workflow.name} — approve it in the incident console` });
-      return;
-    }
-
-    setAttempts((a) => ({
-      ...a,
-      [incident.ruleId]: [...(a[incident.ruleId] ?? []).filter((t) => now - t < 24 * 60 * 60 * 1000), now],
-    }));
     patchIncident(incident.id, { remediation: "running", remediationWorkflowName: workflow.name, remediationError: undefined, remediationNote: undefined });
     try {
-      const run = await execute({
+      const res = await requestRemediationFn({
         data: {
+          ruleId: incident.ruleId,
+          ruleName: incident.ruleName,
           workflowId,
+          policy,
+          humanInitiated,
           input: `Incident remediation request.\nRule: ${incident.ruleName}\nSeverity: ${incident.severity}\nMetric: ${incident.metric}\nObserved: ${incident.observed} (threshold ${incident.threshold})\nDetail: ${incident.message}\n\nDiagnose the likely cause and produce a concrete remediation plan.`,
         },
       });
-      const ok = (run as { status?: string })?.status === "succeeded";
+      void attemptsQuery.refetch();
+
+      if (res.outcome === "blocked") {
+        patchIncident(incident.id, {
+          remediation: "blocked",
+          remediationWorkflowName: res.workflowName,
+          remediationNote: res.retryAfterMs ? `${res.reason} · retry in ${formatRetryAfter(res.retryAfterMs)}` : res.reason,
+        });
+        toast.error("Remediation blocked by policy", { description: res.reason });
+        return;
+      }
+      if (res.outcome === "needs_approval") {
+        patchIncident(incident.id, {
+          remediation: "awaiting_approval",
+          remediationWorkflowName: res.workflowName,
+          remediationNote: res.reason,
+        });
+        toast.warning("Remediation awaiting approval", { description: `${res.workflowName} — approve it in the incident console` });
+        return;
+      }
+
+      const ok = (res.run as { status?: string } | null)?.status === "succeeded";
       patchIncident(incident.id, { remediation: ok ? "succeeded" : "failed" });
-      if (ok) toast.success(`Remediation ran: ${workflow.name}`, { description: "Full trace available in Runs" });
+      if (ok) toast.success(`Remediation ran: ${res.workflowName}`, { description: "Full trace available in Runs" });
       else toast.error("Remediation run failed", { description: "See the trace in Runs" });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Remediation failed";
@@ -266,6 +278,7 @@ function AlertsView() {
       toast.error("Remediation failed", { description: message });
     }
   };
+
 
   // Simulate a rule firing: pick a plausible observed value just past the threshold.
   const fireRule = (rule: AlertRule) => {
