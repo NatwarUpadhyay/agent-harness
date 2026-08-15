@@ -76,7 +76,8 @@ It is built for teams who want a shared visual language for AI systems before wr
 | **36** | **Production execution engine — run harness workflows against live models, full traces** | **Shipped** |
 | **37** | **Scheduled & triggered runs — cron windows, inbound webhooks, manual fire** | **Shipped** |
 | **41** | **Server-enforced remediation guardrails — persisted attempt ledger, server-side policy decisions** | **Shipped** |
-| **Next** | Remediation ledger analytics + org-wide guardrail defaults | Planned |
+| **42** | **Remediation ledger analytics + org-wide guardrail defaults** | **Shipped** |
+| **Next** | Cross-org guardrail policy inheritance and per-team remediation budgets | Planned |
 
 
 ---
@@ -223,6 +224,8 @@ The fastest way to understand Harness is to use the preview:
 
 - **Phase 41 — Server-enforced remediation guardrails.** Guardrails are no longer a client-side courtesy. Every remediation request goes through a server function that reads the rule's attempt history from a persisted ledger (`remediation_attempts`, row-level secured per user), evaluates the same pure policy on the server, records the outcome (allow / needs approval / blocked) with its reason, and only then executes the workflow — linking the resulting run back to the attempt. The incident console renders the server's decision and reads the live hourly budget from the ledger instead of localStorage, so cooldowns and rate limits survive a refresh, a different browser, or a direct API call.
 
+- **Phase 42 — Remediation ledger analytics + org-wide guardrail defaults.** A new `/remediation` console summarises the attempt ledger: 24-hour outcome distribution (allowed / awaiting approval / blocked) as a stacked timeline, allow rate, machine-vs-operator share, success rate of the runs automation triggered, top block reasons, and a per-rule breakdown with run failures and last-attempt time. Org-wide guardrail defaults (mode, hourly cap, cooldown) are persisted with the rest of the org settings and every new alert rule inherits them, so automation can never be created wide open by accident. Summarisation lives in `src/lib/data/remediation-analytics.ts` as pure, unit-tested functions, and the ledger exports to CSV for audit.
+
 ## Next up
 
-Remediation ledger analytics (MTTR, success rate per rule) and org-wide guardrail defaults enforced across all members.
+Cross-org guardrail policy inheritance and per-team remediation budgets.
