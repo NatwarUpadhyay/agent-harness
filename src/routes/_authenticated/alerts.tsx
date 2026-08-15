@@ -12,9 +12,10 @@ import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { useWorkflows } from "@/lib/hooks/use-entities";
 import { listRemediationAttempts, requestRemediation } from "@/lib/data/remediation.functions";
+import { getEnterpriseAuth } from "@/lib/data/enterprise-auth.functions";
 import {
   type RemediationPolicy, type RemediationMode,
-  defaultRemediationPolicy, normalizePolicy, attemptsInWindow, formatRetryAfter,
+  normalizePolicy, attemptsInWindow, formatRetryAfter,
 } from "@/lib/data/remediation-policy";
 
 
