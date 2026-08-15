@@ -34,13 +34,15 @@ describe("summarizeLedger", () => {
     expect(a.runSuccessRate).toBeCloseTo(2 / 3);
   });
 
-  it("summarizes per rule sorted by volume", () => {
-    expect(a.rules[0].ruleId).toBe("r1");
-    expect(a.rules[0]).toMatchObject({ total: 3, allowed: 1, blocked: 2, runFailures: 0 });
-    expect(a.rules[0].allowRate).toBeCloseTo(1 / 3);
+  it("summarizes per rule, breaking volume ties by name", () => {
+    const r1 = a.rules.find((r) => r.ruleId === "r1")!;
+    expect(r1).toMatchObject({ total: 3, allowed: 1, blocked: 2, runFailures: 0 });
+    expect(r1.allowRate).toBeCloseTo(1 / 3);
     const r2 = a.rules.find((r) => r.ruleId === "r2")!;
     expect(r2).toMatchObject({ total: 3, allowed: 2, needsApproval: 1, humanInitiated: 1, runFailures: 1 });
-    expect(a.busiestRule?.ruleId).toBe("r1");
+    // equal volume — "Error budget" sorts before "Latency spike"
+    expect(a.rules[0].ruleId).toBe("r2");
+    expect(a.busiestRule?.ruleId).toBe("r2");
   });
 
   it("buckets only the last 24 hours", () => {
