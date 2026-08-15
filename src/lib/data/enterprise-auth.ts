@@ -30,11 +30,21 @@ export const scimConfigSchema = z.object({
 
 export type ScimConfig = z.infer<typeof scimConfigSchema>;
 
+/** Org-wide fallback guardrails applied to newly created alert rules. */
+export const remediationDefaultsSchema = z.object({
+  mode: z.enum(["manual", "approval", "auto"]).default("approval"),
+  maxPerHour: z.number().int().min(1).max(60).default(3),
+  cooldownMinutes: z.number().min(0).max(720).default(10),
+});
+
+export type RemediationDefaults = z.infer<typeof remediationDefaultsSchema>;
+
 export const enterpriseAuthSchema = z.object({
   sso: ssoProviderSchema.array().default([]),
   scim: scimConfigSchema.default({}),
   allowedDomains: z.string().array().default([]),
   passwordLoginEnabled: z.boolean().default(true),
+  remediationDefaults: remediationDefaultsSchema.default({}),
 });
 
 export type EnterpriseAuth = z.infer<typeof enterpriseAuthSchema>;
