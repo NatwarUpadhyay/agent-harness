@@ -153,6 +153,19 @@ function AlertsView() {
     staleTime: 30_000,
   });
 
+  // New rules inherit the org-wide guardrail defaults set on /remediation.
+  const loadOrgFn = useServerFn(getEnterpriseAuth);
+  const orgQuery = useQuery({
+    queryKey: ["enterprise-auth"],
+    queryFn: () => loadOrgFn({}),
+    staleTime: 60_000,
+  });
+  const orgDefaults = useMemo(
+    () => normalizePolicy(orgQuery.data?.remediationDefaults),
+    [orgQuery.data],
+  );
+
+
   /** Allowed attempts per rule, timestamps in epoch-ms — server ledger is the source of truth. */
   const attempts = useMemo(() => {
     const map: Record<string, number[]> = {};
