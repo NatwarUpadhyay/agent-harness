@@ -10,9 +10,17 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/login")({
-  ssr: false,
   validateSearch: searchSchema,
-  head: () => ({ meta: [{ title: "Sign in — Harness" }] }),
+  head: () => ({
+    meta: [
+      { title: "Sign in — Harness" },
+      { name: "description", content: "Sign in to your Harness workspace to run, observe and govern AI agents." },
+      { property: "og:title", content: "Sign in — Harness" },
+      { property: "og:description", content: "Sign in to your Harness workspace to run, observe and govern AI agents." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
   component: LoginPage,
 });
 
