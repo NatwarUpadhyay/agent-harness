@@ -218,7 +218,7 @@ function AlertsView() {
       enabled: true,
       created: new Date().toISOString().slice(0, 10),
       remediationWorkflowId: draft.remediationWorkflowId || undefined,
-      remediationPolicy: normalizePolicy(draft.remediationPolicy),
+      remediationPolicy: normalizePolicy(draft.remediationPolicy ?? orgDefaults),
     };
     setRules((rs) => [rule, ...rs]);
     setCreating(false);
