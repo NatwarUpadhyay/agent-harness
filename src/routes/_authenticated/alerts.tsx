@@ -406,10 +406,10 @@ function AlertsView() {
                 </Field>
                 <Field label="Remediation guardrail">
                   <select
-                    value={(draft.remediationPolicy ?? defaultRemediationPolicy).mode}
+                    value={(draft.remediationPolicy ?? orgDefaults).mode}
                     onChange={(e) => setDraft((d) => ({
                       ...d,
-                      remediationPolicy: normalizePolicy({ ...(d.remediationPolicy ?? defaultRemediationPolicy), mode: e.target.value as RemediationMode }),
+                      remediationPolicy: normalizePolicy({ ...(d.remediationPolicy ?? orgDefaults), mode: e.target.value as RemediationMode }),
                     }))}
                     className="w-full h-9 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-default)] px-2 text-[13px] focus:outline-none focus:border-[var(--accent)]"
                   >
