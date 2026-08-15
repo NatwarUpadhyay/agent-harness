@@ -22,6 +22,7 @@ import { Route as AuthenticatedSchedulesRouteImport } from './routes/_authentica
 import { Route as AuthenticatedRunsRouteImport } from './routes/_authenticated/runs'
 import { Route as AuthenticatedRetrieverRouteImport } from './routes/_authenticated/retriever'
 import { Route as AuthenticatedResearchRouteImport } from './routes/_authenticated/research'
+import { Route as AuthenticatedRemediationRouteImport } from './routes/_authenticated/remediation'
 import { Route as AuthenticatedReliabilityRouteImport } from './routes/_authenticated/reliability'
 import { Route as AuthenticatedPromptsRouteImport } from './routes/_authenticated/prompts'
 import { Route as AuthenticatedProjectsRouteImport } from './routes/_authenticated/projects'
@@ -121,6 +122,12 @@ const AuthenticatedResearchRoute = AuthenticatedResearchRouteImport.update({
   path: '/research',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedRemediationRoute =
+  AuthenticatedRemediationRouteImport.update({
+    id: '/remediation',
+    path: '/remediation',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedReliabilityRoute =
   AuthenticatedReliabilityRouteImport.update({
     id: '/reliability',
@@ -333,6 +340,7 @@ export interface FileRoutesByFullPath {
   '/projects': typeof AuthenticatedProjectsRoute
   '/prompts': typeof AuthenticatedPromptsRoute
   '/reliability': typeof AuthenticatedReliabilityRoute
+  '/remediation': typeof AuthenticatedRemediationRoute
   '/research': typeof AuthenticatedResearchRoute
   '/retriever': typeof AuthenticatedRetrieverRoute
   '/runs': typeof AuthenticatedRunsRoute
@@ -380,6 +388,7 @@ export interface FileRoutesByTo {
   '/projects': typeof AuthenticatedProjectsRoute
   '/prompts': typeof AuthenticatedPromptsRoute
   '/reliability': typeof AuthenticatedReliabilityRoute
+  '/remediation': typeof AuthenticatedRemediationRoute
   '/research': typeof AuthenticatedResearchRoute
   '/retriever': typeof AuthenticatedRetrieverRoute
   '/runs': typeof AuthenticatedRunsRoute
@@ -430,6 +439,7 @@ export interface FileRoutesById {
   '/_authenticated/projects': typeof AuthenticatedProjectsRoute
   '/_authenticated/prompts': typeof AuthenticatedPromptsRoute
   '/_authenticated/reliability': typeof AuthenticatedReliabilityRoute
+  '/_authenticated/remediation': typeof AuthenticatedRemediationRoute
   '/_authenticated/research': typeof AuthenticatedResearchRoute
   '/_authenticated/retriever': typeof AuthenticatedRetrieverRoute
   '/_authenticated/runs': typeof AuthenticatedRunsRoute
@@ -481,6 +491,7 @@ export interface FileRouteTypes {
     | '/projects'
     | '/prompts'
     | '/reliability'
+    | '/remediation'
     | '/research'
     | '/retriever'
     | '/runs'
@@ -528,6 +539,7 @@ export interface FileRouteTypes {
     | '/projects'
     | '/prompts'
     | '/reliability'
+    | '/remediation'
     | '/research'
     | '/retriever'
     | '/runs'
@@ -577,6 +589,7 @@ export interface FileRouteTypes {
     | '/_authenticated/projects'
     | '/_authenticated/prompts'
     | '/_authenticated/reliability'
+    | '/_authenticated/remediation'
     | '/_authenticated/research'
     | '/_authenticated/retriever'
     | '/_authenticated/runs'
@@ -695,6 +708,13 @@ declare module '@tanstack/react-router' {
       path: '/research'
       fullPath: '/research'
       preLoaderRoute: typeof AuthenticatedResearchRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/remediation': {
+      id: '/_authenticated/remediation'
+      path: '/remediation'
+      fullPath: '/remediation'
+      preLoaderRoute: typeof AuthenticatedRemediationRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/reliability': {
@@ -968,6 +988,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProjectsRoute: typeof AuthenticatedProjectsRoute
   AuthenticatedPromptsRoute: typeof AuthenticatedPromptsRoute
   AuthenticatedReliabilityRoute: typeof AuthenticatedReliabilityRoute
+  AuthenticatedRemediationRoute: typeof AuthenticatedRemediationRoute
   AuthenticatedResearchRoute: typeof AuthenticatedResearchRoute
   AuthenticatedRetrieverRoute: typeof AuthenticatedRetrieverRoute
   AuthenticatedRunsRoute: typeof AuthenticatedRunsRoute
@@ -1009,6 +1030,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProjectsRoute: AuthenticatedProjectsRoute,
   AuthenticatedPromptsRoute: AuthenticatedPromptsRoute,
   AuthenticatedReliabilityRoute: AuthenticatedReliabilityRoute,
+  AuthenticatedRemediationRoute: AuthenticatedRemediationRoute,
   AuthenticatedResearchRoute: AuthenticatedResearchRoute,
   AuthenticatedRetrieverRoute: AuthenticatedRetrieverRoute,
   AuthenticatedRunsRoute: AuthenticatedRunsRoute,

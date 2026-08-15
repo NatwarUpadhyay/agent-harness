@@ -12,9 +12,10 @@ import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { useWorkflows } from "@/lib/hooks/use-entities";
 import { listRemediationAttempts, requestRemediation } from "@/lib/data/remediation.functions";
+import { getEnterpriseAuth } from "@/lib/data/enterprise-auth.functions";
 import {
   type RemediationPolicy, type RemediationMode,
-  defaultRemediationPolicy, normalizePolicy, attemptsInWindow, formatRetryAfter,
+  normalizePolicy, attemptsInWindow, formatRetryAfter,
 } from "@/lib/data/remediation-policy";
 
 
@@ -153,6 +154,19 @@ function AlertsView() {
     staleTime: 30_000,
   });
 
+  // New rules inherit the org-wide guardrail defaults set on /remediation.
+  const loadOrgFn = useServerFn(getEnterpriseAuth);
+  const orgQuery = useQuery({
+    queryKey: ["enterprise-auth"],
+    queryFn: () => loadOrgFn({}),
+    staleTime: 60_000,
+  });
+  const orgDefaults = useMemo(
+    () => normalizePolicy(orgQuery.data?.remediationDefaults),
+    [orgQuery.data],
+  );
+
+
   /** Allowed attempts per rule, timestamps in epoch-ms — server ledger is the source of truth. */
   const attempts = useMemo(() => {
     const map: Record<string, number[]> = {};
@@ -204,7 +218,7 @@ function AlertsView() {
       enabled: true,
       created: new Date().toISOString().slice(0, 10),
       remediationWorkflowId: draft.remediationWorkflowId || undefined,
-      remediationPolicy: normalizePolicy(draft.remediationPolicy),
+      remediationPolicy: normalizePolicy(draft.remediationPolicy ?? orgDefaults),
     };
     setRules((rs) => [rule, ...rs]);
     setCreating(false);
@@ -406,10 +420,10 @@ function AlertsView() {
                 </Field>
                 <Field label="Remediation guardrail">
                   <select
-                    value={(draft.remediationPolicy ?? defaultRemediationPolicy).mode}
+                    value={(draft.remediationPolicy ?? orgDefaults).mode}
                     onChange={(e) => setDraft((d) => ({
                       ...d,
-                      remediationPolicy: normalizePolicy({ ...(d.remediationPolicy ?? defaultRemediationPolicy), mode: e.target.value as RemediationMode }),
+                      remediationPolicy: normalizePolicy({ ...(d.remediationPolicy ?? orgDefaults), mode: e.target.value as RemediationMode }),
                     }))}
                     className="w-full h-9 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-default)] px-2 text-[13px] focus:outline-none focus:border-[var(--accent)]"
                   >
