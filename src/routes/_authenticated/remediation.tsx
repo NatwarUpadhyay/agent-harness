@@ -340,12 +340,22 @@ function RemediationLedgerView() {
         <SectionHeader
           title="Per-team remediation budgets"
           action={
-            <button
-              onClick={addTeam}
-              className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md border border-[var(--border-default)] text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)]"
-            >
-              <Plus className="h-3.5 w-3.5" /> Add team
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => saveMutation.mutate()}
+                disabled={!dirty || saveMutation.isPending || !orgQuery.data}
+                className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md bg-[var(--accent)] text-[var(--bg-base)] text-[12px] font-medium hover:bg-[var(--accent-hover)] disabled:opacity-40"
+              >
+                {saveMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                {dirty ? "Save teams" : "Saved"}
+              </button>
+              <button
+                onClick={addTeam}
+                className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md border border-[var(--border-default)] text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)]"
+              >
+                <Plus className="h-3.5 w-3.5" /> Add team
+              </button>
+            </div>
           }
         />
         <p className="text-[12px] text-[var(--text-secondary)] mb-4">
