@@ -130,6 +130,8 @@ export type Database = {
           rule_name: string
           run_id: string | null
           run_status: string | null
+          team_id: string | null
+          team_name: string | null
           user_id: string
           workflow_id: string | null
           workflow_name: string | null
@@ -144,6 +146,8 @@ export type Database = {
           rule_name: string
           run_id?: string | null
           run_status?: string | null
+          team_id?: string | null
+          team_name?: string | null
           user_id: string
           workflow_id?: string | null
           workflow_name?: string | null
@@ -158,6 +162,8 @@ export type Database = {
           rule_name?: string
           run_id?: string | null
           run_status?: string | null
+          team_id?: string | null
+          team_name?: string | null
           user_id?: string
           workflow_id?: string | null
           workflow_name?: string | null

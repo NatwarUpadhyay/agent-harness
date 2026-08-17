@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useServerFn } from "@tanstack/react-start";
 import {
   Bell, Plus, Trash2, Zap, Check, X, Filter, Flame, ShieldAlert, Activity,
-  DollarSign, Clock, ShieldCheck, Mail, Slack, Webhook, Wand2, Loader2, Ban, Timer, Gauge,
+  DollarSign, Clock, ShieldCheck, Mail, Slack, Webhook, Wand2, Loader2, Ban, Timer, Gauge, Users,
 } from "lucide-react";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { StatusDot } from "@/components/ui/status-badge";
@@ -17,6 +17,7 @@ import {
   type RemediationPolicy, type RemediationMode,
   normalizePolicy, attemptsInWindow, formatRetryAfter,
 } from "@/lib/data/remediation-policy";
+import { normalizeTeam, type TeamBudget } from "@/lib/data/remediation-teams";
 
 
 type Metric = "cost" | "latency" | "error_rate" | "audit_anomaly";
@@ -41,6 +42,8 @@ interface AlertRule {
   remediationWorkflowId?: string;
   /** Guardrails: approval gate, hourly cap and cooldown for that workflow. */
   remediationPolicy?: RemediationPolicy;
+  /** Team whose daily remediation budget this rule spends. */
+  remediationTeamId?: string;
 }
 
 interface Incident {
@@ -165,6 +168,11 @@ function AlertsView() {
     () => normalizePolicy(orgQuery.data?.remediationDefaults),
     [orgQuery.data],
   );
+  /** Teams configured on /remediation — a rule spends its team's daily budget. */
+  const orgTeams = useMemo(
+    () => (orgQuery.data?.remediationTeams ?? []).map((t) => normalizeTeam(t as TeamBudget)),
+    [orgQuery.data],
+  );
 
 
   /** Allowed attempts per rule, timestamps in epoch-ms — server ledger is the source of truth. */
@@ -257,6 +265,7 @@ function AlertsView() {
           ruleName: incident.ruleName,
           workflowId,
           policy,
+          ...(rule?.remediationTeamId ? { teamId: rule.remediationTeamId } : {}),
           humanInitiated,
           input: `Incident remediation request.\nRule: ${incident.ruleName}\nSeverity: ${incident.severity}\nMetric: ${incident.metric}\nObserved: ${incident.observed} (threshold ${incident.threshold})\nDetail: ${incident.message}\n\nDiagnose the likely cause and produce a concrete remediation plan.`,
         },
@@ -418,6 +427,18 @@ function AlertsView() {
                     {workflows.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
                   </select>
                 </Field>
+                <Field label="Owning team (budget)">
+                  <select
+                    value={draft.remediationTeamId ?? ""}
+                    onChange={(e) => setDraft((d) => ({ ...d, remediationTeamId: e.target.value || undefined }))}
+                    className="w-full h-9 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-default)] px-2 text-[13px] focus:outline-none focus:border-[var(--accent)]"
+                  >
+                    <option value="">Unassigned — org budget only</option>
+                    {orgTeams.map((t) => (
+                      <option key={t.id} value={t.id}>{t.name} — {t.dailyBudget}/day</option>
+                    ))}
+                  </select>
+                </Field>
                 <Field label="Remediation guardrail">
                   <select
                     value={(draft.remediationPolicy ?? orgDefaults).mode}
@@ -548,6 +569,30 @@ function AlertsView() {
                           m cooldown
                         </label>
                         <span className="font-mono-tabular">used {used}/{policy.maxPerHour} this hour</span>
+                        {orgTeams.length > 0 && (
+                          <label className="inline-flex items-center gap-1">
+                            <Users className="h-3 w-3" />
+                            <select
+                              value={r.remediationTeamId ?? ""}
+                              onChange={(e) =>
+                                setRules((rs) =>
+                                  rs.map((x) =>
+                                    x.id === r.id
+                                      ? { ...x, remediationTeamId: e.target.value || undefined }
+                                      : x,
+                                  ),
+                                )
+                              }
+                              aria-label={`Owning team for ${r.name}`}
+                              className="h-7 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-default)] px-1.5 text-[11px] focus:outline-none focus:border-[var(--accent)]"
+                            >
+                              <option value="">No team budget</option>
+                              {orgTeams.map((t) => (
+                                <option key={t.id} value={t.id}>{t.name}</option>
+                              ))}
+                            </select>
+                          </label>
+                        )}
                       </div>
                     );
                   })()}

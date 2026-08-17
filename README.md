@@ -77,7 +77,8 @@ It is built for teams who want a shared visual language for AI systems before wr
 | **37** | **Scheduled & triggered runs — cron windows, inbound webhooks, manual fire** | **Shipped** |
 | **41** | **Server-enforced remediation guardrails — persisted attempt ledger, server-side policy decisions** | **Shipped** |
 | **42** | **Remediation ledger analytics + org-wide guardrail defaults** | **Shipped** |
-| **Next** | Cross-org guardrail policy inheritance and per-team remediation budgets | Planned |
+| **Phase 43** | Per-team remediation budgets + guardrail inheritance | Shipped |
+| **Next** | Per-team spend attribution rolled into budgets and forecasting | Planned |
 
 
 ---
@@ -226,6 +227,8 @@ The fastest way to understand Harness is to use the preview:
 
 - **Phase 42 — Remediation ledger analytics + org-wide guardrail defaults.** A new `/remediation` console summarises the attempt ledger: 24-hour outcome distribution (allowed / awaiting approval / blocked) as a stacked timeline, allow rate, machine-vs-operator share, success rate of the runs automation triggered, top block reasons, and a per-rule breakdown with run failures and last-attempt time. Org-wide guardrail defaults (mode, hourly cap, cooldown) are persisted with the rest of the org settings and every new alert rule inherits them, so automation can never be created wide open by accident. Summarisation lives in `src/lib/data/remediation-analytics.ts` as pure, unit-tested functions, and the ledger exports to CSV for audit.
 
+- **Phase 43 — Per-team remediation budgets + guardrail inheritance.** Automation now has an owner. Teams are defined on `/remediation` with a rolling 24-hour budget of allowed remediations and optional guardrail overrides, and each alert rule is assigned to a team. The effective policy for a rule is the strictest of org defaults, team overrides and the rule's own settings, so nothing further down the chain can loosen what the org or team allowed. The ledger records the team on every attempt (`team_id` / `team_name`), the server refuses remediation once a team's daily budget is spent — even for an operator-initiated run — and the console shows live per-team usage bars, effective policy and blocked counts. Inheritance and budget maths live in `src/lib/data/remediation-teams.ts` as pure, unit-tested functions (87 tests total).
+
 ## Next up
 
-Cross-org guardrail policy inheritance and per-team remediation budgets.
+Per-team spend attribution rolled into budgets and forecasting.

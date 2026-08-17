@@ -6,7 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, Legend,
 } from "recharts";
-import { Siren, ShieldCheck, Ban, Clock, RefreshCw, Save, Download, Loader2 } from "lucide-react";
+import { Siren, ShieldCheck, Ban, Clock, RefreshCw, Save, Download, Loader2, Users, Plus, Trash2 } from "lucide-react";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { MetricCard } from "@/components/ui/metric-card";
 import { toast } from "sonner";
@@ -14,6 +14,12 @@ import { listRemediationAttempts } from "@/lib/data/remediation.functions";
 import { getEnterpriseAuth, saveEnterpriseAuth } from "@/lib/data/enterprise-auth.functions";
 import { summarizeLedger, formatPercent, type AttemptRow } from "@/lib/data/remediation-analytics";
 import { normalizePolicy, type RemediationMode } from "@/lib/data/remediation-policy";
+import {
+  defaultTeam,
+  normalizeTeam,
+  summarizeTeams,
+  type TeamBudget,
+} from "@/lib/data/remediation-teams";
 
 export const Route = createFileRoute("/_authenticated/remediation")({
   head: () => ({
@@ -66,11 +72,13 @@ function RemediationLedgerView() {
   });
 
   const [defaults, setDefaults] = useState({ mode: "approval" as RemediationMode, maxPerHour: 3, cooldownMinutes: 10 });
+  const [teams, setTeams] = useState<TeamBudget[]>([]);
   const [dirty, setDirty] = useState(false);
 
   useEffect(() => {
     if (orgQuery.data?.remediationDefaults && !dirty) {
       setDefaults(normalizePolicy(orgQuery.data.remediationDefaults));
+      setTeams((orgQuery.data.remediationTeams ?? []).map((t) => normalizeTeam(t as TeamBudget)));
     }
     // only re-sync from the server while the operator has no unsaved edits
   }, [orgQuery.data, dirty]);
@@ -79,13 +87,19 @@ function RemediationLedgerView() {
     mutationFn: async () => {
       const config = orgQuery.data;
       if (!config) throw new Error("Org settings are still loading");
-      return saveOrg({ data: { ...config, remediationDefaults: normalizePolicy(defaults) } });
+      return saveOrg({
+        data: {
+          ...config,
+          remediationDefaults: normalizePolicy(defaults),
+          remediationTeams: teams.map((t) => normalizeTeam(t)),
+        },
+      });
     },
     onSuccess: () => {
       setDirty(false);
       void qc.invalidateQueries({ queryKey: ["enterprise-auth"] });
-      toast.success("Guardrail defaults saved", {
-        description: "New alert rules will inherit these limits.",
+      toast.success("Guardrails saved", {
+        description: "New alert rules and every team inherit these limits.",
       });
     },
     onError: (e: Error) => toast.error("Could not save defaults", { description: e.message }),
@@ -93,6 +107,28 @@ function RemediationLedgerView() {
 
   const rows = (attemptsQuery.data ?? []) as unknown as AttemptRow[];
   const analytics = useMemo(() => summarizeLedger(rows), [rows]);
+  const teamRows = useMemo(
+    () =>
+      summarizeTeams(
+        teams,
+        (attemptsQuery.data ?? []) as { team_id?: string | null; outcome: string; created_at: string }[],
+        defaults,
+      ),
+    [teams, attemptsQuery.data, defaults],
+  );
+
+  const patchTeam = (id: string, p: Partial<TeamBudget>) => {
+    setTeams((ts) => ts.map((t) => (t.id === id ? { ...t, ...p } : t)));
+    setDirty(true);
+  };
+  const addTeam = () => {
+    setTeams((ts) => [...ts, { ...defaultTeam(), name: `Team ${ts.length + 1}` }]);
+    setDirty(true);
+  };
+  const removeTeam = (id: string) => {
+    setTeams((ts) => ts.filter((t) => t.id !== id));
+    setDirty(true);
+  };
 
   const exportCsv = () => {
     const header = "timestamp,rule,outcome,reason,human_initiated,run_status,workflow\n";
@@ -297,6 +333,151 @@ function RemediationLedgerView() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Per-team budgets */}
+      <div className="mt-8 rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
+        <SectionHeader
+          title="Per-team remediation budgets"
+          action={
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => saveMutation.mutate()}
+                disabled={!dirty || saveMutation.isPending || !orgQuery.data}
+                className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md bg-[var(--accent)] text-[var(--bg-base)] text-[12px] font-medium hover:bg-[var(--accent-hover)] disabled:opacity-40"
+              >
+                {saveMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                {dirty ? "Save teams" : "Saved"}
+              </button>
+              <button
+                onClick={addTeam}
+                className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md border border-[var(--border-default)] text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)]"
+              >
+                <Plus className="h-3.5 w-3.5" /> Add team
+              </button>
+            </div>
+          }
+        />
+        <p className="text-[12px] text-[var(--text-secondary)] mb-4">
+          Each team owns a rolling 24-hour budget of allowed remediations plus optional tightenings of the
+          org defaults. A team override can only make guardrails stricter, never looser — and once the daily
+          budget is spent, the server refuses further automation for that team even if a rule allows it.
+        </p>
+
+        {teamRows.length === 0 ? (
+          <div className="flex items-center gap-2 text-[13px] text-[var(--text-muted)] py-6">
+            <Users className="h-4 w-4" /> No teams yet — add one to split the automation blast radius.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+            {teamRows.map((row, i) => (
+              <motion.div
+                key={row.team.id}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25, delay: i * 0.03 }}
+                className="rounded-[10px] border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-4"
+              >
+                <div className="flex items-start gap-2">
+                  <input
+                    value={row.team.name}
+                    onChange={(e) => patchTeam(row.team.id, { name: e.target.value })}
+                    aria-label="Team name"
+                    className="flex-1 h-9 rounded-md bg-[var(--bg-surface)] border border-[var(--border-default)] px-2 text-[13px] focus:outline-none focus:border-[var(--accent)]"
+                  />
+                  <button
+                    onClick={() => removeTeam(row.team.id)}
+                    aria-label={`Remove ${row.team.name}`}
+                    className="h-9 w-9 grid place-items-center rounded-md border border-[var(--border-default)] text-[var(--text-muted)] hover:text-[var(--danger)] hover:border-[var(--danger)]"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+
+                <div className="mt-3 grid grid-cols-3 gap-2">
+                  <label className="block">
+                    <span className="block text-[11px] text-[var(--text-muted)] mb-1">Daily budget</span>
+                    <input
+                      type="number" min={0} max={1000} value={row.team.dailyBudget}
+                      onChange={(e) => patchTeam(row.team.id, { dailyBudget: Number(e.target.value) })}
+                      className="w-full h-8 rounded-md bg-[var(--bg-surface)] border border-[var(--border-default)] px-2 text-[12.5px] focus:outline-none focus:border-[var(--accent)]"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="block text-[11px] text-[var(--text-muted)] mb-1">Mode</span>
+                    <select
+                      value={row.team.mode ?? ""}
+                      onChange={(e) =>
+                        patchTeam(row.team.id, {
+                          mode: e.target.value ? (e.target.value as RemediationMode) : undefined,
+                        })
+                      }
+                      className="w-full h-8 rounded-md bg-[var(--bg-surface)] border border-[var(--border-default)] px-1.5 text-[12.5px] focus:outline-none focus:border-[var(--accent)]"
+                    >
+                      <option value="">Inherit</option>
+                      {MODES.map((m) => (
+                        <option key={m.value} value={m.value}>{m.label}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="block">
+                    <span className="block text-[11px] text-[var(--text-muted)] mb-1">Max / hour</span>
+                    <input
+                      type="number" min={1} max={60}
+                      placeholder={`${defaults.maxPerHour}`}
+                      value={row.team.maxPerHour ?? ""}
+                      onChange={(e) =>
+                        patchTeam(row.team.id, {
+                          maxPerHour: e.target.value ? Number(e.target.value) : undefined,
+                        })
+                      }
+                      className="w-full h-8 rounded-md bg-[var(--bg-surface)] border border-[var(--border-default)] px-2 text-[12.5px] focus:outline-none focus:border-[var(--accent)]"
+                    />
+                  </label>
+                </div>
+
+                <div className="mt-3">
+                  <div className="flex items-center justify-between text-[11px] mb-1.5">
+                    <span className="text-[var(--text-muted)]">
+                      Effective: {row.policy.mode} · {row.policy.maxPerHour}/h · {row.policy.cooldownMinutes}m cooldown
+                    </span>
+                    <span
+                      className="font-mono-tabular"
+                      style={{ color: row.exceeded ? "var(--danger)" : "var(--text-secondary)" }}
+                    >
+                      {row.used}/{row.budget} today
+                    </span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-[var(--bg-surface)] overflow-hidden">
+                    <motion.div
+                      className="h-full rounded-full"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.round(row.share * 100)}%` }}
+                      transition={{ duration: 0.5 }}
+                      style={{
+                        background: row.exceeded
+                          ? "var(--danger)"
+                          : row.share > 0.7
+                            ? "var(--warning)"
+                            : "var(--success)",
+                      }}
+                    />
+                  </div>
+                  {row.exceeded && (
+                    <p className="mt-1.5 text-[11px] text-[var(--danger)] flex items-center gap-1">
+                      <Ban className="h-3 w-3" /> {row.reason}
+                    </p>
+                  )}
+                  {row.blocked > 0 && !row.exceeded && (
+                    <p className="mt-1.5 text-[11px] text-[var(--text-muted)]">
+                      {row.blocked} attempt{row.blocked === 1 ? "" : "s"} stopped by guardrails today
+                    </p>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Per-rule breakdown */}

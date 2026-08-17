@@ -2,6 +2,14 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { evaluateRemediation, normalizePolicy } from "./remediation-policy";
+import {
+  evaluateTeamBudget,
+  normalizeTeam,
+  resolveEffectivePolicy,
+  teamUsage,
+  type TeamBudget,
+} from "./remediation-teams";
+import { enterpriseAuthSchema } from "./enterprise-auth";
 
 const policySchema = z.object({
   mode: z.enum(["manual", "approval", "auto"]),
@@ -14,6 +22,8 @@ const requestSchema = z.object({
   ruleName: z.string().min(1).max(160),
   workflowId: z.string().uuid(),
   policy: policySchema,
+  /** Team the rule belongs to — its daily budget and overrides apply. */
+  teamId: z.string().max(64).optional(),
   humanInitiated: z.boolean().optional(),
   input: z.string().min(1).max(4000),
 });
@@ -47,8 +57,23 @@ export const requestRemediation = createServerFn({ method: "POST" })
   .inputValidator((data) => requestSchema.parse(data))
   .handler(async ({ context, data }) => {
     const { supabase, userId } = context;
-    const policy = normalizePolicy(data.policy);
     const humanInitiated = data.humanInitiated ?? false;
+
+    // Guardrail inheritance: org defaults -> team overrides -> rule overrides.
+    const { data: orgRow } = await supabase
+      .from("org_settings")
+      .select("config")
+      .eq("user_id", userId)
+      .maybeSingle();
+    const org = enterpriseAuthSchema.parse(orgRow?.config ?? {});
+    const team: TeamBudget | null = data.teamId
+      ? (org.remediationTeams.find((t) => t.id === data.teamId) as TeamBudget | undefined) ?? null
+      : null;
+    const policy = resolveEffectivePolicy({
+      orgDefaults: org.remediationDefaults,
+      team,
+      rulePolicy: normalizePolicy(data.policy),
+    });
 
     const { data: workflow, error: wfError } = await supabase
       .from("workflows")
@@ -70,12 +95,31 @@ export const requestRemediation = createServerFn({ method: "POST" })
     if (histError) throw new Error(`Failed to load attempt history: ${histError.message}`);
 
     const now = Date.now();
-    const decision = evaluateRemediation({
+    let decision = evaluateRemediation({
       policy,
       history: (history ?? []).map((h) => new Date(h.created_at).getTime()),
       now,
       humanInitiated,
     });
+
+    // A team that has spent its rolling-day budget cannot remediate again,
+    // not even by hand — the budget is the blast radius, not a suggestion.
+    if (team && decision.outcome === "allow") {
+      const normalized = normalizeTeam(team);
+      const { data: teamHistory } = await supabase
+        .from("remediation_attempts")
+        .select("created_at, outcome, team_id")
+        .eq("team_id", normalized.id)
+        .gte("created_at", since)
+        .limit(500);
+      const verdict = evaluateTeamBudget(
+        normalized,
+        teamUsage(teamHistory ?? [], normalized.id, now),
+      );
+      if (verdict.exceeded) {
+        decision = { outcome: "blocked", reason: verdict.reason ?? "Team budget exhausted" };
+      }
+    }
 
     const record = async (patch: Record<string, unknown>) => {
       const { data: row } = await supabase
@@ -89,6 +133,8 @@ export const requestRemediation = createServerFn({ method: "POST" })
           outcome: decision.outcome,
           reason: decision.reason,
           human_initiated: humanInitiated,
+          team_id: team ? team.id : null,
+          team_name: team ? team.name : null,
           ...patch,
         })
         .select()
@@ -102,6 +148,7 @@ export const requestRemediation = createServerFn({ method: "POST" })
         outcome: decision.outcome,
         reason: decision.reason,
         retryAfterMs: decision.retryAfterMs ?? null,
+        policy,
         workflowName: workflow.name,
         run: null,
       };
@@ -146,6 +193,7 @@ export const requestRemediation = createServerFn({ method: "POST" })
       outcome: "allow" as const,
       reason: decision.reason,
       retryAfterMs: null,
+      policy,
       workflowName: workflow.name,
       run,
     };

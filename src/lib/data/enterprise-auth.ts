@@ -39,12 +39,25 @@ export const remediationDefaultsSchema = z.object({
 
 export type RemediationDefaults = z.infer<typeof remediationDefaultsSchema>;
 
+/** Per-team remediation budget; overrides may only tighten the org defaults. */
+export const teamBudgetSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  dailyBudget: z.number().int().min(0).max(1000).default(10),
+  mode: z.enum(["manual", "approval", "auto"]).optional(),
+  maxPerHour: z.number().int().min(1).max(60).optional(),
+  cooldownMinutes: z.number().min(0).max(720).optional(),
+});
+
+export type TeamBudgetConfig = z.infer<typeof teamBudgetSchema>;
+
 export const enterpriseAuthSchema = z.object({
   sso: ssoProviderSchema.array().default([]),
   scim: scimConfigSchema.default({}),
   allowedDomains: z.string().array().default([]),
   passwordLoginEnabled: z.boolean().default(true),
   remediationDefaults: remediationDefaultsSchema.default({}),
+  remediationTeams: teamBudgetSchema.array().default([]),
 });
 
 export type EnterpriseAuth = z.infer<typeof enterpriseAuthSchema>;
