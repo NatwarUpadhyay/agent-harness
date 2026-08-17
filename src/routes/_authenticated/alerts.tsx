@@ -569,6 +569,30 @@ function AlertsView() {
                           m cooldown
                         </label>
                         <span className="font-mono-tabular">used {used}/{policy.maxPerHour} this hour</span>
+                        {orgTeams.length > 0 && (
+                          <label className="inline-flex items-center gap-1">
+                            <Users className="h-3 w-3" />
+                            <select
+                              value={r.remediationTeamId ?? ""}
+                              onChange={(e) =>
+                                setRules((rs) =>
+                                  rs.map((x) =>
+                                    x.id === r.id
+                                      ? { ...x, remediationTeamId: e.target.value || undefined }
+                                      : x,
+                                  ),
+                                )
+                              }
+                              aria-label={`Owning team for ${r.name}`}
+                              className="h-7 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-default)] px-1.5 text-[11px] focus:outline-none focus:border-[var(--accent)]"
+                            >
+                              <option value="">No team budget</option>
+                              {orgTeams.map((t) => (
+                                <option key={t.id} value={t.id}>{t.name}</option>
+                              ))}
+                            </select>
+                          </label>
+                        )}
                       </div>
                     );
                   })()}
