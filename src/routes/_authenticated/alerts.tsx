@@ -265,6 +265,7 @@ function AlertsView() {
           ruleName: incident.ruleName,
           workflowId,
           policy,
+          ...(rule?.remediationTeamId ? { teamId: rule.remediationTeamId } : {}),
           humanInitiated,
           input: `Incident remediation request.\nRule: ${incident.ruleName}\nSeverity: ${incident.severity}\nMetric: ${incident.metric}\nObserved: ${incident.observed} (threshold ${incident.threshold})\nDetail: ${incident.message}\n\nDiagnose the likely cause and produce a concrete remediation plan.`,
         },
