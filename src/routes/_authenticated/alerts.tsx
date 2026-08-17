@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useServerFn } from "@tanstack/react-start";
 import {
   Bell, Plus, Trash2, Zap, Check, X, Filter, Flame, ShieldAlert, Activity,
-  DollarSign, Clock, ShieldCheck, Mail, Slack, Webhook, Wand2, Loader2, Ban, Timer, Gauge,
+  DollarSign, Clock, ShieldCheck, Mail, Slack, Webhook, Wand2, Loader2, Ban, Timer, Gauge, Users,
 } from "lucide-react";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { StatusDot } from "@/components/ui/status-badge";
