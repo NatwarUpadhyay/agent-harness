@@ -119,7 +119,27 @@ function BudgetsView() {
     toast.success(`${b.team} cap raised to $${next.toLocaleString()}`);
   };
 
+  const seats = useMemo(() => seatRoster(budgets.map((b) => b.team)), [budgets]);
+  const attribution = useMemo(
+    () => attributeSpend(active, seats, { dayOfPeriod: dayOfMonth, daysInPeriod: daysInMonth }),
+    [active, seats],
+  );
+  const totals = useMemo(() => summarizeAttribution(attribution, seats), [attribution, seats]);
+
+  const exportChargeback = () => {
+    const url = URL.createObjectURL(
+      new Blob([chargebackCsv(attribution)], { type: "text/csv;charset=utf-8" }),
+    );
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "harness-chargeback.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Chargeback exported", { description: `${attribution.length} teams` });
+  };
+
   const exportCsv = () => {
+
     const header = "team,period,cap_usd,spent_usd,utilization_pct,enforcement,active,status\n";
     const body = budgets.map((b) => [
       b.team, b.period, b.cap, b.spent, ((b.spent / b.cap) * 100).toFixed(1),
