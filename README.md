@@ -78,7 +78,8 @@ It is built for teams who want a shared visual language for AI systems before wr
 | **41** | **Server-enforced remediation guardrails — persisted attempt ledger, server-side policy decisions** | **Shipped** |
 | **42** | **Remediation ledger analytics + org-wide guardrail defaults** | **Shipped** |
 | **Phase 43** | Per-team remediation budgets + guardrail inheritance | Shipped |
-| **Next** | Per-team spend attribution rolled into budgets and forecasting | Planned |
+| **Phase 44** | Per-team spend attribution, chargeback & breach forecasting | Shipped |
+| **Next** | Anomaly-driven cost alerts wired to budget owners | Planned |
 
 
 ---
@@ -229,6 +230,8 @@ The fastest way to understand Harness is to use the preview:
 
 - **Phase 43 — Per-team remediation budgets + guardrail inheritance.** Automation now has an owner. Teams are defined on `/remediation` with a rolling 24-hour budget of allowed remediations and optional guardrail overrides, and each alert rule is assigned to a team. The effective policy for a rule is the strictest of org defaults, team overrides and the rule's own settings, so nothing further down the chain can loosen what the org or team allowed. The ledger records the team on every attempt (`team_id` / `team_name`), the server refuses remediation once a team's daily budget is spent — even for an operator-initiated run — and the console shows live per-team usage bars, effective policy and blocked counts. Inheritance and budget maths live in `src/lib/data/remediation-teams.ts` as pure, unit-tested functions (87 tests total).
 
+- **Phase 44 — Per-team spend attribution, chargeback & breach forecasting.** Metered seat-level spend is now rolled up to the team that owns the budget on `/budgets`: attributed spend, seat count, share of total spend, burn per day, month-end forecast and the projected day each cap breaks. Spend with no owning team budget is surfaced as unallocated so it can't hide, and the whole roll-up exports as a finance-facing chargeback CSV. Attribution, forecasting and breach projection live in `src/lib/data/spend-attribution.ts` as pure, unit-tested functions (102 tests total).
+
 ## Next up
 
-Per-team spend attribution rolled into budgets and forecasting.
+Anomaly-driven cost alerts wired to budget owners.

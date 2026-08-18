@@ -10,6 +10,13 @@ import {
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { MetricCard } from "@/components/ui/metric-card";
 import { toast } from "sonner";
+import {
+  attributeSpend,
+  chargebackCsv,
+  summarizeAttribution,
+} from "@/lib/data/spend-attribution";
+import { seatRoster } from "@/lib/data/spend-roster";
+
 
 type Enforcement = "notify" | "throttle" | "block";
 
@@ -119,7 +126,27 @@ function BudgetsView() {
     toast.success(`${b.team} cap raised to $${next.toLocaleString()}`);
   };
 
+  const seats = useMemo(() => seatRoster(budgets.map((b) => b.team)), [budgets]);
+  const attribution = useMemo(
+    () => attributeSpend(active, seats, { dayOfPeriod: dayOfMonth, daysInPeriod: daysInMonth }),
+    [active, seats],
+  );
+  const totals = useMemo(() => summarizeAttribution(attribution, seats), [attribution, seats]);
+
+  const exportChargeback = () => {
+    const url = URL.createObjectURL(
+      new Blob([chargebackCsv(attribution)], { type: "text/csv;charset=utf-8" }),
+    );
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "harness-chargeback.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Chargeback exported", { description: `${attribution.length} teams` });
+  };
+
   const exportCsv = () => {
+
     const header = "team,period,cap_usd,spent_usd,utilization_pct,enforcement,active,status\n";
     const body = budgets.map((b) => [
       b.team, b.period, b.cap, b.spent, ((b.spent / b.cap) * 100).toFixed(1),
@@ -283,6 +310,112 @@ function BudgetsView() {
           )}
         </div>
       </div>
+
+      {/* Per-team spend attribution & chargeback */}
+      <div className="mt-8 rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
+        <SectionHeader
+          title="Per-team spend attribution & chargeback"
+          action={
+            <button
+              onClick={exportChargeback}
+              disabled={attribution.length === 0}
+              className="inline-flex items-center gap-2 h-8 px-2.5 rounded-md border border-[var(--border-default)] text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)] disabled:opacity-40"
+            >
+              <Download className="h-3.5 w-3.5" /> Chargeback CSV
+            </button>
+          }
+        />
+        <p className="text-[12px] text-[var(--text-secondary)] mb-4">
+          Metered seat spend is rolled up to the team that owns the budget, projected to month end at the
+          current pace, and reported with the day each cap is expected to break — so an owner sees the
+          breach coming instead of finding it in the invoice.
+        </p>
+
+        {totals.unallocated > 0 && (
+          <div className="mb-4 flex items-start gap-2 rounded-md border border-[color:rgb(245_158_11_/_0.35)] bg-[color:rgb(245_158_11_/_0.08)] p-3">
+            <AlertTriangle className="h-4 w-4 text-[var(--warning)] mt-0.5 shrink-0" />
+            <p className="text-[11px] text-[var(--text-secondary)]">
+              ${totals.unallocated.toLocaleString()} of metered spend has no owning team budget — create a
+              budget for those seats to make the cost accountable.
+            </p>
+          </div>
+        )}
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-[13px]">
+            <thead>
+              <tr className="text-[11px] uppercase tracking-wider text-[var(--text-muted)] text-left">
+                <th className="py-2 pr-3 font-medium">Team</th>
+                <th className="py-2 pr-3 font-medium">Seats</th>
+                <th className="py-2 pr-3 font-medium">Attributed</th>
+                <th className="py-2 pr-3 font-medium w-[160px]">Share of spend</th>
+                <th className="py-2 pr-3 font-medium">Burn / day</th>
+                <th className="py-2 pr-3 font-medium">Forecast</th>
+                <th className="py-2 pr-3 font-medium">Cap breaks</th>
+              </tr>
+            </thead>
+            <tbody>
+              {attribution.map((r) => (
+                <tr key={r.team} className="border-t border-[var(--border-subtle)]">
+                  <td className="py-2.5 pr-3">
+                    <span className="font-medium">{r.team}</span>
+                    <span className="ml-2 text-[11px] text-[var(--text-muted)] font-mono-tabular">
+                      cap ${r.cap.toLocaleString()}
+                    </span>
+                  </td>
+                  <td className="py-2.5 pr-3 font-mono-tabular text-[var(--text-secondary)]">{r.seats}</td>
+                  <td className="py-2.5 pr-3 font-mono-tabular">${r.attributed.toLocaleString()}</td>
+                  <td className="py-2.5 pr-3">
+                    <div className="h-1.5 rounded-full bg-[var(--bg-elevated)] overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${Math.round(r.share * 100)}%` }}
+                        transition={{ duration: 0.5, ease: "easeOut" }}
+                        className="h-full rounded-full"
+                        style={{
+                          background:
+                            r.status === "breached"
+                              ? "var(--danger)"
+                              : r.status === "at-risk"
+                                ? "var(--warning)"
+                                : "var(--accent)",
+                        }}
+                      />
+                    </div>
+                    <span className="text-[11px] text-[var(--text-muted)] font-mono-tabular">
+                      {(r.share * 100).toFixed(1)}% · {(r.utilization * 100).toFixed(0)}% of cap
+                    </span>
+                  </td>
+                  <td className="py-2.5 pr-3 font-mono-tabular text-[var(--text-secondary)]">
+                    ${r.burnPerDay.toLocaleString()}
+                  </td>
+                  <td className="py-2.5 pr-3 font-mono-tabular">
+                    <span className={r.forecast > r.cap ? "text-[var(--danger)]" : "text-[var(--text-primary)]"}>
+                      ${r.forecast.toLocaleString()}
+                    </span>
+                  </td>
+                  <td className="py-2.5 pr-3 text-[12px]">
+                    {r.breachDay === null ? (
+                      <span className="text-[var(--success)]">holds</span>
+                    ) : (
+                      <span className="text-[var(--warning)]">
+                        day {r.breachDay}
+                        {r.breachDay <= dayOfMonth ? " (now)" : ""}
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-3 flex flex-wrap gap-4 text-[11px] text-[var(--text-secondary)]">
+          <span>Attributed ${totals.attributed.toLocaleString()} of ${totals.cap.toLocaleString()} allocated</span>
+          <span>Forecast ${totals.forecast.toLocaleString()} at month end</span>
+          <span>{totals.atRisk} at risk · {totals.breaching} over cap</span>
+        </div>
+      </div>
+
 
       <div className="mt-8 rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
         <SectionHeader title="Team budgets" />
