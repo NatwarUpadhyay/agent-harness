@@ -101,7 +101,7 @@ describe("detectAnomalies", () => {
   it("sorts critical anomalies before warnings and info", () => {
     const rows = [
       makeRow({ team: "Healthy", attributed: 100, cap: 1000, burnPerDay: 10, forecast: 300 }),
-      makeRow({ team: "Warning", attributed: 250, cap: 1000, burnPerDay: 25, forecast: 750 }),
+      makeRow({ team: "Warning", attributed: 400, cap: 1000, burnPerDay: 40, forecast: 1200 }),
       makeRow({ team: "Critical", attributed: 1200, cap: 1000, burnPerDay: 80, forecast: 2400, utilization: 1.2, status: "breached" }),
     ];
     const anomalies = detectAnomalies(rows, emptyTotals, { dayOfPeriod: 10, zThreshold: 1.5 });
@@ -109,6 +109,7 @@ describe("detectAnomalies", () => {
     expect(severities[0]).toBe("critical");
     expect(severities[severities.length - 1]).toBe("warning");
   });
+
 
 });
 
