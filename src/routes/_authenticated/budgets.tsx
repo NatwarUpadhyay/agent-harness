@@ -135,6 +135,31 @@ function BudgetsView() {
     [active, seats],
   );
   const totals = useMemo(() => summarizeAttribution(attribution, seats), [attribution, seats]);
+  const anomalies = useMemo(
+    () => detectAnomalies(attribution, totals, { dayOfPeriod: dayOfMonth, zThreshold: 1.5, unallocatedMinUsd: 1 }),
+    [attribution, totals],
+  );
+  const anomalyCount = useMemo(() => anomalyCounts(anomalies), [anomalies]);
+
+  const escalateAnomaly = (a: Anomaly) => {
+    const raw = typeof window !== "undefined" ? window.localStorage.getItem("harness.alerts.incidents") : null;
+    const existing: unknown[] = raw ? (JSON.parse(raw) as unknown[]) : [];
+    const incident = {
+      id: a.id,
+      ruleId: "anomaly",
+      ruleName: "Spend anomaly",
+      severity: a.severity,
+      metric: "cost",
+      observed: a.observed,
+      threshold: a.threshold,
+      status: "firing",
+      fired: "just now",
+      message: a.message,
+    };
+    window.localStorage.setItem("harness.alerts.incidents", JSON.stringify([incident, ...existing]));
+    toast.success("Escalated to Alerts", { description: a.message });
+  };
+
 
   const exportChargeback = () => {
     const url = URL.createObjectURL(
