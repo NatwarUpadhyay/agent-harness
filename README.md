@@ -79,7 +79,9 @@ It is built for teams who want a shared visual language for AI systems before wr
 | **42** | **Remediation ledger analytics + org-wide guardrail defaults** | **Shipped** |
 | **Phase 43** | Per-team remediation budgets + guardrail inheritance | Shipped |
 | **Phase 44** | Per-team spend attribution, chargeback & breach forecasting | Shipped |
-| **Next** | Anomaly-driven cost alerts wired to budget owners | Planned |
+| **Phase 45** | Anomaly-driven cost alerts wired to budget owners | Shipped |
+| Next | Cost anomaly auto-remediation + fleet-wide burn recommendations | Planned |
+
 
 
 ---
