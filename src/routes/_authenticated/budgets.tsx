@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Wallet, Plus, Trash2, TrendingUp, AlertTriangle, Download, Gauge, ShieldAlert, Check,
+  Bell,
 } from "lucide-react";
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, ReferenceLine,
@@ -16,6 +17,8 @@ import {
   summarizeAttribution,
 } from "@/lib/data/spend-attribution";
 import { seatRoster } from "@/lib/data/spend-roster";
+import { detectAnomalies, type Anomaly, anomalyCounts } from "@/lib/data/anomaly";
+
 
 
 type Enforcement = "notify" | "throttle" | "block";
