@@ -146,9 +146,10 @@ python3 context/loops/loop_detection.py
 
 ## Testing
 
-Vitest + Testing Library regression suite covering the main interactive surfaces: harness canvas, dashboard, evaluations, agents, layout controls, usage math, and auth flows. Runs green (8 files / 14 tests) alongside a clean TypeScript check.
+Vitest + Testing Library regression suite covering the main interactive surfaces: harness canvas, dashboard, evaluations, agents, layout controls, usage math, remediation, attribution, anomaly detection, and auth flows. Runs green (19 files / 114 tests) alongside a clean TypeScript check.
 
 The current suite is a focused smoke/regression layer rather than exhaustive coverage for every page, so it is a good starting point for validating future UI changes.
+
 
 ---
 
