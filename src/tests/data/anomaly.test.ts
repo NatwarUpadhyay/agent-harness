@@ -58,10 +58,10 @@ describe("detectAnomalies", () => {
 
   it("detects burn-rate spikes with z-score above threshold", () => {
     const rows = [
-      makeRow({ team: "A", burnPerDay: 10, forecast: 300 }),
-      makeRow({ team: "B", burnPerDay: 12, forecast: 360 }),
-      makeRow({ team: "C", burnPerDay: 15, forecast: 450 }),
-      makeRow({ team: "D", burnPerDay: 200, forecast: 6000 }),
+      makeRow({ team: "A", burnPerDay: 10, cap: 10000, forecast: 300 }),
+      makeRow({ team: "B", burnPerDay: 12, cap: 10000, forecast: 360 }),
+      makeRow({ team: "C", burnPerDay: 15, cap: 10000, forecast: 450 }),
+      makeRow({ team: "D", burnPerDay: 200, cap: 10000, forecast: 500 }),
     ];
     const anomalies = detectAnomalies(rows, emptyTotals, { dayOfPeriod: 10, zThreshold: 1.5 });
     const spike = anomalies.find((a) => a.type === "spike");
@@ -70,6 +70,7 @@ describe("detectAnomalies", () => {
     expect(spike!.observed).toBe(200);
     expect(spike!.expected).toBeGreaterThan(0);
   });
+
 
 
 
