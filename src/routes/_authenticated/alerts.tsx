@@ -637,8 +637,12 @@ function AlertsView() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-[13.5px] font-medium">{inc.ruleName}</span>
+                        {inc.ruleId === "anomaly" && (
+                          <span className="text-[10px] font-medium uppercase px-1.5 py-0.5 rounded-sm border border-[var(--accent-border)] text-[var(--text-accent)] bg-[var(--accent-muted)]">budget anomaly</span>
+                        )}
                         <span className={`text-[10px] font-medium uppercase px-1.5 py-0.5 rounded-sm ${st.bg} ${st.text}`}>{inc.status}</span>
                       </div>
+
                       <div className="text-[12px] text-[var(--text-secondary)] mt-1">{inc.message}</div>
                       <div className="text-[10.5px] text-[var(--text-muted)] font-mono-tabular mt-1 flex items-center gap-2 flex-wrap">
                         <span>observed {meta.unit}{inc.observed} / threshold {meta.unit}{inc.threshold}</span>

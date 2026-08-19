@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Wallet, Plus, Trash2, TrendingUp, AlertTriangle, Download, Gauge, ShieldAlert, Check,
+  Bell,
 } from "lucide-react";
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, ReferenceLine,
@@ -16,6 +17,8 @@ import {
   summarizeAttribution,
 } from "@/lib/data/spend-attribution";
 import { seatRoster } from "@/lib/data/spend-roster";
+import { detectAnomalies, type Anomaly, anomalyCounts } from "@/lib/data/anomaly";
+
 
 
 type Enforcement = "notify" | "throttle" | "block";
@@ -132,6 +135,31 @@ function BudgetsView() {
     [active, seats],
   );
   const totals = useMemo(() => summarizeAttribution(attribution, seats), [attribution, seats]);
+  const anomalies = useMemo(
+    () => detectAnomalies(attribution, totals, { dayOfPeriod: dayOfMonth, zThreshold: 1.5, unallocatedMinUsd: 1 }),
+    [attribution, totals],
+  );
+  const anomalyCount = useMemo(() => anomalyCounts(anomalies), [anomalies]);
+
+  const escalateAnomaly = (a: Anomaly) => {
+    const raw = typeof window !== "undefined" ? window.localStorage.getItem("harness.alerts.incidents") : null;
+    const existing: unknown[] = raw ? (JSON.parse(raw) as unknown[]) : [];
+    const incident = {
+      id: a.id,
+      ruleId: "anomaly",
+      ruleName: "Spend anomaly",
+      severity: a.severity,
+      metric: "cost",
+      observed: a.observed,
+      threshold: a.threshold,
+      status: "firing",
+      fired: "just now",
+      message: a.message,
+    };
+    window.localStorage.setItem("harness.alerts.incidents", JSON.stringify([incident, ...existing]));
+    toast.success("Escalated to Alerts", { description: a.message });
+  };
+
 
   const exportChargeback = () => {
     const url = URL.createObjectURL(
@@ -194,6 +222,70 @@ function BudgetsView() {
         <MetricCard index={3} label="Breached caps" value={breaches} trend={breaches} trendTone={breaches ? "red" : "green"} series={[0, 1, breaches]} />
 
       </div>
+
+      <AnimatePresence>
+        {anomalies.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+            className="mt-6 rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-5"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <SectionHeader
+                title="Anomaly detection"
+                action={
+                  <span className="text-[11px] font-mono-tabular text-[var(--text-muted)]">
+                    {anomalyCount.critical > 0 && <span className="text-[var(--danger)] mr-3">{anomalyCount.critical} critical</span>}
+                    {anomalyCount.warning > 0 && <span className="text-[var(--warning)] mr-3">{anomalyCount.warning} warning</span>}
+                    {anomalyCount.info > 0 && <span className="text-[var(--text-accent)]">{anomalyCount.info} info</span>}
+                  </span>
+                }
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {anomalies.map((a) => (
+                <motion.div
+                  key={a.id}
+                  initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}
+                  className={`rounded-lg border p-3 ${
+                    a.severity === "critical"
+                      ? "border-[color:rgb(239_68_68_/_0.35)] bg-[color:rgb(239_68_68_/_0.08)]"
+                      : a.severity === "warning"
+                        ? "border-[color:rgb(245_158_11_/_0.35)] bg-[color:rgb(245_158_11_/_0.08)]"
+                        : "border-[var(--border-default)] bg-[var(--bg-elevated)]"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <span className={`h-2 w-2 rounded-full ${
+                        a.severity === "critical" ? "bg-[var(--danger)]" : a.severity === "warning" ? "bg-[var(--warning)]" : "bg-[var(--text-accent)]"
+                      }`} />
+                      <span className="text-[11px] uppercase tracking-wider font-medium" style={{
+                        color: a.severity === "critical" ? "var(--danger)" : a.severity === "warning" ? "var(--warning)" : "var(--text-accent)",
+                      }}>{a.type.replace("_", " ")}</span>
+                    </div>
+                    <button
+                      onClick={() => escalateAnomaly(a)}
+                      className="inline-flex items-center gap-1 h-7 px-2 rounded-md border border-[var(--border-default)] text-[11px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)]"
+                    >
+                      <Bell className="h-3 w-3" /> Escalate
+                    </button>
+                  </div>
+                  <p className="text-[12px] text-[var(--text-secondary)] mt-2 leading-relaxed">{a.message}</p>
+                  {a.expected !== null && (
+                    <div className="mt-2 text-[11px] font-mono-tabular text-[var(--text-muted)]">
+                      observed ${a.observed.toLocaleString()}
+                      {a.expected !== null && a.expected > 0 && (
+                        <span> · expected ${a.expected.toLocaleString()}</span>
+                      )}
+                    </div>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
 
       <AnimatePresence>
         {showDraft && (

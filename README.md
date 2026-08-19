@@ -79,7 +79,9 @@ It is built for teams who want a shared visual language for AI systems before wr
 | **42** | **Remediation ledger analytics + org-wide guardrail defaults** | **Shipped** |
 | **Phase 43** | Per-team remediation budgets + guardrail inheritance | Shipped |
 | **Phase 44** | Per-team spend attribution, chargeback & breach forecasting | Shipped |
-| **Next** | Anomaly-driven cost alerts wired to budget owners | Planned |
+| **Phase 45** | Anomaly-driven cost alerts wired to budget owners | Shipped |
+| Next | Cost anomaly auto-remediation + fleet-wide burn recommendations | Planned |
+
 
 
 ---
@@ -144,9 +146,10 @@ python3 context/loops/loop_detection.py
 
 ## Testing
 
-Vitest + Testing Library regression suite covering the main interactive surfaces: harness canvas, dashboard, evaluations, agents, layout controls, usage math, and auth flows. Runs green (8 files / 14 tests) alongside a clean TypeScript check.
+Vitest + Testing Library regression suite covering the main interactive surfaces: harness canvas, dashboard, evaluations, agents, layout controls, usage math, remediation, attribution, anomaly detection, and auth flows. Runs green (19 files / 114 tests) alongside a clean TypeScript check.
 
 The current suite is a focused smoke/regression layer rather than exhaustive coverage for every page, so it is a good starting point for validating future UI changes.
+
 
 ---
 
@@ -232,6 +235,9 @@ The fastest way to understand Harness is to use the preview:
 
 - **Phase 44 — Per-team spend attribution, chargeback & breach forecasting.** Metered seat-level spend is now rolled up to the team that owns the budget on `/budgets`: attributed spend, seat count, share of total spend, burn per day, month-end forecast and the projected day each cap breaks. Spend with no owning team budget is surfaced as unallocated so it can't hide, and the whole roll-up exports as a finance-facing chargeback CSV. Attribution, forecasting and breach projection live in `src/lib/data/spend-attribution.ts` as pure, unit-tested functions (102 tests total).
 
+- **Phase 45 — Anomaly-driven cost alerts.** The `/budgets` page now continuously scans per-team spend for four anomaly classes: active cap breaches, projected month-end breaches, burn-rate spikes (z-score > 1.5σ above the fleet average), and unallocated spend with no owning budget. Detected anomalies are surfaced in a severity-sorted panel with one-click escalation to the `/alerts` incident console, where they appear tagged as **budget anomaly** incidents. Detection logic lives in `src/lib/data/anomaly.ts` as pure, unit-tested functions.
+
 ## Next up
 
-Anomaly-driven cost alerts wired to budget owners.
+Cost anomaly auto-remediation + fleet-wide burn recommendations.
+
