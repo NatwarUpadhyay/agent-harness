@@ -60,15 +60,16 @@ describe("detectAnomalies", () => {
     const rows = [
       makeRow({ team: "A", burnPerDay: 10, forecast: 300 }),
       makeRow({ team: "B", burnPerDay: 12, forecast: 360 }),
-      makeRow({ team: "C", burnPerDay: 60, forecast: 1800 }),
+      makeRow({ team: "C", burnPerDay: 80, forecast: 2400 }),
     ];
     const anomalies = detectAnomalies(rows, emptyTotals, { dayOfPeriod: 10, zThreshold: 1.5 });
     const spike = anomalies.find((a) => a.type === "spike");
     expect(spike).toBeDefined();
     expect(spike!.team).toBe("C");
-    expect(spike!.observed).toBe(60);
+    expect(spike!.observed).toBe(80);
     expect(spike!.expected).toBeGreaterThan(0);
   });
+
 
   it("does not flag low z-score teams as spikes", () => {
     const rows = [
