@@ -155,5 +155,6 @@ export function anomalyCounts(anomalies: Anomaly[]) {
 export function anomalySummary(anomalies: Anomaly[]): string {
   if (anomalies.length === 0) return "No spend anomalies detected.";
   const counts = anomalyCounts(anomalies);
-  return `${counts.total} anomaly${counts.total === 1 ? "" : "ies"} detected (${counts.critical} critical, ${counts.warning} warning, ${counts.info} info).`;
+  return `${counts.total} anomaly${counts.total === 1 ? "" : "s"} detected (${counts.critical} critical, ${counts.warning} warning, ${counts.info} info).`;
+
 }
