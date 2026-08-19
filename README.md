@@ -234,6 +234,9 @@ The fastest way to understand Harness is to use the preview:
 
 - **Phase 44 — Per-team spend attribution, chargeback & breach forecasting.** Metered seat-level spend is now rolled up to the team that owns the budget on `/budgets`: attributed spend, seat count, share of total spend, burn per day, month-end forecast and the projected day each cap breaks. Spend with no owning team budget is surfaced as unallocated so it can't hide, and the whole roll-up exports as a finance-facing chargeback CSV. Attribution, forecasting and breach projection live in `src/lib/data/spend-attribution.ts` as pure, unit-tested functions (102 tests total).
 
+- **Phase 45 — Anomaly-driven cost alerts.** The `/budgets` page now continuously scans per-team spend for four anomaly classes: active cap breaches, projected month-end breaches, burn-rate spikes (z-score > 1.5σ above the fleet average), and unallocated spend with no owning budget. Detected anomalies are surfaced in a severity-sorted panel with one-click escalation to the `/alerts` incident console, where they appear tagged as **budget anomaly** incidents. Detection logic lives in `src/lib/data/anomaly.ts` as pure, unit-tested functions.
+
 ## Next up
 
-Anomaly-driven cost alerts wired to budget owners.
+Cost anomaly auto-remediation + fleet-wide burn recommendations.
+
