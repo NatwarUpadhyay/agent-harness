@@ -109,6 +109,7 @@ describe("detectAnomalies", () => {
     expect(severities[0]).toBe("critical");
     expect(severities[severities.length - 1]).toBe("warning");
   });
+
 });
 
 describe("anomalyCounts", () => {
