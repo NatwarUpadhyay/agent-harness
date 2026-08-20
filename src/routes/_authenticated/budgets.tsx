@@ -160,6 +160,44 @@ function BudgetsView() {
     toast.success("Escalated to Alerts", { description: a.message });
   };
 
+  // ---- Auto-remediation -------------------------------------------------
+  const [guardrails, setGuardrails] = useState<CostGuardrails>(defaultCostGuardrails);
+  const [history, setHistory] = useState<AppliedAction[]>([]);
+  const [approvedTeams, setApprovedTeams] = useState<string[]>([]);
+
+  useEffect(() => {
+    setGuardrails(load(GK, defaultCostGuardrails));
+    setHistory(load<AppliedAction[]>(HK, []));
+  }, []);
+  useEffect(() => { if (hydrated) { save(GK, guardrails); save(HK, history); } }, [guardrails, history, hydrated]);
+
+  const plan = useMemo(
+    () => planRemediation(anomalies, { guardrails, history, now: Date.now(), approvedTeams }),
+    [anomalies, guardrails, history, approvedTeams],
+  );
+  const planCount = useMemo(() => planCounts(plan), [plan]);
+
+  const applyAction = (action: PlannedAction) => {
+    const target = budgets.find((b) => b.team === action.team);
+    if (action.kind === "throttle" && target) update(target.id, { enforcement: "throttle" });
+    if (action.kind === "block" && target) update(target.id, { enforcement: "block" });
+    if (action.kind === "raise_cap" && target && action.capUsd) update(target.id, { cap: action.capUsd });
+    if (action.kind === "notify" && target) update(target.id, { enforcement: "notify" });
+    const entry = toAppliedAction(action, Date.now());
+    setHistory((prev) => [entry, ...prev].slice(0, 50));
+    toast.success(`${actionCopy[action.kind]} — ${action.team}`, { description: action.rationale });
+  };
+
+  const applyAll = () => {
+    const ready = plan.filter((p) => p.status === "ready");
+    if (ready.length === 0) {
+      toast.error("Nothing to apply", { description: planSummary(plan) });
+      return;
+    }
+    ready.forEach(applyAction);
+  };
+
+
 
   const exportChargeback = () => {
     const url = URL.createObjectURL(
