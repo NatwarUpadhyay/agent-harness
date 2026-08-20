@@ -54,6 +54,8 @@ const SEED: Budget[] = [
 ];
 
 const BK = "harness.budgets.v1";
+const GK = "harness.cost-remediation.guardrails.v1";
+const HK = "harness.cost-remediation.history.v1";
 
 function load<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
