@@ -80,7 +80,8 @@ It is built for teams who want a shared visual language for AI systems before wr
 | **Phase 43** | Per-team remediation budgets + guardrail inheritance | Shipped |
 | **Phase 44** | Per-team spend attribution, chargeback & breach forecasting | Shipped |
 | **Phase 45** | Anomaly-driven cost alerts wired to budget owners | Shipped |
-| Next | Cost anomaly auto-remediation + fleet-wide burn recommendations | Planned |
+| **Phase 46** | Cost anomaly auto-remediation with guardrails | Shipped |
+| Next | Fleet-wide burn recommendations & savings simulator | Planned |
 
 
 
@@ -146,7 +147,7 @@ python3 context/loops/loop_detection.py
 
 ## Testing
 
-Vitest + Testing Library regression suite covering the main interactive surfaces: harness canvas, dashboard, evaluations, agents, layout controls, usage math, remediation, attribution, anomaly detection, and auth flows. Runs green (19 files / 114 tests) alongside a clean TypeScript check.
+Vitest + Testing Library regression suite covering the main interactive surfaces: harness canvas, dashboard, evaluations, agents, layout controls, usage math, remediation, attribution, anomaly detection, and auth flows. Runs green (20 files / 131 tests) alongside a clean TypeScript check.
 
 The current suite is a focused smoke/regression layer rather than exhaustive coverage for every page, so it is a good starting point for validating future UI changes.
 
@@ -237,7 +238,9 @@ The fastest way to understand Harness is to use the preview:
 
 - **Phase 45 — Anomaly-driven cost alerts.** The `/budgets` page now continuously scans per-team spend for four anomaly classes: active cap breaches, projected month-end breaches, burn-rate spikes (z-score > 1.5σ above the fleet average), and unallocated spend with no owning budget. Detected anomalies are surfaced in a severity-sorted panel with one-click escalation to the `/alerts` incident console, where they appear tagged as **budget anomaly** incidents. Detection logic lives in `src/lib/data/anomaly.ts` as pure, unit-tested functions.
 
+- **Phase 46 — Cost anomaly auto-remediation.** Detected anomalies now become a concrete, guarded remediation plan on `/budgets`: over-cap teams get hard-blocked, forecast overruns get throttled (or the cap raised when the forecast is structurally past it), burn-rate spikes get throttled, and unallocated spend gets an owner. Guardrails are enforced in the planner, not the UI — dry-run mode, an hourly action cap, per-team cooldowns, and an approval gate for destructive actions — and every applied action lands in an action ledger. Planning logic lives in `src/lib/data/cost-remediation.ts` as pure, unit-tested functions.
+
 ## Next up
 
-Cost anomaly auto-remediation + fleet-wide burn recommendations.
+Fleet-wide burn recommendations and a savings simulator.
 

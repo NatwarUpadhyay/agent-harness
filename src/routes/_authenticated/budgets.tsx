@@ -18,6 +18,18 @@ import {
 } from "@/lib/data/spend-attribution";
 import { seatRoster } from "@/lib/data/spend-roster";
 import { detectAnomalies, type Anomaly, anomalyCounts } from "@/lib/data/anomaly";
+import {
+  planRemediation,
+  planCounts,
+  planSummary,
+  toAppliedAction,
+  defaultCostGuardrails,
+  actionCopy,
+  skipCopy,
+  type CostGuardrails,
+  type AppliedAction,
+  type PlannedAction,
+} from "@/lib/data/cost-remediation";
 
 
 
@@ -42,6 +54,8 @@ const SEED: Budget[] = [
 ];
 
 const BK = "harness.budgets.v1";
+const GK = "harness.cost-remediation.guardrails.v1";
+const HK = "harness.cost-remediation.history.v1";
 
 function load<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
@@ -159,6 +173,44 @@ function BudgetsView() {
     window.localStorage.setItem("harness.alerts.incidents", JSON.stringify([incident, ...existing]));
     toast.success("Escalated to Alerts", { description: a.message });
   };
+
+  // ---- Auto-remediation -------------------------------------------------
+  const [guardrails, setGuardrails] = useState<CostGuardrails>(defaultCostGuardrails);
+  const [history, setHistory] = useState<AppliedAction[]>([]);
+  const [approvedTeams, setApprovedTeams] = useState<string[]>([]);
+
+  useEffect(() => {
+    setGuardrails(load(GK, defaultCostGuardrails));
+    setHistory(load<AppliedAction[]>(HK, []));
+  }, []);
+  useEffect(() => { if (hydrated) { save(GK, guardrails); save(HK, history); } }, [guardrails, history, hydrated]);
+
+  const plan = useMemo(
+    () => planRemediation(anomalies, { guardrails, history, now: Date.now(), approvedTeams }),
+    [anomalies, guardrails, history, approvedTeams],
+  );
+  const planCount = useMemo(() => planCounts(plan), [plan]);
+
+  const applyAction = (action: PlannedAction) => {
+    const target = budgets.find((b) => b.team === action.team);
+    if (action.kind === "throttle" && target) update(target.id, { enforcement: "throttle" });
+    if (action.kind === "block" && target) update(target.id, { enforcement: "block" });
+    if (action.kind === "raise_cap" && target && action.capUsd) update(target.id, { cap: action.capUsd });
+    if (action.kind === "notify" && target) update(target.id, { enforcement: "notify" });
+    const entry = toAppliedAction(action, Date.now());
+    setHistory((prev) => [entry, ...prev].slice(0, 50));
+    toast.success(`${actionCopy[action.kind]} — ${action.team}`, { description: action.rationale });
+  };
+
+  const applyAll = () => {
+    const ready = plan.filter((p) => p.status === "ready");
+    if (ready.length === 0) {
+      toast.error("Nothing to apply", { description: planSummary(plan) });
+      return;
+    }
+    ready.forEach(applyAction);
+  };
+
 
 
   const exportChargeback = () => {
@@ -286,6 +338,99 @@ function BudgetsView() {
         )}
       </AnimatePresence>
 
+      {plan.length > 0 && (
+        <div className="mt-6 rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
+            <SectionHeader
+              title="Auto-remediation"
+              action={
+                <span className="text-[11px] font-mono-tabular text-[var(--text-muted)]">
+                  {planSummary(plan)}
+                </span>
+              }
+            />
+            <div className="flex flex-wrap items-center gap-2">
+              <label className="inline-flex items-center gap-2 h-9 px-3 rounded-md border border-[var(--border-default)] text-[12px] text-[var(--text-secondary)]">
+                <input
+                  type="checkbox"
+                  checked={guardrails.dryRun}
+                  onChange={(e) => setGuardrails({ ...guardrails, dryRun: e.target.checked })}
+                  className="accent-[var(--accent)]"
+                />
+                Dry run
+              </label>
+              <label className="inline-flex items-center gap-2 h-9 px-3 rounded-md border border-[var(--border-default)] text-[12px] text-[var(--text-secondary)]">
+                <input
+                  type="checkbox"
+                  checked={guardrails.requireApprovalForDestructive}
+                  onChange={(e) => setGuardrails({ ...guardrails, requireApprovalForDestructive: e.target.checked })}
+                  className="accent-[var(--accent)]"
+                />
+                Approve destructive
+              </label>
+              <button
+                onClick={applyAll}
+                disabled={planCount.ready === 0}
+                className="inline-flex items-center gap-2 h-9 px-3 rounded-md bg-[var(--accent)] text-[var(--bg-base)] text-[13px] font-medium hover:bg-[var(--accent-hover)] disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <ShieldAlert className="h-3.5 w-3.5" />
+                Apply {planCount.ready} action{planCount.ready === 1 ? "" : "s"}
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            {plan.map((p) => (
+              <div
+                key={p.id}
+                className="flex flex-col sm:flex-row sm:items-center gap-3 rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] px-3 py-2.5"
+              >
+                <div className="flex items-center gap-2 sm:w-48 shrink-0">
+                  <span className={`h-2 w-2 rounded-full ${p.status === "ready" ? "bg-[var(--success)]" : "bg-[var(--text-muted)]"}`} />
+                  <span className="text-[13px] text-[var(--text-primary)]">{actionCopy[p.kind]}</span>
+                  <span className="text-[11px] text-[var(--text-muted)]">{p.team}</span>
+                </div>
+                <p className="flex-1 text-[12px] text-[var(--text-secondary)] leading-relaxed">{p.rationale}</p>
+                <div className="flex items-center gap-2 shrink-0">
+                  {p.status === "skipped" && (
+                    <span className="text-[11px] text-[var(--text-muted)]">{skipCopy[p.skipReason!]}</span>
+                  )}
+                  {p.skipReason === "needs_approval" && (
+                    <button
+                      onClick={() => setApprovedTeams((prev) => (prev.includes(p.team) ? prev : [...prev, p.team]))}
+                      className="inline-flex items-center gap-1 h-7 px-2 rounded-md border border-[var(--border-default)] text-[11px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)]"
+                    >
+                      <Check className="h-3 w-3" /> Approve
+                    </button>
+                  )}
+                  <button
+                    onClick={() => applyAction(p)}
+                    className="inline-flex items-center gap-1 h-7 px-2 rounded-md border border-[var(--border-default)] text-[11px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)]"
+                  >
+                    Apply now
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {history.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-[var(--border-default)]">
+              <p className="text-[11px] uppercase tracking-wider text-[var(--text-muted)] mb-2">Action ledger</p>
+              <div className="space-y-1">
+                {history.slice(0, 5).map((h) => (
+                  <div key={`${h.actionId}-${h.at}`} className="flex items-center justify-between text-[12px]">
+                    <span className="text-[var(--text-secondary)]">{h.message}</span>
+                    <span className="font-mono-tabular text-[var(--text-muted)]">
+                      {new Date(h.at).toLocaleTimeString()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       <AnimatePresence>
         {showDraft && (
