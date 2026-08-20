@@ -18,6 +18,18 @@ import {
 } from "@/lib/data/spend-attribution";
 import { seatRoster } from "@/lib/data/spend-roster";
 import { detectAnomalies, type Anomaly, anomalyCounts } from "@/lib/data/anomaly";
+import {
+  planRemediation,
+  planCounts,
+  planSummary,
+  toAppliedAction,
+  defaultCostGuardrails,
+  actionCopy,
+  skipCopy,
+  type CostGuardrails,
+  type AppliedAction,
+  type PlannedAction,
+} from "@/lib/data/cost-remediation";
 
 
 
