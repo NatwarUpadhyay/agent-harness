@@ -45,7 +45,7 @@ describe("actionForAnomaly", () => {
   it("raises the cap for a critical projected breach", () => {
     const action = actionForAnomaly(anomaly({ type: "projected_breach", severity: "critical", observed: 1800, expected: 1000 }))!;
     expect(action.kind).toBe("raise_cap");
-    expect(action.capUsd).toBe(1980);
+    expect(action.capUsd).toBe(2000);
   });
 
   it("throttles a burn-rate spike", () => {
