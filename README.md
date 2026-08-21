@@ -34,7 +34,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 
 ## Current status
 
-> **Published and playable** — the harness canvas is live with workflows, templates, simulation, and enterprise features. Cloud persistence is active for workflows, prompts, datasets, and API keys; data retention and organization-scoped controls are planned for later phases.
+> **Published and playable** — the harness canvas is live with workflows, templates, simulation, and enterprise features. Cloud persistence is active for workflows, prompts, datasets, API keys, and org settings; anomaly-driven cost remediation now auto-remediates budget breaches with guardrails.
 
 | Phase | Area | Status |
 | --- | --- | --- |
@@ -61,27 +61,30 @@ It is built for teams who want a shared visual language for AI systems before wr
 | 21 | API key management — scoped keys, request tracking | Done |
 | 22 | Live collaboration activity stream | Done |
 | 23 | Real-time collaborative node editing | Done |
-| **24** | **Node comments — threaded discussion per canvas node** | **Shipped** |
-| **25** | **Alerts & incidents — rule-driven alerting console** | **Shipped** |
+| 24 | Node comments — threaded discussion per canvas node | Shipped |
+| 25 | Alerts & incidents — rule-driven alerting console | Shipped |
 | 26 | Governance & org-scoped controls | Done |
-| **27** | **Budgets & forecasting — per-team spend caps and breach enforcement** | **Shipped** |
-| **28** | **Optimizer — advanced RAG & memory tuning suggestions with impact estimates** | **Shipped** |
-| **29** | **Org control room + onboarding wizard — company-wide cost, latency, department roll-ups** | **Shipped** |
+| 27 | Budgets & forecasting — per-team spend caps and breach enforcement | Shipped |
+| 28 | Optimizer — advanced RAG & memory tuning suggestions with impact estimates | Shipped |
+| 29 | Org control room + onboarding wizard — company-wide cost, latency, department roll-ups | Shipped |
 | 30 | Regression test suite (Vitest + Testing Library) across canvas, dashboard, auth | Done |
-| **31** | **Spend enforcement — real-time budget breach enforcement & burn-rate anomaly detection** | **Shipped** |
-| **32** | **Workflow topology audit — cycle detection, orphans, critical path** | **Shipped** |
-| **33** | **Reliability SLOs & error budgets — per-service burn-down, time-to-exhaustion** | **Shipped** |
-| **34** | **Enterprise SSO/SCIM — SAML/OIDC admin console, directory sync, domain enforcement** | **Shipped** |
-| **35** | **Server-persisted org data + live SCIM provisioning endpoint** | **Shipped** |
-| **36** | **Production execution engine — run harness workflows against live models, full traces** | **Shipped** |
-| **37** | **Scheduled & triggered runs — cron windows, inbound webhooks, manual fire** | **Shipped** |
-| **41** | **Server-enforced remediation guardrails — persisted attempt ledger, server-side policy decisions** | **Shipped** |
-| **42** | **Remediation ledger analytics + org-wide guardrail defaults** | **Shipped** |
-| **Phase 43** | Per-team remediation budgets + guardrail inheritance | Shipped |
-| **Phase 44** | Per-team spend attribution, chargeback & breach forecasting | Shipped |
-| **Phase 45** | Anomaly-driven cost alerts wired to budget owners | Shipped |
-| **Phase 46** | Cost anomaly auto-remediation with guardrails | Shipped |
-| Next | Fleet-wide burn recommendations & savings simulator | Planned |
+| 31 | Spend enforcement — real-time budget breach enforcement & burn-rate anomaly detection | Shipped |
+| 32 | Workflow topology audit — cycle detection, orphans, critical path | Shipped |
+| 33 | Reliability SLOs & error budgets — per-service burn-down, time-to-exhaustion | Shipped |
+| 34 | Enterprise SSO/SCIM — SAML/OIDC admin console, directory sync, domain enforcement | Shipped |
+| 35 | Server-persisted org data + live SCIM provisioning endpoint | Shipped |
+| 36 | Production execution engine — run harness workflows against live models, full traces | Shipped |
+| 37 | Scheduled & triggered runs — cron windows, inbound webhooks, manual fire | Shipped |
+| 38 | Run retries and backoff — transient failure handling, replay | Shipped |
+| 39 | Alert-driven auto-remediation — run workflows on incidents | Shipped |
+| 40 | Remediation policy guardrails — modes, hourly caps, cooldowns | Shipped |
+| 41 | Server-enforced remediation guardrails — persisted attempt ledger, server-side policy decisions | Shipped |
+| 42 | Remediation ledger analytics + org-wide guardrail defaults | Shipped |
+| 43 | Per-team remediation budgets + guardrail inheritance | Shipped |
+| 44 | Per-team spend attribution, chargeback & breach forecasting | Shipped |
+| 45 | Anomaly-driven cost alerts wired to budget owners | Shipped |
+| 46 | Cost anomaly auto-remediation with guardrails | Shipped |
+| 47 | Fleet-wide burn recommendations & savings simulator | Planned |
 
 
 
