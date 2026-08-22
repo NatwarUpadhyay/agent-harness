@@ -34,7 +34,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 
 ## Current status
 
-> **Published and playable** — the harness canvas is live with workflows, templates, simulation, and enterprise features. Cloud persistence is active for workflows, prompts, datasets, API keys, and org settings; anomaly-driven cost remediation now auto-remediates budget breaches with guardrails.
+> **Published and playable** — the harness canvas is live with workflows, templates, simulation, and enterprise features. Cloud persistence is active for workflows, prompts, datasets, API keys, and org settings; anomaly-driven cost remediation now auto-remediates budget breaches with guardrails. Phase 47 is next: fleet-wide burn recommendations and a savings simulator.
 
 | Phase | Area | Status |
 | --- | --- | --- |
