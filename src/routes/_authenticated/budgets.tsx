@@ -158,6 +158,10 @@ function BudgetsView() {
   const escalateAnomaly = (a: Anomaly) => {
     const raw = typeof window !== "undefined" ? window.localStorage.getItem("harness.alerts.incidents") : null;
     const existing: unknown[] = raw ? (JSON.parse(raw) as unknown[]) : [];
+    if (existing.some((i) => (i as { id?: string })?.id === a.id)) {
+      toast.info("Already escalated", { description: a.message });
+      return;
+    }
     const incident = {
       id: a.id,
       ruleId: "anomaly",
