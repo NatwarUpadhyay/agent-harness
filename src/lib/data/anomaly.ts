@@ -53,8 +53,9 @@ function zScore(value: number, m: number, sd: number): number {
   return (value - m) / sd;
 }
 
+/** Stable, deterministic id: same team + type + day always yields the same id. */
 function makeId(team: string, type: AnomalyType, day: number): string {
-  return `anomaly-${type}-${team.replace(/\s+/g, "-").toLowerCase()}-d${day}-${Date.now()}`;
+  return `anomaly-${type}-${team.replace(/\s+/g, "-").toLowerCase()}-d${day}`;
 }
 
 export function detectAnomalies(

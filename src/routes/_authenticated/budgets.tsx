@@ -98,7 +98,7 @@ function BudgetsView() {
   }, []);
   useEffect(() => { if (hydrated) save(BK, budgets); }, [budgets, hydrated]);
 
-  const active = budgets.filter((b) => b.active);
+  const active = useMemo(() => budgets.filter((b) => b.active), [budgets]);
   const totalCap = active.reduce((s, b) => s + b.cap, 0);
   const totalSpent = active.reduce((s, b) => s + b.spent, 0);
   const burnRate = totalSpent / dayOfMonth;
@@ -158,6 +158,10 @@ function BudgetsView() {
   const escalateAnomaly = (a: Anomaly) => {
     const raw = typeof window !== "undefined" ? window.localStorage.getItem("harness.alerts.incidents") : null;
     const existing: unknown[] = raw ? (JSON.parse(raw) as unknown[]) : [];
+    if (existing.some((i) => (i as { id?: string })?.id === a.id)) {
+      toast.info("Already escalated", { description: a.message });
+      return;
+    }
     const incident = {
       id: a.id,
       ruleId: "anomaly",
@@ -192,6 +196,12 @@ function BudgetsView() {
   const planCount = useMemo(() => planCounts(plan), [plan]);
 
   const applyAction = (action: PlannedAction) => {
+    if (action.status !== "ready") {
+      toast.error("Held by guardrails", {
+        description: action.skipReason ? skipCopy[action.skipReason] : "Action is not ready to apply",
+      });
+      return;
+    }
     const target = budgets.find((b) => b.team === action.team);
     if (action.kind === "throttle" && target) update(target.id, { enforcement: "throttle" });
     if (action.kind === "block" && target) update(target.id, { enforcement: "block" });
@@ -405,7 +415,9 @@ function BudgetsView() {
                   )}
                   <button
                     onClick={() => applyAction(p)}
-                    className="inline-flex items-center gap-1 h-7 px-2 rounded-md border border-[var(--border-default)] text-[11px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)]"
+                    disabled={p.status !== "ready"}
+                    title={p.status !== "ready" && p.skipReason ? skipCopy[p.skipReason] : undefined}
+                    className="inline-flex items-center gap-1 h-7 px-2 rounded-md border border-[var(--border-default)] text-[11px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-[var(--text-secondary)] disabled:hover:border-[var(--border-default)]"
                   >
                     Apply now
                   </button>
