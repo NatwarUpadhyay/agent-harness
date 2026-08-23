@@ -98,7 +98,7 @@ function BudgetsView() {
   }, []);
   useEffect(() => { if (hydrated) save(BK, budgets); }, [budgets, hydrated]);
 
-  const active = budgets.filter((b) => b.active);
+  const active = useMemo(() => budgets.filter((b) => b.active), [budgets]);
   const totalCap = active.reduce((s, b) => s + b.cap, 0);
   const totalSpent = active.reduce((s, b) => s + b.spent, 0);
   const burnRate = totalSpent / dayOfMonth;
