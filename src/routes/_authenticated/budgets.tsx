@@ -415,7 +415,9 @@ function BudgetsView() {
                   )}
                   <button
                     onClick={() => applyAction(p)}
-                    className="inline-flex items-center gap-1 h-7 px-2 rounded-md border border-[var(--border-default)] text-[11px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)]"
+                    disabled={p.status !== "ready"}
+                    title={p.status !== "ready" && p.skipReason ? skipCopy[p.skipReason] : undefined}
+                    className="inline-flex items-center gap-1 h-7 px-2 rounded-md border border-[var(--border-default)] text-[11px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-[var(--text-secondary)] disabled:hover:border-[var(--border-default)]"
                   >
                     Apply now
                   </button>
