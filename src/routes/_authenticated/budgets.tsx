@@ -196,6 +196,12 @@ function BudgetsView() {
   const planCount = useMemo(() => planCounts(plan), [plan]);
 
   const applyAction = (action: PlannedAction) => {
+    if (action.status !== "ready") {
+      toast.error("Held by guardrails", {
+        description: action.skipReason ? skipCopy[action.skipReason] : "Action is not ready to apply",
+      });
+      return;
+    }
     const target = budgets.find((b) => b.team === action.team);
     if (action.kind === "throttle" && target) update(target.id, { enforcement: "throttle" });
     if (action.kind === "block" && target) update(target.id, { enforcement: "block" });
