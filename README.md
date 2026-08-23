@@ -263,5 +263,13 @@ The fastest way to understand Harness is to use the preview:
 
 ## Next up
 
-Fleet-wide burn recommendations and a savings simulator.
+**Phase 47 — Fleet-wide burn recommendations & savings simulator.** Roll every team's burn profile into a single fleet view, rank the highest-leverage savings levers (model downgrades, cache/retrieval tuning, schedule trimming, seat reclamation), and let an operator simulate a combination of levers to see projected monthly spend, latency impact and payback before applying anything.
+
+Then, post-launch:
+
+1. **Billing & plans** — metered usage tied to a payment provider so the platform can be sold, not just demoed.
+2. **Org-level RBAC on the server** — move the governance capability matrix from client state into server-enforced roles.
+3. **Real integrations** — replace the vendor capability matrix with live provider connections and key vaulting.
+4. **Deeper eval coverage** — scheduled regression evals against production traces, with drift alerts.
+
 
