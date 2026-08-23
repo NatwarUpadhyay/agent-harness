@@ -34,7 +34,25 @@ It is built for teams who want a shared visual language for AI systems before wr
 
 ## Current status
 
-> **Published and playable** — the harness canvas is live with workflows, templates, simulation, and enterprise features. Cloud persistence is active for workflows, prompts, datasets, API keys, and org settings; anomaly-driven cost remediation now auto-remediates budget breaches with guardrails. Phase 47 is next: fleet-wide burn recommendations and a savings simulator.
+> **MVP launch ready** — auth, cloud persistence, the harness canvas, the production execution engine, scheduling, remediation guardrails and cost governance are all live and wired end to end. The regression suite runs green (20 files / 131 tests) with a clean TypeScript check and a clean security scan (no open findings). Phase 47 is next: fleet-wide burn recommendations and a savings simulator.
+
+### MVP launch checklist
+
+| Area | State |
+| --- | --- |
+| Auth (email/password, OTP magic link, password reset, leaked-password protection) | Ready |
+| Route protection (`_authenticated` gate + public share/SCIM/webhook routes) | Ready |
+| Cloud persistence (workflows, prompts, datasets, API keys, org settings, runs, schedules, remediation ledger) | Ready |
+| Row-level security + explicit grants on every public table | Ready |
+| Production execution engine with retries, backoff and full per-node traces | Ready |
+| Scheduling + inbound webhook triggers | Ready |
+| Cost governance (budgets, attribution, anomaly detection, guarded auto-remediation) | Ready |
+| Enterprise SSO/SCIM provisioning endpoint | Ready |
+| Observability (usage, audit log, SLOs, topology audit, alerts/incidents) | Ready |
+| Responsive UI + command palette + onboarding | Ready |
+| Tests (20 files / 131 tests) and TypeScript check | Green |
+| Security scan | No open findings |
+
 
 | Phase | Area | Status |
 | --- | --- | --- |
