@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Wallet, Plus, Trash2, TrendingUp, AlertTriangle, Download, Gauge, ShieldAlert, Check,
-  Bell,
+  Bell, Lightbulb, Calculator, ArrowRight,
 } from "lucide-react";
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, ReferenceLine,
@@ -30,6 +30,14 @@ import {
   type AppliedAction,
   type PlannedAction,
 } from "@/lib/data/cost-remediation";
+import {
+  fleetBurnSummary,
+  generateRecommendations,
+  recommendationSummary,
+  simulateSavings,
+  type BurnRecommendation,
+  type SavingsScenario,
+} from "@/lib/data/burn-recommendations";
 
 
 
