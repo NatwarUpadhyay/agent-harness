@@ -102,7 +102,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 | 44 | Per-team spend attribution, chargeback & breach forecasting | Shipped |
 | 45 | Anomaly-driven cost alerts wired to budget owners | Shipped |
 | 46 | Cost anomaly auto-remediation with guardrails | Shipped |
-| 47 | Fleet-wide burn recommendations & savings simulator | Planned |
+| 47 | Fleet-wide burn recommendations & savings simulator | Shipped |
 
 
 
