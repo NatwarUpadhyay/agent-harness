@@ -255,8 +255,9 @@ export function simulateSavings(
   );
 
   for (const r of rows) {
-    const burn = r.burnPerDay;
-    let newBurn = burn * (1 - scenario.efficiencyGain);
+    // Derive new forecast from the original forecast so a neutral scenario
+    // reproduces the baseline exactly (avoids rounding drift from burnPerDay).
+    let newForecast = r.forecast * (1 - scenario.efficiencyGain);
 
     if (r.burnPerDay > 0) {
       const meanBurn =
@@ -267,7 +268,7 @@ export function simulateSavings(
       );
       const z = stdBurn > 0 ? (r.burnPerDay - meanBurn) / stdBurn : 0;
       if (z > 1.5) {
-        newBurn = newBurn * (1 - scenario.throttleReduction);
+        newForecast = newForecast * (1 - scenario.throttleReduction);
       }
     }
 
@@ -278,7 +279,7 @@ export function simulateSavings(
       newCap = r.cap + actualReallocate * share;
     }
 
-    const newForecast = round2(newBurn * days);
+    newForecast = round2(newForecast);
     simulatedForecast += newForecast;
 
     const wasTroubled = r.status === "breached" || r.status === "at-risk";
