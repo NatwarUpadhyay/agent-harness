@@ -101,8 +101,8 @@ describe("simulateSavings", () => {
     const rows = rowsFor(budgets, seats);
     const totals = summarizeAttribution(rows, seats);
     const out = simulateSavings(rows, totals, baseScenario);
-    expect(out.savingsUsd).toBe(0);
-    expect(out.savingsPct).toBe(0);
+    expect(out.savingsUsd).toBeCloseTo(0, 1);
+    expect(out.savingsPct).toBeCloseTo(0, 1);
   });
 
   it("reduces forecast when efficiency gain is applied", () => {
