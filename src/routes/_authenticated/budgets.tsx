@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Wallet, Plus, Trash2, TrendingUp, AlertTriangle, Download, Gauge, ShieldAlert, Check,
-  Bell,
+  Bell, Lightbulb, Calculator, ArrowRight,
 } from "lucide-react";
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, ReferenceLine,
@@ -30,6 +30,14 @@ import {
   type AppliedAction,
   type PlannedAction,
 } from "@/lib/data/cost-remediation";
+import {
+  fleetBurnSummary,
+  generateRecommendations,
+  recommendationSummary,
+  simulateSavings,
+  type BurnRecommendation,
+  type SavingsScenario,
+} from "@/lib/data/burn-recommendations";
 
 
 
@@ -154,6 +162,47 @@ function BudgetsView() {
     [attribution, totals],
   );
   const anomalyCount = useMemo(() => anomalyCounts(anomalies), [anomalies]);
+
+  // ---- Fleet burn recommendations + savings simulator ---------------------
+  const [scenario, setScenario] = useState<SavingsScenario>({
+    efficiencyGain: 0,
+    reallocateUsd: 0,
+    throttleReduction: 0,
+  });
+
+  const recommendations = useMemo(
+    () => generateRecommendations(attribution, totals),
+    [attribution, totals],
+  );
+  const fleetSummary = useMemo(
+    () => fleetBurnSummary(attribution, totals),
+    [attribution, totals],
+  );
+  const simulated = useMemo(
+    () => simulateSavings(attribution, totals, scenario),
+    [attribution, totals, scenario],
+  );
+
+  const applyRecommendation = (rec: BurnRecommendation) => {
+    const target = budgets.find((b) => b.team === rec.team);
+    if (rec.kind === "rightsize_cap" && target && rec.targetValue) {
+      update(target.id, { cap: Math.round(rec.targetValue) });
+      toast.success(`Right-sized ${rec.team} cap`, { description: `Reduced to $${Math.round(rec.targetValue).toLocaleString()}` });
+    } else if (rec.kind === "throttle" && target) {
+      update(target.id, { enforcement: "throttle" });
+      toast.success(`Throttled ${rec.team}`, { description: rec.impactCopy });
+    } else if (rec.kind === "create_budget") {
+      setDraft({ team: "Unassigned", cap: "1000", enforcement: "notify" });
+      setShowDraft(true);
+      toast.info("Create a budget for unallocated spend", { description: "Fill in the team and cap below." });
+    } else if (rec.kind === "forecast_breach" && target) {
+      raiseCap(target);
+    } else if (rec.kind === "reallocate") {
+      toast.info("Reallocate headroom", { description: "Manually raise caps for teams trending toward breach and lower caps for underutilized teams." });
+    } else {
+      toast.info(rec.title, { description: rec.description });
+    }
+  };
 
   const escalateAnomaly = (a: Anomaly) => {
     const raw = typeof window !== "undefined" ? window.localStorage.getItem("harness.alerts.incidents") : null;
@@ -282,7 +331,143 @@ function BudgetsView() {
         <MetricCard index={1} label="Spent to date" value={totalSpent} display={(v) => `$${Math.round(v).toLocaleString()}`} trend={Math.round((totalSpent / Math.max(1, totalCap)) * 100)} trendTone="amber" series={[totalSpent * 0.5, totalSpent * 0.75, totalSpent]} />
         <MetricCard index={2} label="Forecast (month end)" value={forecast} display={(v) => `$${Math.round(v).toLocaleString()}`} trend={Math.round(((forecast - totalCap) / Math.max(1, totalCap)) * 100)} trendTone={forecast > totalCap ? "red" : "green"} series={[forecast * 0.6, forecast * 0.8, forecast]} />
         <MetricCard index={3} label="Breached caps" value={breaches} trend={breaches} trendTone={breaches ? "red" : "green"} series={[0, 1, breaches]} />
+      </div>
 
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mt-6">
+        <div className="lg:col-span-3 rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
+          <SectionHeader
+            title="Fleet burn recommendations"
+            action={
+              <span className="text-[11px] font-mono-tabular text-[var(--text-muted)]">
+                {recommendationSummary(recommendations)}
+              </span>
+            }
+          />
+          <p className="text-[12px] text-[var(--text-secondary)] mb-4">
+            AI-generated suggestions based on current utilization, burn-rate variance, and projected
+            overages. Click a recommendation to apply it or use the simulator to model the impact first.
+          </p>
+          {recommendations.length === 0 ? (
+            <div className="py-6 text-center text-[13px] text-[var(--text-muted)]">
+              <Lightbulb className="h-4 w-4 mx-auto mb-2" />
+              No recommendations — fleet spend is within expected bounds.
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {recommendations.map((rec) => (
+                <div
+                  key={rec.id}
+                  className="flex flex-col sm:flex-row sm:items-center gap-3 rounded-lg border border-[var(--border-default)] bg-[var(--bg-elevated)] px-3 py-2.5"
+                >
+                  <div className="flex items-center gap-2 sm:w-48 shrink-0">
+                    <span className={`h-2 w-2 rounded-full ${
+                      rec.severity === "critical" ? "bg-[var(--danger)]" :
+                      rec.severity === "warning" ? "bg-[var(--warning)]" : "bg-[var(--text-accent)]"
+                    }`} />
+                    <span className="text-[13px] text-[var(--text-primary)]">{rec.title}</span>
+                  </div>
+                  <p className="flex-1 text-[12px] text-[var(--text-secondary)] leading-relaxed">{rec.description}</p>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-[11px] font-mono-tabular text-[var(--text-muted)]">{rec.impactCopy}</span>
+                    <button
+                      onClick={() => applyRecommendation(rec)}
+                      className="inline-flex items-center gap-1 h-7 px-2 rounded-md border border-[var(--border-default)] text-[11px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)]"
+                    >
+                      Apply <ArrowRight className="h-3 w-3" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="lg:col-span-2 rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-5">
+          <SectionHeader
+            title="Savings simulator"
+            action={
+              <span className="text-[11px] font-mono-tabular text-[var(--text-muted)]">
+                {simulated.savingsPct.toFixed(1)}% savings
+              </span>
+            }
+          />
+          <p className="text-[12px] text-[var(--text-secondary)] mb-4">
+            Model efficiency wins, reallocation, and throttling before changing policy.
+          </p>
+
+          <div className="space-y-4">
+            <div>
+              <div className="flex items-center justify-between text-[12px] mb-1.5">
+                <span className="text-[var(--text-secondary)]">Efficiency gain</span>
+                <span className="font-mono-tabular text-[var(--text-muted)]">{(scenario.efficiencyGain * 100).toFixed(0)}%</span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={50}
+                step={5}
+                value={Math.round(scenario.efficiencyGain * 100)}
+                onChange={(e) => setScenario((s) => ({ ...s, efficiencyGain: Number(e.target.value) / 100 }))}
+                className="w-full accent-[var(--accent)]"
+              />
+            </div>
+            <div>
+              <div className="flex items-center justify-between text-[12px] mb-1.5">
+                <span className="text-[var(--text-secondary)]">Reallocate headroom</span>
+                <span className="font-mono-tabular text-[var(--text-muted)]">${Math.round(scenario.reallocateUsd).toLocaleString()}</span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={Math.max(1000, Math.round(fleetSummary.headroom / 100) * 100)}
+                step={100}
+                value={Math.round(scenario.reallocateUsd)}
+                onChange={(e) => setScenario((s) => ({ ...s, reallocateUsd: Number(e.target.value) }))}
+                className="w-full accent-[var(--accent)]"
+              />
+            </div>
+            <div>
+              <div className="flex items-center justify-between text-[12px] mb-1.5">
+                <span className="text-[var(--text-secondary)]">Throttle outliers</span>
+                <span className="font-mono-tabular text-[var(--text-muted)]">{(scenario.throttleReduction * 100).toFixed(0)}%</span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={50}
+                step={5}
+                value={Math.round(scenario.throttleReduction * 100)}
+                onChange={(e) => setScenario((s) => ({ ...s, throttleReduction: Number(e.target.value) / 100 }))}
+                className="w-full accent-[var(--accent)]"
+              />
+            </div>
+          </div>
+
+          <div className="mt-4 rounded-lg bg-[var(--bg-elevated)] p-3 space-y-2">
+            <div className="flex items-center justify-between text-[12px]">
+              <span className="text-[var(--text-secondary)]">Original forecast</span>
+              <span className="font-mono-tabular text-[var(--text-primary)]">${Math.round(simulated.originalForecast).toLocaleString()}</span>
+            </div>
+            <div className="flex items-center justify-between text-[12px]">
+              <span className="text-[var(--text-secondary)]">Simulated forecast</span>
+              <span className="font-mono-tabular text-[var(--text-primary)]">${Math.round(simulated.simulatedForecast).toLocaleString()}</span>
+            </div>
+            <div className="flex items-center justify-between text-[12px]">
+              <span className="text-[var(--text-secondary)]">Estimated savings</span>
+              <span className="font-mono-tabular text-[var(--success)]">${Math.round(simulated.savingsUsd).toLocaleString()} ({simulated.savingsPct.toFixed(1)}%)</span>
+            </div>
+            {simulated.rescuedTeams.length > 0 && (
+              <div className="text-[11px] text-[var(--success)]">
+                Rescues: {simulated.rescuedTeams.join(", ")}
+              </div>
+            )}
+            {simulated.remainingBreaches.length > 0 && (
+              <div className="text-[11px] text-[var(--danger)]">
+                Still breaching: {simulated.remainingBreaches.join(", ")}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       <AnimatePresence>
