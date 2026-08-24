@@ -282,14 +282,15 @@ export function simulateSavings(
     simulatedForecast += newForecast;
 
     const wasTroubled = r.status === "breached" || r.status === "at-risk";
-    const nowHealthy = newCap > 0 && newForecast <= newCap * 0.85;
-    if (newForecast > newCap && newCap > 0) {
+    const nowBreached = newCap > 0 && newForecast > newCap;
+    if (nowBreached) {
       remainingBreaches.push(r.team);
-    } else if (wasTroubled && nowHealthy) {
+    } else if (wasTroubled) {
       rescuedTeams.push(r.team);
     }
   }
 
+  simulatedForecast = round2(simulatedForecast);
   const savingsUsd = Math.max(0, originalForecast - simulatedForecast);
   const savingsPct =
     originalForecast > 0 ? (savingsUsd / originalForecast) * 100 : 0;
