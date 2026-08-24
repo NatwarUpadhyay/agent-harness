@@ -163,6 +163,47 @@ function BudgetsView() {
   );
   const anomalyCount = useMemo(() => anomalyCounts(anomalies), [anomalies]);
 
+  // ---- Fleet burn recommendations + savings simulator ---------------------
+  const [scenario, setScenario] = useState<SavingsScenario>({
+    efficiencyGain: 0,
+    reallocateUsd: 0,
+    throttleReduction: 0,
+  });
+
+  const recommendations = useMemo(
+    () => generateRecommendations(attribution, totals),
+    [attribution, totals],
+  );
+  const fleetSummary = useMemo(
+    () => fleetBurnSummary(attribution, totals),
+    [attribution, totals],
+  );
+  const simulated = useMemo(
+    () => simulateSavings(attribution, totals, scenario),
+    [attribution, totals, scenario],
+  );
+
+  const applyRecommendation = (rec: BurnRecommendation) => {
+    const target = budgets.find((b) => b.team === rec.team);
+    if (rec.kind === "rightsize_cap" && target && rec.targetValue) {
+      update(target.id, { cap: Math.round(rec.targetValue) });
+      toast.success(`Right-sized ${rec.team} cap`, { description: `Reduced to $${Math.round(rec.targetValue).toLocaleString()}` });
+    } else if (rec.kind === "throttle" && target) {
+      update(target.id, { enforcement: "throttle" });
+      toast.success(`Throttled ${rec.team}`, { description: rec.impactCopy });
+    } else if (rec.kind === "create_budget") {
+      setDraft({ team: "Unassigned", cap: "1000", enforcement: "notify" });
+      setShowDraft(true);
+      toast.info("Create a budget for unallocated spend", { description: "Fill in the team and cap below." });
+    } else if (rec.kind === "forecast_breach" && target) {
+      raiseCap(target);
+    } else if (rec.kind === "reallocate") {
+      toast.info("Reallocate headroom", { description: "Manually raise caps for teams trending toward breach and lower caps for underutilized teams." });
+    } else {
+      toast.info(rec.title, { description: rec.description });
+    }
+  };
+
   const escalateAnomaly = (a: Anomaly) => {
     const raw = typeof window !== "undefined" ? window.localStorage.getItem("harness.alerts.incidents") : null;
     const existing: unknown[] = raw ? (JSON.parse(raw) as unknown[]) : [];
