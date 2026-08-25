@@ -115,7 +115,7 @@ export function generateRecommendations(
   totals: AttributionTotals,
 ): BurnRecommendation[] {
   const recs: BurnRecommendation[] = [];
-  const day = 21; // consistent with budgets page
+  const day: number = 21; // consistent with budgets page
 
   const meanBurn = rows.length
     ? rows.reduce((s, r) => s + r.burnPerDay, 0) / rows.length
