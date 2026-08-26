@@ -103,6 +103,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 | 45 | Anomaly-driven cost alerts wired to budget owners | Shipped |
 | 46 | Cost anomaly auto-remediation with guardrails | Shipped |
 | 47 | Fleet-wide burn recommendations & savings simulator | Shipped |
+| 48 | Server-persisted team budgets — cloud caps, enforcement, and status across sessions | Shipped |
 
 
 
