@@ -34,7 +34,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 
 ## Current status
 
-> **MVP launch ready** — auth, cloud persistence, the harness canvas, the production execution engine, scheduling, remediation guardrails, cost governance, and fleet-wide burn recommendations are all live and wired end to end. The regression suite runs green with a clean TypeScript check and a clean security scan (no open findings).
+> **MVP launch ready** — auth, cloud persistence, the harness canvas, the production execution engine, scheduling, remediation guardrails, cost governance, and fleet-wide burn recommendations are all live and wired end to end. Team budgets are now persisted in the cloud, so every user sees the same caps and enforcement settings across sessions and devices. The regression suite runs green with a clean TypeScript check and a clean security scan (no open findings).
 
 ### MVP launch checklist
 
@@ -42,7 +42,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 | --- | --- |
 | Auth (email/password, OTP magic link, password reset, leaked-password protection) | Ready |
 | Route protection (`_authenticated` gate + public share/SCIM/webhook routes) | Ready |
-| Cloud persistence (workflows, prompts, datasets, API keys, org settings, runs, schedules, remediation ledger) | Ready |
+| Cloud persistence (workflows, prompts, datasets, API keys, org settings, runs, schedules, remediation ledger, team budgets) | Ready |
 | Row-level security + explicit grants on every public table | Ready |
 | Production execution engine with retries, backoff and full per-node traces | Ready |
 | Scheduling + inbound webhook triggers | Ready |
@@ -50,7 +50,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 | Enterprise SSO/SCIM provisioning endpoint | Ready |
 | Observability (usage, audit log, SLOs, topology audit, alerts/incidents) | Ready |
 | Responsive UI + command palette + onboarding | Ready |
-| Tests (20 files / 131 tests) and TypeScript check | Green |
+| Tests (21 files / 142 tests) and TypeScript check | Green |
 | Security scan | No open findings |
 
 
@@ -103,6 +103,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 | 45 | Anomaly-driven cost alerts wired to budget owners | Shipped |
 | 46 | Cost anomaly auto-remediation with guardrails | Shipped |
 | 47 | Fleet-wide burn recommendations & savings simulator | Shipped |
+| 48 | Server-persisted team budgets — cloud caps, enforcement, and status across sessions | Shipped |
 
 
 
