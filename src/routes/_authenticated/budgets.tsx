@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Wallet, Plus, Trash2, TrendingUp, AlertTriangle, Download, Gauge, ShieldAlert, Check,
-  Bell, Lightbulb, Calculator, ArrowRight,
+  Bell, Lightbulb, Calculator, ArrowRight, Loader2,
 } from "lucide-react";
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, ReferenceLine,
@@ -11,6 +11,8 @@ import {
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { MetricCard } from "@/components/ui/metric-card";
 import { toast } from "sonner";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import {
   attributeSpend,
   chargebackCsv,
@@ -38,30 +40,33 @@ import {
   type BurnRecommendation,
   type SavingsScenario,
 } from "@/lib/data/burn-recommendations";
+import {
+  listBudgets,
+  createBudget,
+  updateBudget,
+  deleteBudget,
+  ensureDefaultBudgets,
+  type TeamBudget,
+} from "@/lib/data/budgets.functions";
 
-
+export const Route = createFileRoute("/_authenticated/budgets")({
+  head: () => ({
+    meta: [
+      { title: "Budgets & Forecasting — Harness" },
+      { name: "description", content: "Per-team AI spend caps, burn-down forecasting, and breach enforcement for your agent fleet." },
+      { property: "og:title", content: "Budgets & Forecasting — Harness" },
+      { property: "og:description", content: "Set per-team spend caps, forecast month-end burn, and enforce budget breaches." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: BudgetsView,
+});
 
 type Enforcement = "notify" | "throttle" | "block";
 
-interface Budget {
-  id: string;
-  team: string;
-  cap: number;
-  spent: number;
-  enforcement: Enforcement;
-  active: boolean;
-  period: "monthly" | "quarterly";
-}
+interface Budget extends TeamBudget {}
 
-const SEED: Budget[] = [
-  { id: "b1", team: "Platform",   cap: 4000, spent: 2740, enforcement: "throttle", active: true,  period: "monthly" },
-  { id: "b2", team: "Support AI", cap: 2500, spent: 2410, enforcement: "block",    active: true,  period: "monthly" },
-  { id: "b3", team: "Research",   cap: 1800, spent: 690,  enforcement: "notify",   active: true,  period: "monthly" },
-  { id: "b4", team: "Finance",    cap: 900,  spent: 934,  enforcement: "block",    active: true,  period: "monthly" },
-  { id: "b5", team: "Growth",     cap: 1200, spent: 380,  enforcement: "notify",   active: false, period: "quarterly" },
-];
-
-const BK = "harness.budgets.v1";
 const GK = "harness.cost-remediation.guardrails.v1";
 const HK = "harness.cost-remediation.history.v1";
 
@@ -85,7 +90,7 @@ const enforceCopy: Record<Enforcement, string> = {
 const dayOfMonth = 21;
 const daysInMonth = 30;
 
-function statusOf(b: Budget) {
+function statusOf(b: { spent: number; cap: number }) {
   const pct = (b.spent / b.cap) * 100;
   if (pct >= 100) return { key: "breached", label: "Breached", cls: "text-[var(--danger)] bg-[color:rgb(239_68_68_/_0.10)]" };
   if (pct >= 85) return { key: "at-risk", label: "At risk", cls: "text-[var(--warning)] bg-[color:rgb(245_158_11_/_0.10)]" };
@@ -93,20 +98,74 @@ function statusOf(b: Budget) {
 }
 
 function BudgetsView() {
-  const [budgets, setBudgets] = useState<Budget[]>(SEED);
-  const [hydrated, setHydrated] = useState(false);
+  const qc = useQueryClient();
+  const fetchBudgets = useServerFn(listBudgets);
+  const seedDefaults = useServerFn(ensureDefaultBudgets);
+  const create = useServerFn(createBudget);
+  const update = useServerFn(updateBudget);
+  const remove = useServerFn(deleteBudget);
+
+  const budgetsQuery = useQuery({ queryKey: ["team-budgets"], queryFn: () => fetchBudgets() });
+  const budgets = budgetsQuery.data ?? [];
+
+  // Seed default budgets if the user has none yet.
+  const seedMutation = useMutation({
+    mutationFn: () => seedDefaults(),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["team-budgets"] }),
+  });
+  useEffect(() => {
+    if (budgetsQuery.isSuccess && budgets.length === 0 && !seedMutation.isPending && !seedMutation.isSuccess) {
+      seedMutation.mutate();
+    }
+  }, [budgetsQuery.isSuccess, budgets.length, seedMutation.isPending, seedMutation.isSuccess]);
+
   const [draft, setDraft] = useState<{ team: string; cap: string; enforcement: Enforcement }>({
     team: "", cap: "1000", enforcement: "notify",
   });
   const [showDraft, setShowDraft] = useState(false);
 
+  // Guardrails and remediation ledger remain local policy choices.
+  const [hydrated, setHydrated] = useState(false);
   useEffect(() => {
-    setBudgets(load(BK, SEED));
     setHydrated(true);
   }, []);
-  useEffect(() => { if (hydrated) save(BK, budgets); }, [budgets, hydrated]);
 
-  const active = useMemo(() => budgets.filter((b) => b.active), [budgets]);
+  const createMutation = useMutation({
+    mutationFn: (payload: { team: string; cap: number; enforcement: Enforcement }) => create({ data: payload }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["team-budgets"] });
+      toast.success("Budget created");
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Failed to create budget"),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (payload: { id: string } & Partial<Budget>) => update({ data: payload }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["team-budgets"] }),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Failed to update budget"),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => remove({ data: { id } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["team-budgets"] });
+      toast.success("Budget removed");
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Failed to remove budget"),
+  });
+
+  // Overlay live metered spend from the seat roster onto the persisted budgets.
+  const seats = useMemo(() => seatRoster(budgets.map((b) => b.team)), [budgets]);
+  const liveBudgets = useMemo(() => {
+    const byTeam = new Map<string, number>();
+    for (const s of seats) {
+      const team = (s.team ?? "").trim() || "Unassigned";
+      byTeam.set(team, (byTeam.get(team) ?? 0) + s.cost);
+    }
+    return budgets.map((b) => ({ ...b, spent: round2(byTeam.get(b.team) ?? b.spent) }));
+  }, [budgets, seats]);
+
+  const active = useMemo(() => liveBudgets.filter((b) => b.active), [liveBudgets]);
   const totalCap = active.reduce((s, b) => s + b.cap, 0);
   const totalSpent = active.reduce((s, b) => s + b.spent, 0);
   const burnRate = totalSpent / dayOfMonth;
@@ -125,33 +184,6 @@ function BudgetsView() {
     });
   }, [burnRate]);
 
-  const update = (id: string, patch: Partial<Budget>) =>
-    setBudgets((prev) => prev.map((b) => (b.id === id ? { ...b, ...patch } : b)));
-
-  const addBudget = () => {
-    const team = draft.team.trim();
-    const cap = Number(draft.cap);
-    if (!team || !Number.isFinite(cap) || cap <= 0) {
-      toast.error("Enter a team name and a positive cap");
-      return;
-    }
-    const b: Budget = {
-      id: `b${Date.now()}`, team, cap, spent: 0,
-      enforcement: draft.enforcement, active: true, period: "monthly",
-    };
-    setBudgets((prev) => [b, ...prev]);
-    setDraft({ team: "", cap: "1000", enforcement: "notify" });
-    setShowDraft(false);
-    toast.success(`Budget created for ${team}`, { description: `$${cap.toLocaleString()} / month · ${enforceCopy[b.enforcement]}` });
-  };
-
-  const raiseCap = (b: Budget) => {
-    const next = Math.ceil((b.cap * 1.25) / 50) * 50;
-    update(b.id, { cap: next });
-    toast.success(`${b.team} cap raised to $${next.toLocaleString()}`);
-  };
-
-  const seats = useMemo(() => seatRoster(budgets.map((b) => b.team)), [budgets]);
   const attribution = useMemo(
     () => attributeSpend(active, seats, { dayOfPeriod: dayOfMonth, daysInPeriod: daysInMonth }),
     [active, seats],
@@ -184,19 +216,21 @@ function BudgetsView() {
   );
 
   const applyRecommendation = (rec: BurnRecommendation) => {
-    const target = budgets.find((b) => b.team === rec.team);
+    const target = liveBudgets.find((b) => b.team === rec.team);
     if (rec.kind === "rightsize_cap" && target && rec.targetValue) {
-      update(target.id, { cap: Math.round(rec.targetValue) });
+      updateMutation.mutate({ id: target.id, cap: Math.round(rec.targetValue) });
       toast.success(`Right-sized ${rec.team} cap`, { description: `Reduced to $${Math.round(rec.targetValue).toLocaleString()}` });
     } else if (rec.kind === "throttle" && target) {
-      update(target.id, { enforcement: "throttle" });
+      updateMutation.mutate({ id: target.id, enforcement: "throttle" });
       toast.success(`Throttled ${rec.team}`, { description: rec.impactCopy });
     } else if (rec.kind === "create_budget") {
       setDraft({ team: "Unassigned", cap: "1000", enforcement: "notify" });
       setShowDraft(true);
       toast.info("Create a budget for unallocated spend", { description: "Fill in the team and cap below." });
     } else if (rec.kind === "forecast_breach" && target) {
-      raiseCap(target);
+      const next = Math.ceil((target.cap * 1.25) / 50) * 50;
+      updateMutation.mutate({ id: target.id, cap: next });
+      toast.success(`${rec.team} cap raised to $${next.toLocaleString()}`);
     } else if (rec.kind === "reallocate") {
       toast.info("Reallocate headroom", { description: "Manually raise caps for teams trending toward breach and lower caps for underutilized teams." });
     } else {
@@ -227,7 +261,7 @@ function BudgetsView() {
     toast.success("Escalated to Alerts", { description: a.message });
   };
 
-  // ---- Auto-remediation -------------------------------------------------
+  // ---- Auto-remediation ---------------------------------------------------
   const [guardrails, setGuardrails] = useState<CostGuardrails>(defaultCostGuardrails);
   const [history, setHistory] = useState<AppliedAction[]>([]);
   const [approvedTeams, setApprovedTeams] = useState<string[]>([]);
@@ -251,11 +285,11 @@ function BudgetsView() {
       });
       return;
     }
-    const target = budgets.find((b) => b.team === action.team);
-    if (action.kind === "throttle" && target) update(target.id, { enforcement: "throttle" });
-    if (action.kind === "block" && target) update(target.id, { enforcement: "block" });
-    if (action.kind === "raise_cap" && target && action.capUsd) update(target.id, { cap: action.capUsd });
-    if (action.kind === "notify" && target) update(target.id, { enforcement: "notify" });
+    const target = liveBudgets.find((b) => b.team === action.team);
+    if (action.kind === "throttle" && target) updateMutation.mutate({ id: target.id, enforcement: "throttle" });
+    if (action.kind === "block" && target) updateMutation.mutate({ id: target.id, enforcement: "block" });
+    if (action.kind === "raise_cap" && target && action.capUsd) updateMutation.mutate({ id: target.id, cap: action.capUsd });
+    if (action.kind === "notify" && target) updateMutation.mutate({ id: target.id, enforcement: "notify" });
     const entry = toAppliedAction(action, Date.now());
     setHistory((prev) => [entry, ...prev].slice(0, 50));
     toast.success(`${actionCopy[action.kind]} — ${action.team}`, { description: action.rationale });
@@ -270,7 +304,17 @@ function BudgetsView() {
     ready.forEach(applyAction);
   };
 
-
+  const addBudget = () => {
+    const team = draft.team.trim();
+    const cap = Number(draft.cap);
+    if (!team || !Number.isFinite(cap) || cap <= 0) {
+      toast.error("Enter a team name and a positive cap");
+      return;
+    }
+    createMutation.mutate({ team, cap, enforcement: draft.enforcement });
+    setDraft({ team: "", cap: "1000", enforcement: "notify" });
+    setShowDraft(false);
+  };
 
   const exportChargeback = () => {
     const url = URL.createObjectURL(
@@ -285,9 +329,8 @@ function BudgetsView() {
   };
 
   const exportCsv = () => {
-
     const header = "team,period,cap_usd,spent_usd,utilization_pct,enforcement,active,status\n";
-    const body = budgets.map((b) => [
+    const body = liveBudgets.map((b) => [
       b.team, b.period, b.cap, b.spent, ((b.spent / b.cap) * 100).toFixed(1),
       b.enforcement, b.active, statusOf(b).label,
     ].join(",")).join("\n");
@@ -298,8 +341,26 @@ function BudgetsView() {
     a.download = "harness-budgets.csv";
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("Budgets exported", { description: `${budgets.length} rows` });
+    toast.success("Budgets exported", { description: `${liveBudgets.length} rows` });
   };
+
+  if (budgetsQuery.isLoading) {
+    return (
+      <div className="flex h-[60vh] flex-col items-center justify-center gap-3 text-[var(--text-muted)]">
+        <Loader2 className="h-6 w-6 animate-spin" />
+        <p className="text-[13px]">Loading budgets…</p>
+      </div>
+    );
+  }
+
+  if (budgetsQuery.error) {
+    return (
+      <div className="flex h-[60vh] flex-col items-center justify-center gap-3 text-[var(--danger)]">
+        <AlertTriangle className="h-6 w-6" />
+        <p className="text-[13px]">Could not load budgets: {budgetsQuery.error.message}</p>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -866,7 +927,7 @@ function BudgetsView() {
               </tr>
             </thead>
             <tbody>
-              {budgets.map((b) => {
+              {liveBudgets.map((b) => {
                 const pct = (b.spent / b.cap) * 100;
                 const st = statusOf(b);
                 return (
@@ -897,7 +958,7 @@ function BudgetsView() {
                       <select
                         value={b.enforcement}
                         onChange={(e) => {
-                          update(b.id, { enforcement: e.target.value as Enforcement });
+                          updateMutation.mutate({ id: b.id, enforcement: e.target.value as Enforcement });
                           toast(`${b.team}: ${enforceCopy[e.target.value as Enforcement]}`);
                         }}
                         className="h-8 px-2 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[12px] outline-none focus:border-[var(--border-strong)]"
@@ -913,7 +974,11 @@ function BudgetsView() {
                     <td className="py-3 pr-3">
                       <div className="flex items-center justify-end gap-1.5">
                         <button
-                          onClick={() => raiseCap(b)}
+                          onClick={() => {
+                            const next = Math.ceil((b.cap * 1.25) / 50) * 50;
+                            updateMutation.mutate({ id: b.id, cap: next });
+                            toast.success(`${b.team} cap raised to $${next.toLocaleString()}`);
+                          }}
                           className="inline-flex items-center gap-1.5 h-8 px-2 rounded-md border border-[var(--border-default)] text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)]"
                         >
                           <TrendingUp className="h-3 w-3" />
@@ -921,7 +986,7 @@ function BudgetsView() {
                         </button>
                         <button
                           onClick={() => {
-                            update(b.id, { active: !b.active });
+                            updateMutation.mutate({ id: b.id, active: !b.active });
                             toast(`${b.team} budget ${b.active ? "paused" : "resumed"}`);
                           }}
                           className="h-8 px-2 rounded-md border border-[var(--border-default)] text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)]"
@@ -929,10 +994,7 @@ function BudgetsView() {
                           {b.active ? "Pause" : "Resume"}
                         </button>
                         <button
-                          onClick={() => {
-                            setBudgets((prev) => prev.filter((x) => x.id !== b.id));
-                            toast.success(`${b.team} budget removed`);
-                          }}
+                          onClick={() => deleteMutation.mutate(b.id)}
                           aria-label={`Delete ${b.team} budget`}
                           className="h-8 w-8 grid place-items-center rounded-md border border-[var(--border-default)] text-[var(--text-muted)] hover:text-[var(--danger)] hover:border-[var(--border-strong)]"
                         >
@@ -946,7 +1008,7 @@ function BudgetsView() {
             </tbody>
           </table>
         </div>
-        {budgets.length === 0 && (
+        {liveBudgets.length === 0 && (
           <div className="py-10 text-center text-[13px] text-[var(--text-muted)]">
             <AlertTriangle className="h-4 w-4 mx-auto mb-2" />
             No budgets yet — create one to start enforcing spend caps.
@@ -957,16 +1019,6 @@ function BudgetsView() {
   );
 }
 
-export const Route = createFileRoute("/_authenticated/budgets")({
-  head: () => ({
-    meta: [
-      { title: "Budgets & Forecasting — Harness" },
-      { name: "description", content: "Per-team AI spend caps, burn-down forecasting, and breach enforcement for your agent fleet." },
-      { property: "og:title", content: "Budgets & Forecasting — Harness" },
-      { property: "og:description", content: "Set per-team spend caps, forecast month-end burn, and enforce budget breaches." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
-  component: BudgetsView,
-});
+function round2(n: number): number {
+  return Math.round(n * 100) / 100;
+}
