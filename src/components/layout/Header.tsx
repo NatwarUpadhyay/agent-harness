@@ -1,10 +1,12 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { Search, Bell, ChevronRight, LogOut, CheckCheck, AlertTriangle, Activity, Rocket, Menu } from "lucide-react";
+import { Search, Bell, ChevronRight, LogOut, CheckCheck, AlertTriangle, Activity, Rocket, Menu, Megaphone } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useUiStore } from "@/stores/ui";
 import { allNavItems } from "./nav-config";
 import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { listActivityEvents, markActivityRead, markAllActivityRead, type ActivityEvent, type ActivityKind } from "@/lib/data/activity.functions";
 
 function initialsFrom(name: string | null | undefined, email: string | null | undefined) {
   const src = (name && name.trim()) || (email ? email.split("@")[0] : "");
@@ -30,30 +32,44 @@ function useBreadcrumbs() {
   return crumbs;
 }
 
-type Notification = {
-  id: string;
-  title: string;
-  body: string;
-  time: string;
-  kind: "success" | "warning" | "info" | "deploy";
-  read: boolean;
-};
+type NotificationKind = ActivityKind;
 
-const seedNotifications: Notification[] = [
-  { id: "n1", kind: "deploy", title: "Deployment succeeded", body: "orchestrator-v3 rolled out to production.", time: "2m ago", read: false },
-  { id: "n2", kind: "warning", title: "Latency spike detected", body: "planner p95 crossed 800ms in us-east-1.", time: "14m ago", read: false },
-  { id: "n3", kind: "success", title: "Evaluation passed", body: "regression-suite: 148/150 cases green.", time: "1h ago", read: false },
-  { id: "n4", kind: "info", title: "New workflow shared", body: "avery@acme.ai shared 'Support triage v2'.", time: "3h ago", read: true },
-];
+function kindIcon(kind: NotificationKind) {
+  switch (kind) {
+    case "budget_breach":
+    case "slo_breach":
+      return { Icon: AlertTriangle, color: "var(--danger)" };
+    case "remediation_applied":
+    case "success":
+      return { Icon: CheckCheck, color: "var(--success)" };
+    case "alert_escalated":
+    case "warning":
+      return { Icon: AlertTriangle, color: "var(--warning)" };
+    case "run_completed":
+    case "info":
+      return { Icon: Activity, color: "var(--teal)" };
+    case "deploy":
+      return { Icon: Rocket, color: "var(--accent)" };
+    default:
+      return { Icon: Megaphone, color: "var(--accent)" };
+  }
+}
 
-function NotificationIcon({ kind }: { kind: Notification["kind"] }) {
-  const map = {
-    success: { Icon: CheckCheck, color: "var(--success)" },
-    warning: { Icon: AlertTriangle, color: "var(--warning)" },
-    info: { Icon: Activity, color: "var(--teal)" },
-    deploy: { Icon: Rocket, color: "var(--accent)" },
-  } as const;
-  const { Icon, color } = map[kind];
+function formatRelative(iso: string) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const sec = Math.floor(diff / 1000);
+  if (sec < 60) return "just now";
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min}m ago`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr}h ago`;
+  const day = Math.floor(hr / 24);
+  if (day < 7) return `${day}d ago`;
+  return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
+function NotificationIcon({ kind }: { kind: NotificationKind }) {
+  const { Icon, color } = kindIcon(kind);
   return (
     <div
       className="grid h-7 w-7 shrink-0 place-items-center rounded-md"
@@ -73,9 +89,27 @@ export function Header() {
   const [user, setUser] = useState<{ name?: string | null; email?: string | null } | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>(seedNotifications);
   const menuRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
+
+  const fetchActivity = useServerFn(listActivityEvents);
+  const readOne = useServerFn(markActivityRead);
+  const readAll = useServerFn(markAllActivityRead);
+
+  const { data: notifications = [] } = useQuery({
+    queryKey: ["activity_events"],
+    queryFn: () => fetchActivity(),
+  });
+
+  const readMutation = useMutation({
+    mutationFn: (id: string) => readOne({ id }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["activity_events"] }),
+  });
+
+  const readAllMutation = useMutation({
+    mutationFn: () => readAll(),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["activity_events"] }),
+  });
 
   const unread = useMemo(() => notifications.filter((n) => !n.read).length, [notifications]);
 
@@ -122,8 +156,10 @@ export function Header() {
     navigate({ to: "/login", replace: true });
   };
 
-  const markAllRead = () => setNotifications((ns) => ns.map((n) => ({ ...n, read: true })));
-  const markRead = (id: string) => setNotifications((ns) => ns.map((n) => (n.id === id ? { ...n, read: true } : n)));
+  const markAllRead = () => {
+    if (unread > 0) readAllMutation.mutate();
+  };
+  const markRead = (id: string) => readMutation.mutate(id);
 
   return (
     <header className="sticky top-0 z-30 h-14 bg-[var(--bg-base)]/85 backdrop-blur border-b border-[var(--border-subtle)]">
@@ -193,7 +229,7 @@ export function Header() {
                   <div className="text-[13px] font-medium">Notifications</div>
                   <button
                     onClick={markAllRead}
-                    disabled={unread === 0}
+                    disabled={unread === 0 || readAllMutation.isPending}
                     className="text-[11px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     Mark all read
@@ -205,7 +241,7 @@ export function Header() {
                       You're all caught up.
                     </div>
                   ) : (
-                    notifications.map((n) => (
+                    notifications.slice(0, 8).map((n) => (
                       <button
                         key={n.id}
                         onClick={() => markRead(n.id)}
@@ -218,12 +254,19 @@ export function Header() {
                             {!n.read && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--accent)]" />}
                           </div>
                           <div className="text-[11.5px] text-[var(--text-secondary)] line-clamp-2 mt-0.5">{n.body}</div>
-                          <div className="text-[10.5px] text-[var(--text-muted)] font-mono-tabular mt-1">{n.time}</div>
+                          <div className="text-[10.5px] text-[var(--text-muted)] font-mono-tabular mt-1">{formatRelative(n.created_at)}</div>
                         </div>
                       </button>
                     ))
                   )}
                 </div>
+                <Link
+                  to="/activity"
+                  onClick={() => setNotifOpen(false)}
+                  className="block w-full px-3 py-2 text-center text-[11px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-t border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)]"
+                >
+                  View all activity
+                </Link>
               </div>
             )}
           </div>

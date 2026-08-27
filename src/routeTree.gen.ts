@@ -52,6 +52,7 @@ import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedApiKeysRouteImport } from './routes/_authenticated/api-keys'
 import { Route as AuthenticatedAlertsRouteImport } from './routes/_authenticated/alerts'
 import { Route as AuthenticatedAgentsRouteImport } from './routes/_authenticated/agents'
+import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
 import { Route as ApiPublicTriggersTokenRouteImport } from './routes/api/public/triggers/$token'
 import { Route as ApiPublicScimV2RouteImport } from './routes/api/public/scim/v2'
 import { Route as ApiPublicSchedulerTickRouteImport } from './routes/api/public/scheduler/tick'
@@ -281,6 +282,11 @@ const AuthenticatedAgentsRoute = AuthenticatedAgentsRouteImport.update({
   path: '/agents',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedActivityRoute = AuthenticatedActivityRouteImport.update({
+  id: '/activity',
+  path: '/activity',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const ApiPublicTriggersTokenRoute = ApiPublicTriggersTokenRouteImport.update({
   id: '/api/public/triggers/$token',
   path: '/api/public/triggers/$token',
@@ -311,6 +317,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/activity': typeof AuthenticatedActivityRoute
   '/agents': typeof AuthenticatedAgentsRoute
   '/alerts': typeof AuthenticatedAlertsRoute
   '/api-keys': typeof AuthenticatedApiKeysRoute
@@ -359,6 +366,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/activity': typeof AuthenticatedActivityRoute
   '/agents': typeof AuthenticatedAgentsRoute
   '/alerts': typeof AuthenticatedAlertsRoute
   '/api-keys': typeof AuthenticatedApiKeysRoute
@@ -410,6 +418,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/activity': typeof AuthenticatedActivityRoute
   '/_authenticated/agents': typeof AuthenticatedAgentsRoute
   '/_authenticated/alerts': typeof AuthenticatedAlertsRoute
   '/_authenticated/api-keys': typeof AuthenticatedApiKeysRoute
@@ -462,6 +471,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/reset-password'
+    | '/activity'
     | '/agents'
     | '/alerts'
     | '/api-keys'
@@ -510,6 +520,7 @@ export interface FileRouteTypes {
   to:
     | '/login'
     | '/reset-password'
+    | '/activity'
     | '/agents'
     | '/alerts'
     | '/api-keys'
@@ -560,6 +571,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/login'
     | '/reset-password'
+    | '/_authenticated/activity'
     | '/_authenticated/agents'
     | '/_authenticated/alerts'
     | '/_authenticated/api-keys'
@@ -920,6 +932,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAgentsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/activity': {
+      id: '/_authenticated/activity'
+      path: '/activity'
+      fullPath: '/activity'
+      preLoaderRoute: typeof AuthenticatedActivityRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/triggers/$token': {
       id: '/api/public/triggers/$token'
       path: '/api/public/triggers/$token'
@@ -959,6 +978,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedActivityRoute: typeof AuthenticatedActivityRoute
   AuthenticatedAgentsRoute: typeof AuthenticatedAgentsRoute
   AuthenticatedAlertsRoute: typeof AuthenticatedAlertsRoute
   AuthenticatedApiKeysRoute: typeof AuthenticatedApiKeysRoute
@@ -1001,6 +1021,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedActivityRoute: AuthenticatedActivityRoute,
   AuthenticatedAgentsRoute: AuthenticatedAgentsRoute,
   AuthenticatedAlertsRoute: AuthenticatedAlertsRoute,
   AuthenticatedApiKeysRoute: AuthenticatedApiKeysRoute,

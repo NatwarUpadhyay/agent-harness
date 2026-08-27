@@ -14,6 +14,9 @@ import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
+  createActivityEvent,
+} from "@/lib/data/activity.functions";
+import {
   attributeSpend,
   chargebackCsv,
   summarizeAttribution,
@@ -104,6 +107,7 @@ function BudgetsView() {
   const create = useServerFn(createBudget);
   const update = useServerFn(updateBudget);
   const remove = useServerFn(deleteBudget);
+  const createEvent = useServerFn(createActivityEvent);
 
   const budgetsQuery = useQuery({ queryKey: ["team-budgets"], queryFn: () => fetchBudgets() });
   const budgets = budgetsQuery.data ?? [];
@@ -152,6 +156,12 @@ function BudgetsView() {
       toast.success("Budget removed");
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : "Failed to remove budget"),
+  });
+
+  const activityMutation = useMutation({
+    mutationFn: (payload: { kind: "remediation_applied" | "alert_escalated" | "budget_breach"; title: string; body: string; metadata?: Record<string, unknown> }) =>
+      createEvent({ data: payload }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["activity_events"] }),
   });
 
   // Overlay live metered spend from the seat roster onto the persisted budgets.
@@ -258,6 +268,12 @@ function BudgetsView() {
       message: a.message,
     };
     window.localStorage.setItem("harness.alerts.incidents", JSON.stringify([incident, ...existing]));
+    activityMutation.mutate({
+      kind: "alert_escalated",
+      title: `Spend anomaly escalated — ${a.team}`,
+      body: a.message,
+      metadata: { team: a.team, type: a.type, severity: a.severity, observed: a.observed, threshold: a.threshold },
+    });
     toast.success("Escalated to Alerts", { description: a.message });
   };
 
@@ -292,6 +308,12 @@ function BudgetsView() {
     if (action.kind === "notify" && target) updateMutation.mutate({ id: target.id, enforcement: "notify" });
     const entry = toAppliedAction(action, Date.now());
     setHistory((prev) => [entry, ...prev].slice(0, 50));
+    activityMutation.mutate({
+      kind: "remediation_applied",
+      title: `${actionCopy[action.kind]} — ${action.team}`,
+      body: action.rationale,
+      metadata: { team: action.team, kind: action.kind, destructive: action.destructive, severity: action.severity },
+    });
     toast.success(`${actionCopy[action.kind]} — ${action.team}`, { description: action.rationale });
   };
 

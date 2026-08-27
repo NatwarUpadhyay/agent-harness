@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_events: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          kind: string
+          metadata: Json | null
+          read: boolean
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          kind: string
+          metadata?: Json | null
+          read?: boolean
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          metadata?: Json | null
+          read?: boolean
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       agents: {
         Row: {
           avg_latency: number
