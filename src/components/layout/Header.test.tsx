@@ -80,7 +80,7 @@ describe("Header", () => {
     await waitFor(() => expect(screen.getByRole("button", { name: /Account: Avery Kim/i })).toBeInTheDocument());
     await user.click(screen.getByRole("button", { name: /Notifications \(2 unread\)/i }));
     await user.click(screen.getByRole("button", { name: /Mark all read/i }));
-    expect(screen.getByRole("button", { name: "Notifications" })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole("button", { name: "Notifications" })).toBeInTheDocument());
 
     await user.click(screen.getByRole("button", { name: /Account: Avery Kim/i }));
     await user.click(screen.getByRole("button", { name: /Sign out/i }));
