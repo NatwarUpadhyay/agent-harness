@@ -42,7 +42,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 | --- | --- |
 | Auth (email/password, OTP magic link, password reset, leaked-password protection) | Ready |
 | Route protection (`_authenticated` gate + public share/SCIM/webhook routes) | Ready |
-| Cloud persistence (workflows, prompts, datasets, API keys, org settings, runs, schedules, remediation ledger, team budgets) | Ready |
+| Cloud persistence (workflows, prompts, datasets, API keys, org settings, runs, schedules, remediation ledger, team budgets, activity events) | Ready |
 | Row-level security + explicit grants on every public table | Ready |
 | Production execution engine with retries, backoff and full per-node traces | Ready |
 | Scheduling + inbound webhook triggers | Ready |
