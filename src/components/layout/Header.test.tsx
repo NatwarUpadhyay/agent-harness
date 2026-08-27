@@ -29,14 +29,15 @@ vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => navigate,
 }));
 
+let allRead = false;
 vi.mock("@/lib/data/activity.functions", () => ({
-  listActivityEvents: vi.fn().mockResolvedValue([
-    { id: "a1", kind: "info", title: "Deployment complete", body: "", read: false, created_at: new Date().toISOString() },
-    { id: "a2", kind: "warning", title: "Budget alert", body: "", read: false, created_at: new Date().toISOString() },
+  listActivityEvents: vi.fn().mockImplementation(() => Promise.resolve([
+    { id: "a1", kind: "info", title: "Deployment complete", body: "", read: allRead, created_at: new Date().toISOString() },
+    { id: "a2", kind: "warning", title: "Budget alert", body: "", read: allRead, created_at: new Date().toISOString() },
     { id: "a3", kind: "success", title: "Run finished", body: "", read: true, created_at: new Date().toISOString() },
-  ]),
-  markActivityRead: vi.fn().mockResolvedValue(undefined),
-  markAllActivityRead: vi.fn().mockResolvedValue(undefined),
+  ])),
+  markActivityRead: vi.fn().mockImplementation(() => { allRead = true; return Promise.resolve(undefined); }),
+  markAllActivityRead: vi.fn().mockImplementation(() => { allRead = true; return Promise.resolve(undefined); }),
 }));
 
 vi.mock("@/integrations/supabase/client", () => ({
