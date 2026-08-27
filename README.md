@@ -34,7 +34,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 
 ## Current status
 
-> **MVP launch ready** — auth, cloud persistence, the harness canvas, the production execution engine, scheduling, remediation guardrails, cost governance, and fleet-wide burn recommendations are all live and wired end to end. Team budgets are now persisted in the cloud, so every user sees the same caps and enforcement settings across sessions and devices. The regression suite runs green with a clean TypeScript check and a clean security scan (no open findings).
+> **MVP launch ready** — auth, cloud persistence, the harness canvas, the production execution engine, scheduling, remediation guardrails, cost governance, fleet-wide burn recommendations, and a server-persisted activity feed are all live and wired end to end. Team budgets and activity events are now persisted in the cloud, so every user sees the same caps, enforcement settings, and notifications across sessions and devices. The regression suite runs green with a clean TypeScript check and a clean security scan (no open findings).
 
 ### MVP launch checklist
 
@@ -104,6 +104,8 @@ It is built for teams who want a shared visual language for AI systems before wr
 | 46 | Cost anomaly auto-remediation with guardrails | Shipped |
 | 47 | Fleet-wide burn recommendations & savings simulator | Shipped |
 | 48 | Server-persisted team budgets — cloud caps, enforcement, and status across sessions | Shipped |
+| 49 | Server-persisted company activity feed & notifications center | Shipped |
+
 
 
 
