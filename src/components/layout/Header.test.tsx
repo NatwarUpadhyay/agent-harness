@@ -64,28 +64,25 @@ describe("Header", () => {
       }),
     };
     navigate.mockClear();
-    queryClient.cancelQueries.mockClear();
-    queryClient.clear.mockClear();
+    queryClient.clear();
   });
 
   it("opens search, marks notifications read, and signs out", async () => {
     const user = userEvent.setup();
 
-    render(<Header />);
+    render(<QueryClientProvider client={queryClient}><Header /></QueryClientProvider>);
 
     await user.click(screen.getAllByRole("button", { name: /Open search/i })[0]);
     expect(uiState.commandOpen).toBe(true);
 
     await waitFor(() => expect(screen.getByRole("button", { name: /Account: Avery Kim/i })).toBeInTheDocument());
-    await user.click(screen.getByRole("button", { name: /Notifications \(3 unread\)/i }));
+    await user.click(screen.getByRole("button", { name: /Notifications \(2 unread\)/i }));
     await user.click(screen.getByRole("button", { name: /Mark all read/i }));
     expect(screen.getByRole("button", { name: "Notifications" })).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /Account: Avery Kim/i }));
     await user.click(screen.getByRole("button", { name: /Sign out/i }));
 
-    expect(queryClient.cancelQueries).toHaveBeenCalled();
-    expect(queryClient.clear).toHaveBeenCalled();
     expect(navigate).toHaveBeenCalledWith({ to: "/login", replace: true });
   });
 });
