@@ -54,6 +54,7 @@ vi.mock("@/integrations/supabase/client", () => ({
 
 describe("Header", () => {
   beforeEach(() => {
+    allRead = false;
     uiState = {
       sidebarCollapsed: false,
       commandOpen: false,
