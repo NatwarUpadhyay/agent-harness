@@ -1,13 +1,11 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi, beforeEach } from "vitest";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Header } from "./Header";
 
 const navigate = vi.fn();
-const queryClient = {
-  cancelQueries: vi.fn().mockResolvedValue(undefined),
-  clear: vi.fn(),
-};
+const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
 
 let uiState = {
   sidebarCollapsed: false,
@@ -31,13 +29,15 @@ vi.mock("@tanstack/react-router", () => ({
   useNavigate: () => navigate,
 }));
 
-vi.mock("@tanstack/react-query", async () => {
-  const actual = await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
-  return {
-    ...actual,
-    useQueryClient: () => queryClient,
-  };
-});
+vi.mock("@/lib/data/activity.functions", () => ({
+  listActivityEvents: vi.fn().mockResolvedValue([
+    { id: "a1", kind: "info", title: "Deployment complete", body: "", read: false, created_at: new Date().toISOString() },
+    { id: "a2", kind: "warning", title: "Budget alert", body: "", read: false, created_at: new Date().toISOString() },
+    { id: "a3", kind: "success", title: "Run finished", body: "", read: true, created_at: new Date().toISOString() },
+  ]),
+  markActivityRead: vi.fn().mockResolvedValue(undefined),
+  markAllActivityRead: vi.fn().mockResolvedValue(undefined),
+}));
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
