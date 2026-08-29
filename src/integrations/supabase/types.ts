@@ -92,6 +92,42 @@ export type Database = {
         }
         Relationships: []
       }
+      billing_plans: {
+        Row: {
+          billing_interval: string
+          created_at: string
+          features: Json
+          id: string
+          limits: Json
+          name: string
+          price_usd: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          billing_interval?: string
+          created_at?: string
+          features?: Json
+          id?: string
+          limits?: Json
+          name?: string
+          price_usd?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          billing_interval?: string
+          created_at?: string
+          features?: Json
+          id?: string
+          limits?: Json
+          name?: string
+          price_usd?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       experiments: {
         Row: {
           avg_latency: number
@@ -280,6 +316,53 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      usage_meters: {
+        Row: {
+          created_at: string
+          current_value: number
+          id: string
+          limit_value: number
+          name: string
+          period_end: string
+          period_start: string
+          plan_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_value?: number
+          id?: string
+          limit_value?: number
+          name: string
+          period_end?: string
+          period_start?: string
+          plan_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_value?: number
+          id?: string
+          limit_value?: number
+          name?: string
+          period_end?: string
+          period_start?: string
+          plan_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "usage_meters_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "billing_plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_preferences: {
         Row: {
