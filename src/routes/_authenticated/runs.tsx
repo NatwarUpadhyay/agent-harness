@@ -6,7 +6,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
   Play, Loader2, ChevronRight, Trash2, Coins, Timer, Cpu, CheckCircle2, XCircle, MinusCircle,
-  RotateCcw, Lock,
+  RotateCcw,
 } from "lucide-react";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { useWorkflows } from "@/lib/hooks/use-entities";
