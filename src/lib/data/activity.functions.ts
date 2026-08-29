@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Json } from "@/integrations/supabase/types";
 
 export type ActivityKind =
   | "budget_breach"
@@ -19,7 +20,7 @@ export interface ActivityEvent {
   kind: ActivityKind;
   title: string;
   body: string;
-  metadata: Record<string, unknown>;
+  metadata: Json;
   read: boolean;
   created_at: string;
   updated_at: string;
@@ -53,7 +54,7 @@ function toActivity(row: Record<string, unknown>): ActivityEvent {
     kind: String(row.kind) as ActivityKind,
     title: String(row.title),
     body: String(row.body),
-    metadata: (row.metadata ?? {}) as Record<string, unknown>,
+    metadata: (row.metadata ?? {}) as Json,
     read: Boolean(row.read),
     created_at: String(row.created_at),
     updated_at: String(row.updated_at),
@@ -80,7 +81,7 @@ export const createActivityEvent = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     const { data: row, error } = await context.supabase
       .from("activity_events")
-      .insert({ ...data, user_id: context.userId })
+      .insert({ ...data, metadata: data.metadata as Json, user_id: context.userId })
       .select()
       .single();
     if (error) throw new Error(`Failed to create activity event: ${error.message}`);

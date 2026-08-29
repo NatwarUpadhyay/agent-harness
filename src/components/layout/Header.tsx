@@ -102,7 +102,7 @@ export function Header() {
   });
 
   const readMutation = useMutation({
-    mutationFn: (id: string) => readOne({ id }),
+    mutationFn: (id: string) => readOne({ data: { id } }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["activity_events"] }),
   });
 
