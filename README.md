@@ -34,7 +34,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 
 ## Current status
 
-> **MVP launch ready** — auth, cloud persistence, the harness canvas, the production execution engine, scheduling, remediation guardrails, cost governance, fleet-wide burn recommendations, and a server-persisted activity feed are all live and wired end to end. Team budgets and activity events are now persisted in the cloud, so every user sees the same caps, enforcement settings, and notifications across sessions and devices. The regression suite runs green with a clean TypeScript check and a clean security scan (no open findings).
+> **MVP launch ready** — auth, cloud persistence, the harness canvas, the production execution engine, scheduling, remediation guardrails, cost governance, fleet-wide burn recommendations, a server-persisted activity feed, and real-time notifications are all live and wired end to end. Team budgets and activity events are now persisted in the cloud, so every user sees the same caps, enforcement settings, and notifications across sessions and devices. The regression suite runs green with a clean TypeScript check and a clean security scan (no open findings).
 
 ### MVP launch checklist
 
@@ -135,6 +135,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 - **Governance** — Role capability matrix, member invites, SSO and IP-allowlist controls.
 - **Enterprise SSO/SCIM** — SAML/OIDC admin console with domain enforcement, server-persisted organization settings, and a live SCIM 2.0 `/api/public/scim/v2` provisioning endpoint for Okta, Entra, and Google Workspace directories.
 - **Budgets & alerts** — Per-team spend caps with burn-down forecasting, rule-driven alerting, an incident triage console, and a server-persisted activity feed that captures every remediation action and escalation.
+- **Activity feed & notifications** — A server-persisted company activity stream with kind-based filtering and a header notification bell that surfaces budget breaches, remediation actions, and alert escalations in real time.
 - **Spend enforcement** — Real-time budget breach enforcement (notify / throttle / block) with a run simulator, z-score burn-rate anomaly detection, a live enforcement log, and CSV export.
 - **Integrations & library** — Vendor capability matrix with compatibility checks, and a community library for cloning public workflows.
 - **Collaboration** — Multi-cursor presence, activity stream, collaborative node editing, threaded node comments, and canvas snapshots.
@@ -171,7 +172,7 @@ python3 context/loops/loop_detection.py
 
 ## Testing
 
-Vitest + Testing Library regression suite covering the main interactive surfaces: harness canvas, dashboard, evaluations, agents, layout controls, usage math, remediation, attribution, anomaly detection, and auth flows. Runs green (20 files / 131 tests) alongside a clean TypeScript check.
+Vitest + Testing Library regression suite covering the main interactive surfaces: harness canvas, dashboard, evaluations, agents, layout controls, usage math, remediation, attribution, anomaly detection, cost remediation, and auth flows. Runs green (21 files / 142 tests) alongside a clean TypeScript check.
 
 The current suite is a focused smoke/regression layer rather than exhaustive coverage for every page, so it is a good starting point for validating future UI changes.
 
@@ -264,15 +265,21 @@ The fastest way to understand Harness is to use the preview:
 
 - **Phase 46 — Cost anomaly auto-remediation.** Detected anomalies now become a concrete, guarded remediation plan on `/budgets`: over-cap teams get hard-blocked, forecast overruns get throttled (or the cap raised when the forecast is structurally past it), burn-rate spikes get throttled, and unallocated spend gets an owner. Guardrails are enforced in the planner, not the UI — dry-run mode, an hourly action cap, per-team cooldowns, and an approval gate for destructive actions — and every applied action lands in an action ledger. Planning logic lives in `src/lib/data/cost-remediation.ts` as pure, unit-tested functions.
 
+- **Phase 47 — Fleet-wide burn recommendations & savings simulator.** A `/budgets` fleet panel rolls every team's burn profile into a single view, ranks the highest-leverage savings levers (model downgrades, cache/retrieval tuning, schedule trimming, seat reclamation), and lets an operator simulate a combination of levers to see projected monthly spend, latency impact and payback before applying anything. Recommendation math lives in `src/lib/data/burn-recommendations.ts` as pure, unit-tested functions.
+
+- **Phase 48 — Server-persisted team budgets.** Team budget caps, enforcement modes, and status are now stored in `public.team_budgets` with RLS and synced through server functions in `src/lib/data/budgets.functions.ts`. The `/budgets` UI uses TanStack Query mutations so every user sees the same live caps and enforcement settings across sessions and devices.
+
+- **Phase 49 — Server-persisted company activity feed & notifications center.** A new `public.activity_events` table captures budget breaches, remediation actions, and alert escalations with RLS. Server functions in `src/lib/data/activity.functions.ts` power an `/activity` feed page with kind-based filtering and drive the header notification bell, so the whole org sees the same event timeline in real time.
+
 ## Next up
 
-**Phase 47 — Fleet-wide burn recommendations & savings simulator.** Roll every team's burn profile into a single fleet view, rank the highest-leverage savings levers (model downgrades, cache/retrieval tuning, schedule trimming, seat reclamation), and let an operator simulate a combination of levers to see projected monthly spend, latency impact and payback before applying anything.
+**Phase 50 — Billing meters & plan enforcement.** Tie seat-level usage and team spend to plan limits, surface upgrade prompts when caps are approached, and persist plan entitlements in the cloud so the platform can be sold, not just demoed.
 
 Then, post-launch:
 
-1. **Billing & plans** — metered usage tied to a payment provider so the platform can be sold, not just demoed.
-2. **Org-level RBAC on the server** — move the governance capability matrix from client state into server-enforced roles.
-3. **Real integrations** — replace the vendor capability matrix with live provider connections and key vaulting.
-4. **Deeper eval coverage** — scheduled regression evals against production traces, with drift alerts.
+1. **Org-level RBAC on the server** — move the governance capability matrix from client state into server-enforced roles.
+2. **Real integrations** — replace the vendor capability matrix with live provider connections and key vaulting.
+3. **Deeper eval coverage** — scheduled regression evals against production traces, with drift alerts.
+4. **Mobile apps** — native-feel PWA/phone experience for approvals and incident triage on the go.
 
 
