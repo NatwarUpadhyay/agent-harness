@@ -135,6 +135,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 - **Governance** — Role capability matrix, member invites, SSO and IP-allowlist controls.
 - **Enterprise SSO/SCIM** — SAML/OIDC admin console with domain enforcement, server-persisted organization settings, and a live SCIM 2.0 `/api/public/scim/v2` provisioning endpoint for Okta, Entra, and Google Workspace directories.
 - **Budgets & alerts** — Per-team spend caps with burn-down forecasting, rule-driven alerting, an incident triage console, and a server-persisted activity feed that captures every remediation action and escalation.
+- **Activity feed & notifications** — A server-persisted company activity stream with kind-based filtering and a header notification bell that surfaces budget breaches, remediation actions, and alert escalations in real time.
 - **Spend enforcement** — Real-time budget breach enforcement (notify / throttle / block) with a run simulator, z-score burn-rate anomaly detection, a live enforcement log, and CSV export.
 - **Integrations & library** — Vendor capability matrix with compatibility checks, and a community library for cloning public workflows.
 - **Collaboration** — Multi-cursor presence, activity stream, collaborative node editing, threaded node comments, and canvas snapshots.
