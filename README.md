@@ -278,9 +278,11 @@ The fastest way to understand Harness is to use the preview:
 
 - **Phase 49 — Server-persisted company activity feed & notifications center.** A new `public.activity_events` table captures budget breaches, remediation actions, and alert escalations with RLS. Server functions in `src/lib/data/activity.functions.ts` power an `/activity` feed page with kind-based filtering and drive the header notification bell, so the whole org sees the same event timeline in real time.
 
+- **Phase 50 — Billing meters & plan enforcement.** Cloud-persisted `public.billing_plans` and `public.usage_meters` tables store subscription tiers and per-user consumption for seats, runs, tokens, and monthly spend. Pure entitlement helpers in `src/lib/data/billing.ts` and server functions in `src/lib/data/billing.functions.ts` seed Starter defaults, enforce limits before workflow execution, and record consumption after each run. The `/settings` Billing tab shows live usage with upgrade prompts, and `/org` surfaces plan entitlements to leadership. Unit tests cover limits, entitlement checks, meter formatting, and plan display.
+
 ## Next up
 
-**Phase 50 — Billing meters & plan enforcement.** Tie seat-level usage and team spend to plan limits, surface upgrade prompts when caps are approached, and persist plan entitlements in the cloud so the platform can be sold, not just demoed.
+**Phase 51 — Public sign-up and checkout flow.** Connect the billing tables to a self-serve upgrade path: public pricing page, Stripe/Paddle checkout, and automatic plan provisioning on payment confirmation.
 
 Then, post-launch:
 
