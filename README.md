@@ -34,7 +34,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 
 ## Current status
 
-> **MVP launch ready** — auth, cloud persistence, the harness canvas, the production execution engine, scheduling, remediation guardrails, cost governance, fleet-wide burn recommendations, a server-persisted activity feed, and real-time notifications are all live and wired end to end. Team budgets and activity events are now persisted in the cloud, so every user sees the same caps, enforcement settings, and notifications across sessions and devices. The regression suite runs green with a clean TypeScript check and a clean security scan (no open findings).
+> **MVP launch ready** — auth, cloud persistence, the harness canvas, the production execution engine, scheduling, remediation guardrails, cost governance, fleet-wide burn recommendations, a server-persisted activity feed, real-time notifications, and billing meters & plan enforcement are all live and wired end to end. Team budgets, activity events, and plan entitlements are now persisted in the cloud, so every user sees the same caps, enforcement settings, notifications, and usage limits across sessions and devices. The regression suite runs green with a clean TypeScript check and a clean security scan (no open findings).
 
 ### MVP launch checklist
 
@@ -47,10 +47,11 @@ It is built for teams who want a shared visual language for AI systems before wr
 | Production execution engine with retries, backoff and full per-node traces | Ready |
 | Scheduling + inbound webhook triggers | Ready |
 | Cost governance (budgets, attribution, anomaly detection, guarded auto-remediation) | Ready |
+| Billing meters & plan enforcement (cloud-persisted entitlements, run-time limit checks) | Ready |
 | Enterprise SSO/SCIM provisioning endpoint | Ready |
 | Observability (usage, audit log, SLOs, topology audit, alerts/incidents) | Ready |
 | Responsive UI + command palette + onboarding | Ready |
-| Tests (21 files / 142 tests) and TypeScript check | Green |
+| Tests (22 files / 156 tests) and TypeScript check | Green |
 | Security scan | No open findings |
 
 
@@ -105,6 +106,11 @@ It is built for teams who want a shared visual language for AI systems before wr
 | 47 | Fleet-wide burn recommendations & savings simulator | Shipped |
 | 48 | Server-persisted team budgets — cloud caps, enforcement, and status across sessions | Shipped |
 | 49 | Server-persisted company activity feed & notifications center | Shipped |
+| 50 | Billing meters & plan enforcement — cloud-persisted entitlements, usage meters, run-time limit checks, and upgrade prompts | Shipped |
+
+
+
+
 
 
 
@@ -136,6 +142,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 - **Enterprise SSO/SCIM** — SAML/OIDC admin console with domain enforcement, server-persisted organization settings, and a live SCIM 2.0 `/api/public/scim/v2` provisioning endpoint for Okta, Entra, and Google Workspace directories.
 - **Budgets & alerts** — Per-team spend caps with burn-down forecasting, rule-driven alerting, an incident triage console, and a server-persisted activity feed that captures every remediation action and escalation.
 - **Activity feed & notifications** — A server-persisted company activity stream with kind-based filtering and a header notification bell that surfaces budget breaches, remediation actions, and alert escalations in real time.
+- **Billing meters & plan enforcement** — Cloud-persisted subscription plans and usage meters for seats, runs, tokens, and monthly spend. The execution engine checks entitlements before firing a run, records consumption after each run, and surfaces upgrade prompts in Settings and the Control Room.
 - **Spend enforcement** — Real-time budget breach enforcement (notify / throttle / block) with a run simulator, z-score burn-rate anomaly detection, a live enforcement log, and CSV export.
 - **Integrations & library** — Vendor capability matrix with compatibility checks, and a community library for cloning public workflows.
 - **Collaboration** — Multi-cursor presence, activity stream, collaborative node editing, threaded node comments, and canvas snapshots.
@@ -172,7 +179,7 @@ python3 context/loops/loop_detection.py
 
 ## Testing
 
-Vitest + Testing Library regression suite covering the main interactive surfaces: harness canvas, dashboard, evaluations, agents, layout controls, usage math, remediation, attribution, anomaly detection, cost remediation, and auth flows. Runs green (21 files / 142 tests) alongside a clean TypeScript check.
+Vitest + Testing Library regression suite covering the main interactive surfaces: harness canvas, dashboard, evaluations, agents, layout controls, usage math, remediation, attribution, anomaly detection, cost remediation, billing entitlements, and auth flows. Runs green (22 files / 156 tests) alongside a clean TypeScript check.
 
 The current suite is a focused smoke/regression layer rather than exhaustive coverage for every page, so it is a good starting point for validating future UI changes.
 
@@ -271,9 +278,11 @@ The fastest way to understand Harness is to use the preview:
 
 - **Phase 49 — Server-persisted company activity feed & notifications center.** A new `public.activity_events` table captures budget breaches, remediation actions, and alert escalations with RLS. Server functions in `src/lib/data/activity.functions.ts` power an `/activity` feed page with kind-based filtering and drive the header notification bell, so the whole org sees the same event timeline in real time.
 
+- **Phase 50 — Billing meters & plan enforcement.** Cloud-persisted `public.billing_plans` and `public.usage_meters` tables store subscription tiers and per-user consumption for seats, runs, tokens, and monthly spend. Pure entitlement helpers in `src/lib/data/billing.ts` and server functions in `src/lib/data/billing.functions.ts` seed Starter defaults, enforce limits before workflow execution, and record consumption after each run. The `/settings` Billing tab shows live usage with upgrade prompts, and `/org` surfaces plan entitlements to leadership. Unit tests cover limits, entitlement checks, meter formatting, and plan display.
+
 ## Next up
 
-**Phase 50 — Billing meters & plan enforcement.** Tie seat-level usage and team spend to plan limits, surface upgrade prompts when caps are approached, and persist plan entitlements in the cloud so the platform can be sold, not just demoed.
+**Phase 51 — Public sign-up and checkout flow.** Connect the billing tables to a self-serve upgrade path: public pricing page, Stripe/Paddle checkout, and automatic plan provisioning on payment confirmation.
 
 Then, post-launch:
 

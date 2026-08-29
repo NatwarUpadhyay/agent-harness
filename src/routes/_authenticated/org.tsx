@@ -7,9 +7,13 @@ import {
 } from "recharts";
 import {
   TrendingUp, TrendingDown, AlertTriangle, Activity, Coins, Users,
-  Building2, Zap, ArrowRight, ShieldCheck, Gauge, Clock,
+  Building2, Zap, ArrowRight, ShieldCheck, Gauge, Clock, CreditCard,
 } from "lucide-react";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { getBillingPlan, getUsageMeters } from "@/lib/data/billing.functions";
+import { formatMeterValue, planDisplayName } from "@/lib/data/billing";
 
 // Deterministic PRNG so the "org control room" is stable per session.
 function seeded(i: number) {
@@ -58,6 +62,13 @@ export const Route = createFileRoute("/_authenticated/org")({
 
 function OrgView() {
   const [range, setRange] = useState<"7d" | "30d" | "90d">("30d");
+  const fetchPlan = useServerFn(getBillingPlan);
+  const fetchMeters = useServerFn(getUsageMeters);
+  const { data: plan } = useQuery({ queryKey: ["billing-plan"], queryFn: () => fetchPlan() });
+  const { data: meters = [] } = useQuery({ queryKey: ["usage-meters"], queryFn: () => fetchMeters() });
+
+  const planMeter = meters.find((m) => m.name === "cost_usd");
+  const planPct = planMeter && planMeter.limit_value > 0 ? planMeter.current_value / planMeter.limit_value : 0;
 
   const totals = useMemo(() => {
     const spend = DEPTS.reduce((s, d) => s + d.spend, 0);
@@ -101,6 +112,45 @@ function OrgView() {
         <Kpi icon={<Gauge className="h-4 w-4" />} label="Avg latency" value={`${totals.latency}ms`} sub="p95 1.2s" />
         <Kpi icon={<ShieldCheck className="h-4 w-4" />} label="Success rate" value="97.4%" sub="+0.6% vs last week" trend="up" />
         <Kpi icon={<AlertTriangle className="h-4 w-4" />} label="Open incidents" value={totals.incidents.toString()} sub="2 high sev" warn={totals.incidents > 0} />
+      </div>
+
+      {/* Plan usage */}
+      <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-5 mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <SectionHeader title="Plan & entitlements" />
+          <Link to="/settings" className="text-[11px] text-[var(--accent)] hover:underline">Manage →</Link>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-4">
+            <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-[var(--text-muted)]">
+              <CreditCard className="h-3.5 w-3.5" /> Plan
+            </div>
+            <div className="mt-2 text-[15px] font-medium text-[var(--text-primary)]">
+              {plan ? planDisplayName(plan) : "Loading…"}
+            </div>
+          </div>
+          {meters.slice(0, 3).map((m) => {
+            const pct = m.limit_value > 0 ? Math.min(100, (m.current_value / m.limit_value) * 100) : 0;
+            const warn = pct >= 80;
+            return (
+              <div key={m.name} className="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-4">
+                <div className="text-[11px] uppercase tracking-wider text-[var(--text-muted)]">{m.name.replace("cost_usd", "Spend").replace("_", " ")}</div>
+                <div className="mt-2 text-[18px] font-mono-tabular text-[var(--text-primary)]">
+                  {formatMeterValue(m.name, m.current_value)}
+                  <span className="text-[12px] text-[var(--text-muted)]"> / {formatMeterValue(m.name, m.limit_value)}</span>
+                </div>
+                <div className="mt-2 h-1.5 rounded-full bg-[var(--bg-surface)] overflow-hidden">
+                  <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: warn ? "var(--danger)" : "var(--accent)" }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        {planPct >= 0.9 && (
+          <div className="mt-4 rounded-md border border-[var(--danger)]/30 bg-[var(--danger)]/10 px-3 py-2 text-[12px] text-[var(--danger)]">
+            You are within 10% of your monthly spend cap. Upgrade to keep runs flowing.
+          </div>
+        )}
       </div>
 
       {/* Spend + Model mix */}

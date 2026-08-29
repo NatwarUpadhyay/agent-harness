@@ -11,6 +11,7 @@ import {
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { useWorkflows } from "@/lib/hooks/use-entities";
 import { listRuns, runWorkflow, deleteRun, retryRun } from "@/lib/data/runs.functions";
+import { checkPlanEnforcement, recordUsage } from "@/lib/data/billing.functions";
 
 export const Route = createFileRoute("/_authenticated/runs")({
   head: () => ({
@@ -72,8 +73,20 @@ function RunsView() {
 
   const selected = workflowId || workflows[0]?.id || "";
 
+  const checkPlan = useServerFn(checkPlanEnforcement);
+  const bumpUsage = useServerFn(recordUsage);
+
   const runMutation = useMutation({
-    mutationFn: () => execute({ data: { workflowId: selected, input } }),
+    mutationFn: async () => {
+      const enforcement = await checkPlan({ data: { runs: 1 } });
+      if (!enforcement.allowed) {
+        const first = enforcement.blocking[0];
+        throw new Error(`Plan limit reached: ${first?.reason ?? "upgrade required"}`);
+      }
+      const row = await execute({ data: { workflowId: selected, input } });
+      await bumpUsage({ data: { runs: 1, tokens: row.total_tokens ?? 0, cost_usd: row.cost_usd ?? 0 } });
+      return row;
+    },
     onSuccess: (row) => {
       toast.success(
         row.status === "succeeded" ? "Run finished" : "Run failed",
@@ -81,6 +94,7 @@ function RunsView() {
       );
       setOpen(row.id);
       qc.invalidateQueries({ queryKey: ["workflow-runs"] });
+      qc.invalidateQueries({ queryKey: ["usage-meters"] });
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : "Run failed"),
   });
