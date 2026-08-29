@@ -47,6 +47,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 | Production execution engine with retries, backoff and full per-node traces | Ready |
 | Scheduling + inbound webhook triggers | Ready |
 | Cost governance (budgets, attribution, anomaly detection, guarded auto-remediation) | Ready |
+| Billing meters & plan enforcement (cloud-persisted entitlements, run-time limit checks) | Ready |
 | Enterprise SSO/SCIM provisioning endpoint | Ready |
 | Observability (usage, audit log, SLOs, topology audit, alerts/incidents) | Ready |
 | Responsive UI + command palette + onboarding | Ready |
