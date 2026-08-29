@@ -51,7 +51,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 | Enterprise SSO/SCIM provisioning endpoint | Ready |
 | Observability (usage, audit log, SLOs, topology audit, alerts/incidents) | Ready |
 | Responsive UI + command palette + onboarding | Ready |
-| Tests (21 files / 142 tests) and TypeScript check | Green |
+| Tests (22 files / 156 tests) and TypeScript check | Green |
 | Security scan | No open findings |
 
 
