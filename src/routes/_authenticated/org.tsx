@@ -62,6 +62,13 @@ export const Route = createFileRoute("/_authenticated/org")({
 
 function OrgView() {
   const [range, setRange] = useState<"7d" | "30d" | "90d">("30d");
+  const fetchPlan = useServerFn(getBillingPlan);
+  const fetchMeters = useServerFn(getUsageMeters);
+  const { data: plan } = useQuery({ queryKey: ["billing-plan"], queryFn: () => fetchPlan() });
+  const { data: meters = [] } = useQuery({ queryKey: ["usage-meters"], queryFn: () => fetchMeters() });
+
+  const planMeter = meters.find((m) => m.name === "cost_usd");
+  const planPct = planMeter && planMeter.limit_value > 0 ? planMeter.current_value / planMeter.limit_value : 0;
 
   const totals = useMemo(() => {
     const spend = DEPTS.reduce((s, d) => s + d.spend, 0);
