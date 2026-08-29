@@ -75,8 +75,7 @@ async function loadOrSeedMeters(supabase: AppSupabaseClient, userId: string, pla
   return (rows ?? []).map((m) => toMeter(m as Record<string, unknown>));
 }
 
-// Extract the Supabase client type from the middleware context.
-type AppSupabaseClient = Awaited<ReturnType<typeof requireSupabaseAuth>>["supabase"];
+
 
 /** Get or seed the authenticated user's billing plan. */
 export const getBillingPlan = createServerFn({ method: "GET" })
