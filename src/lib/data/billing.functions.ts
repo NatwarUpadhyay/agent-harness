@@ -23,65 +23,71 @@ const DEFAULT_PLAN = {
 
 const METER_NAMES: MeterName[] = ["seats", "runs", "tokens", "cost_usd"];
 
+async function loadOrSeedPlan(supabase: AppSupabaseClient, userId: string): Promise<BillingPlan> {
+  const { data, error } = await supabase
+    .from("billing_plans")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error) throw new Error(`Failed to load billing plan: ${error.message}`);
+  if (data) return toPlan(data as Record<string, unknown>);
+
+  const { data: row, error: insertError } = await supabase
+    .from("billing_plans")
+    .insert({
+      user_id: userId,
+      name: DEFAULT_PLAN.name,
+      price_usd: DEFAULT_PLAN.price_usd,
+      billing_interval: DEFAULT_PLAN.billing_interval,
+      limits: DEFAULT_PLAN.limits as unknown as Json,
+      features: DEFAULT_PLAN.features as unknown as Json,
+    })
+    .select()
+    .single();
+
+  if (insertError) throw new Error(`Failed to seed billing plan: ${insertError.message}`);
+  return toPlan(row as Record<string, unknown>);
+}
+
+async function loadOrSeedMeters(supabase: AppSupabaseClient, userId: string, plan: BillingPlan): Promise<UsageMeter[]> {
+  const { data, error } = await supabase
+    .from("usage_meters")
+    .select("*")
+    .eq("user_id", userId)
+    .order("name", { ascending: true });
+
+  if (error) throw new Error(`Failed to load usage meters: ${error.message}`);
+  if ((data ?? []).length === METER_NAMES.length) {
+    return (data ?? []).map((m) => toMeter(m as Record<string, unknown>));
+  }
+
+  const inserts = defaultMeters(plan.id, plan.limits).map((m) => ({ ...m, user_id: userId }));
+  const { data: rows, error: insertError } = await supabase
+    .from("usage_meters")
+    .insert(inserts)
+    .select();
+
+  if (insertError) throw new Error(`Failed to seed usage meters: ${insertError.message}`);
+  return (rows ?? []).map((m) => toMeter(m as Record<string, unknown>));
+}
+
+// Extract the Supabase client type from the middleware context.
+type AppSupabaseClient = Awaited<ReturnType<typeof requireSupabaseAuth>>["supabase"];
+
 /** Get or seed the authenticated user's billing plan. */
 export const getBillingPlan = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context;
-    const { data, error } = await supabase
-      .from("billing_plans")
-      .select("*")
-      .eq("user_id", userId)
-      .maybeSingle();
-
-    if (error) throw new Error(`Failed to load billing plan: ${error.message}`);
-    if (data) return toPlan(data as Record<string, unknown>);
-
-    // Seed a default plan for new users.
-    const { data: row, error: insertError } = await supabase
-      .from("billing_plans")
-      .insert({
-        user_id: userId,
-        name: DEFAULT_PLAN.name,
-        price_usd: DEFAULT_PLAN.price_usd,
-        billing_interval: DEFAULT_PLAN.billing_interval,
-        limits: DEFAULT_PLAN.limits as unknown as Json,
-        features: DEFAULT_PLAN.features as unknown as Json,
-      })
-      .select()
-      .single();
-
-    if (insertError) throw new Error(`Failed to seed billing plan: ${insertError.message}`);
-    return toPlan(row as Record<string, unknown>);
+    return loadOrSeedPlan(context.supabase, context.userId);
   });
 
 /** Get or seed usage meters for the authenticated user's plan. */
 export const getUsageMeters = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context;
-    const plan = await getBillingPlan({ context } as never);
-
-    const { data, error } = await supabase
-      .from("usage_meters")
-      .select("*")
-      .eq("user_id", userId)
-      .order("name", { ascending: true });
-
-    if (error) throw new Error(`Failed to load usage meters: ${error.message}`);
-    if ((data ?? []).length === METER_NAMES.length) {
-      return (data ?? []).map((m) => toMeter(m as Record<string, unknown>));
-    }
-
-    // Seed missing meters.
-    const inserts = defaultMeters(plan.id, plan.limits).map((m) => ({ ...m, user_id: userId }));
-    const { data: rows, error: insertError } = await supabase
-      .from("usage_meters")
-      .insert(inserts)
-      .select();
-
-    if (insertError) throw new Error(`Failed to seed usage meters: ${insertError.message}`);
-    return (rows ?? []).map((m) => toMeter(m as Record<string, unknown>));
+    const plan = await loadOrSeedPlan(context.supabase, context.userId);
+    return loadOrSeedMeters(context.supabase, context.userId, plan);
   });
 
 const recordUsageInput = z.object({
@@ -96,7 +102,7 @@ export const recordUsage = createServerFn({ method: "POST" })
   .inputValidator((data) => recordUsageInput.parse(data))
   .handler(async ({ context, data }) => {
     const { supabase, userId } = context;
-    const meters = await getUsageMeters({ context } as never);
+    const meters = await loadOrSeedMeters(supabase, userId, await loadOrSeedPlan(supabase, userId));
 
     const updates: Partial<Record<MeterName, number>> = {};
     if (data.runs) updates.runs = data.runs;
@@ -114,7 +120,7 @@ export const recordUsage = createServerFn({ method: "POST" })
       if (error) throw new Error(`Failed to update meter ${name}: ${error.message}`);
     }
 
-    return getUsageMeters({ context } as never);
+    return loadOrSeedMeters(supabase, userId, await loadOrSeedPlan(supabase, userId));
   });
 
 const checkPlanInput = z.object({
@@ -128,8 +134,8 @@ export const checkPlanEnforcement = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => checkPlanInput.parse(data))
   .handler(async ({ context, data }) => {
-    const plan = await getBillingPlan({ context } as never);
-    const meters = await getUsageMeters({ context } as never);
+    const plan = await loadOrSeedPlan(context.supabase, context.userId);
+    const meters = await loadOrSeedMeters(context.supabase, context.userId, plan);
     return checkEntitlement(plan, meters, data);
   });
 
@@ -152,7 +158,7 @@ export const updateBillingPlan = createServerFn({ method: "POST" })
   )
   .handler(async ({ context, data }) => {
     const { supabase, userId } = context;
-    const plan = await getBillingPlan({ context } as never);
+    const plan = await loadOrSeedPlan(supabase, userId);
 
     const { error } = await supabase
       .from("billing_plans")
@@ -169,7 +175,6 @@ export const updateBillingPlan = createServerFn({ method: "POST" })
 
     if (error) throw new Error(`Failed to update billing plan: ${error.message}`);
 
-    // Re-sync meter limits to match the new plan.
     const limits = parseLimits(data.limits as Record<string, unknown>);
     const limitMap: Record<MeterName, number> = {
       seats: limits.seats,
@@ -187,7 +192,7 @@ export const updateBillingPlan = createServerFn({ method: "POST" })
       if (meterError) throw new Error(`Failed to sync meter ${name}: ${meterError.message}`);
     }
 
-    return getBillingPlan({ context } as never);
+    return loadOrSeedPlan(supabase, userId);
   });
 
 export type { BillingPlan, UsageMeter, MeterName };
