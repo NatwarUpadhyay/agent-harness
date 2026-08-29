@@ -21,6 +21,7 @@ const fieldsByTab: Record<Tab, Array<[string, string]>> = {
   General:       [["Organization name", "Acme AI"], ["Default region", "us-east-1"], ["Timezone", "America/New_York"]],
   Team:          [["Owner", "avery@acme.ai"], ["Seats used", "12 / 25"], ["SSO provider", "Okta"]],
   "API keys":    [["Public key", "pk_live_•••••••••••• 38af"], ["Last rotated", "2025-06-14"], ["Rate limit", "1000 req/min"]],
+  Billing:       [],
   Integrations:  [["Slack", "Connected · #ai-ops"], ["PagerDuty", "Not connected"], ["Datadog", "Connected"]],
 };
 
