@@ -265,15 +265,21 @@ The fastest way to understand Harness is to use the preview:
 
 - **Phase 46 — Cost anomaly auto-remediation.** Detected anomalies now become a concrete, guarded remediation plan on `/budgets`: over-cap teams get hard-blocked, forecast overruns get throttled (or the cap raised when the forecast is structurally past it), burn-rate spikes get throttled, and unallocated spend gets an owner. Guardrails are enforced in the planner, not the UI — dry-run mode, an hourly action cap, per-team cooldowns, and an approval gate for destructive actions — and every applied action lands in an action ledger. Planning logic lives in `src/lib/data/cost-remediation.ts` as pure, unit-tested functions.
 
+- **Phase 47 — Fleet-wide burn recommendations & savings simulator.** A `/budgets` fleet panel rolls every team's burn profile into a single view, ranks the highest-leverage savings levers (model downgrades, cache/retrieval tuning, schedule trimming, seat reclamation), and lets an operator simulate a combination of levers to see projected monthly spend, latency impact and payback before applying anything. Recommendation math lives in `src/lib/data/burn-recommendations.ts` as pure, unit-tested functions.
+
+- **Phase 48 — Server-persisted team budgets.** Team budget caps, enforcement modes, and status are now stored in `public.team_budgets` with RLS and synced through server functions in `src/lib/data/budgets.functions.ts`. The `/budgets` UI uses TanStack Query mutations so every user sees the same live caps and enforcement settings across sessions and devices.
+
+- **Phase 49 — Server-persisted company activity feed & notifications center.** A new `public.activity_events` table captures budget breaches, remediation actions, and alert escalations with RLS. Server functions in `src/lib/data/activity.functions.ts` power an `/activity` feed page with kind-based filtering and drive the header notification bell, so the whole org sees the same event timeline in real time.
+
 ## Next up
 
-**Phase 47 — Fleet-wide burn recommendations & savings simulator.** Roll every team's burn profile into a single fleet view, rank the highest-leverage savings levers (model downgrades, cache/retrieval tuning, schedule trimming, seat reclamation), and let an operator simulate a combination of levers to see projected monthly spend, latency impact and payback before applying anything.
+**Phase 50 — Billing meters & plan enforcement.** Tie seat-level usage and team spend to plan limits, surface upgrade prompts when caps are approached, and persist plan entitlements in the cloud so the platform can be sold, not just demoed.
 
 Then, post-launch:
 
-1. **Billing & plans** — metered usage tied to a payment provider so the platform can be sold, not just demoed.
-2. **Org-level RBAC on the server** — move the governance capability matrix from client state into server-enforced roles.
-3. **Real integrations** — replace the vendor capability matrix with live provider connections and key vaulting.
-4. **Deeper eval coverage** — scheduled regression evals against production traces, with drift alerts.
+1. **Org-level RBAC on the server** — move the governance capability matrix from client state into server-enforced roles.
+2. **Real integrations** — replace the vendor capability matrix with live provider connections and key vaulting.
+3. **Deeper eval coverage** — scheduled regression evals against production traces, with drift alerts.
+4. **Mobile apps** — native-feel PWA/phone experience for approvals and incident triage on the go.
 
 
