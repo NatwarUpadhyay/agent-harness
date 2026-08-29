@@ -7,9 +7,13 @@ import {
 } from "recharts";
 import {
   TrendingUp, TrendingDown, AlertTriangle, Activity, Coins, Users,
-  Building2, Zap, ArrowRight, ShieldCheck, Gauge, Clock,
+  Building2, Zap, ArrowRight, ShieldCheck, Gauge, Clock, CreditCard,
 } from "lucide-react";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { getBillingPlan, getUsageMeters } from "@/lib/data/billing.functions";
+import { formatMeterValue, planDisplayName } from "@/lib/data/billing";
 
 // Deterministic PRNG so the "org control room" is stable per session.
 function seeded(i: number) {
