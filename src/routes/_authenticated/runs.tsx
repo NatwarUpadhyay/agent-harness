@@ -6,11 +6,12 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
   Play, Loader2, ChevronRight, Trash2, Coins, Timer, Cpu, CheckCircle2, XCircle, MinusCircle,
-  RotateCcw,
+  RotateCcw, Lock,
 } from "lucide-react";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { useWorkflows } from "@/lib/hooks/use-entities";
 import { listRuns, runWorkflow, deleteRun, retryRun } from "@/lib/data/runs.functions";
+import { checkPlanEnforcement, recordUsage } from "@/lib/data/billing.functions";
 
 export const Route = createFileRoute("/_authenticated/runs")({
   head: () => ({
