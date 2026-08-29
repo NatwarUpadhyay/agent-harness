@@ -1,7 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import type { Json } from "@/integrations/supabase/types";
+import type { Database, Json } from "@/integrations/supabase/types";
 import {
   toPlan,
   toMeter,
@@ -12,6 +13,8 @@ import {
   type UsageMeter,
   type MeterName,
 } from "./billing";
+
+type AppSupabaseClient = SupabaseClient<Database>;
 
 const DEFAULT_PLAN = {
   name: "Starter",
