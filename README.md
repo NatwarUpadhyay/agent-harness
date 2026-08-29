@@ -106,6 +106,11 @@ It is built for teams who want a shared visual language for AI systems before wr
 | 47 | Fleet-wide burn recommendations & savings simulator | Shipped |
 | 48 | Server-persisted team budgets — cloud caps, enforcement, and status across sessions | Shipped |
 | 49 | Server-persisted company activity feed & notifications center | Shipped |
+| 50 | Billing meters & plan enforcement — cloud-persisted entitlements, usage meters, run-time limit checks, and upgrade prompts | Shipped |
+
+
+
+
 
 
 
