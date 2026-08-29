@@ -68,7 +68,7 @@ function ActivityView() {
   });
 
   const readMutation = useMutation({
-    mutationFn: (id: string) => readOne({ id }),
+    mutationFn: (id: string) => readOne({ data: { id } }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["activity_events"] }),
   });
 
@@ -192,7 +192,7 @@ function ActivityView() {
                         </span>
                       </div>
                       <p className="text-[11.5px] text-[var(--text-secondary)] mt-0.5">{e.body}</p>
-                      {Object.keys(e.metadata).length > 0 && (
+                      {e.metadata && typeof e.metadata === "object" && Object.keys(e.metadata).length > 0 && (
                         <p className="text-[10.5px] text-[var(--text-muted)] font-mono-tabular mt-1 truncate">
                           {JSON.stringify(e.metadata)}
                         </p>
