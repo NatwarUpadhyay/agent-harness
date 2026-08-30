@@ -282,7 +282,7 @@ The fastest way to understand Harness is to use the preview:
 
 ## Next up
 
-**Phase 51 — Public sign-up and checkout flow.** Connect the billing tables to a self-serve upgrade path: public pricing page, Stripe/Paddle checkout, and automatic plan provisioning on payment confirmation.
+**Phase 51 — Public sign-up and checkout flow.** Connect the billing tables to a self-serve upgrade path: a public `/pricing` page, Stripe/Paddle checkout, automatic plan provisioning on payment confirmation, and metered usage billing that ties `usage_meters` rows to the invoice cycle.
 
 Then, post-launch:
 
