@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Wallet, Plus, Trash2, TrendingUp, AlertTriangle, Download, Gauge, ShieldAlert, Check,
@@ -117,11 +117,15 @@ function BudgetsView() {
     mutationFn: () => seedDefaults(),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["team-budgets"] }),
   });
+  const seedCheckedRef = useRef(false);
   useEffect(() => {
-    if (budgetsQuery.isSuccess && budgets.length === 0 && !seedMutation.isPending && !seedMutation.isSuccess) {
-      seedMutation.mutate();
-    }
-  }, [budgetsQuery.isSuccess, budgets.length, seedMutation.isPending, seedMutation.isSuccess]);
+    if (!budgetsQuery.isSuccess || seedCheckedRef.current) return;
+    // Only consider seeding on the first successful load of this session, so
+    // deleting every budget never re-creates the demo defaults.
+    seedCheckedRef.current = true;
+    if (budgets.length === 0) seedMutation.mutate();
+  }, [budgetsQuery.isSuccess, budgets.length]);
+
 
   const [draft, setDraft] = useState<{ team: string; cap: string; enforcement: Enforcement }>({
     team: "", cap: "1000", enforcement: "notify",
