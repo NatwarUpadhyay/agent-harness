@@ -23,7 +23,7 @@ export const Route = createFileRoute("/_authenticated")({
       });
     }
     // Fire-and-forget seed (idempotent). Doesn't block navigation.
-    seedIfEmpty(data.user.id).catch(() => {});
+    seedDemoData().catch(() => {});
     return { user: data.user };
   },
   component: () => (
