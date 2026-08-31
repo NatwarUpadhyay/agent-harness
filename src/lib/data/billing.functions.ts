@@ -31,25 +31,39 @@ async function loadOrSeedPlan(supabase: AppSupabaseClient, userId: string): Prom
     .from("billing_plans")
     .select("*")
     .eq("user_id", userId)
+    .order("created_at", { ascending: true })
+    .limit(1)
     .maybeSingle();
 
   if (error) throw new Error(`Failed to load billing plan: ${error.message}`);
   if (data) return toPlan(data as Record<string, unknown>);
 
-  const { data: row, error: insertError } = await supabase
+  // Upsert on user_id so concurrent first-visit requests can't create duplicates.
+  const { error: insertError } = await supabase
     .from("billing_plans")
-    .insert({
-      user_id: userId,
-      name: DEFAULT_PLAN.name,
-      price_usd: DEFAULT_PLAN.price_usd,
-      billing_interval: DEFAULT_PLAN.billing_interval,
-      limits: DEFAULT_PLAN.limits as unknown as Json,
-      features: DEFAULT_PLAN.features as unknown as Json,
-    })
-    .select()
-    .single();
+    .upsert(
+      {
+        user_id: userId,
+        name: DEFAULT_PLAN.name,
+        price_usd: DEFAULT_PLAN.price_usd,
+        billing_interval: DEFAULT_PLAN.billing_interval,
+        limits: DEFAULT_PLAN.limits as unknown as Json,
+        features: DEFAULT_PLAN.features as unknown as Json,
+      },
+      { onConflict: "user_id", ignoreDuplicates: true },
+    );
 
   if (insertError) throw new Error(`Failed to seed billing plan: ${insertError.message}`);
+
+  const { data: row, error: reloadError } = await supabase
+    .from("billing_plans")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (reloadError || !row) throw new Error(`Failed to load billing plan: ${reloadError?.message ?? "not found"}`);
   return toPlan(row as Record<string, unknown>);
 }
 
@@ -66,14 +80,22 @@ async function loadOrSeedMeters(supabase: AppSupabaseClient, userId: string, pla
   }
 
   const inserts = defaultMeters(plan.id, plan.limits).map((m) => ({ ...m, user_id: userId }));
-  const { data: rows, error: insertError } = await supabase
+  const { error: insertError } = await supabase
     .from("usage_meters")
-    .insert(inserts)
-    .select();
+    .upsert(inserts, { onConflict: "user_id,name", ignoreDuplicates: true });
 
   if (insertError) throw new Error(`Failed to seed usage meters: ${insertError.message}`);
+
+  const { data: rows, error: reloadError } = await supabase
+    .from("usage_meters")
+    .select("*")
+    .eq("user_id", userId)
+    .order("name", { ascending: true });
+
+  if (reloadError) throw new Error(`Failed to load usage meters: ${reloadError.message}`);
   return (rows ?? []).map((m) => toMeter(m as Record<string, unknown>));
 }
+
 
 
 
