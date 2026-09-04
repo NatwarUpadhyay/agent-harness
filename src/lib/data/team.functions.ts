@@ -95,29 +95,17 @@ export const getTeamRoster = createServerFn({ method: "GET" })
     const { supabase, userId } = context;
 
     const [{ data: members, error: membersError }, { data: invitations, error: invitesError }] = await Promise.all([
-      supabase.from("team_members").select("id, role, created_at, user_id").eq("owner_id", userId).order("created_at", { ascending: false }),
+      supabase.from("team_members").select("id, email, role, created_at, user_id").eq("owner_id", userId).order("created_at", { ascending: false }),
       supabase.from("team_invitations").select("id, email, role, token, status, expires_at, created_at").eq("owner_id", userId).order("created_at", { ascending: false }),
     ]);
 
     if (membersError) throw new Error(`Failed to load members: ${membersError.message}`);
     if (invitesError) throw new Error(`Failed to load invitations: ${invitesError.message}`);
 
-    // Resolve member emails from auth.users via service role is not available on Cloud,
-    // so we rely on the invitee policy to let members see themselves. For the owner,
-    // members from invitations carry the email; for direct memberships without an invite
-    // we show a placeholder.
-    const userIds = (members ?? []).map((m) => m.user_id).filter(Boolean);
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("id, email")
-      .in("id", userIds.length ? userIds : ["00000000-0000-0000-0000-000000000000"]);
-
-    const profileById = new Map((profiles ?? []).map((p) => [p.id, p.email]));
-
     return {
       members: (members ?? []).map((m) => ({
         id: m.id,
-        email: profileById.get(m.user_id) ?? null,
+        email: m.email ?? null,
         role: m.role,
         status: "active" as const,
         joined_at: m.created_at,
