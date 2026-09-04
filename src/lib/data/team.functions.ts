@@ -154,6 +154,7 @@ export const acceptInvitation = createServerFn({ method: "POST" })
     const { error: memberError } = await supabase.from("team_members").insert({
       owner_id: invite.owner_id,
       user_id: userId,
+      email: user.user.email,
       role: invite.role,
     });
 
