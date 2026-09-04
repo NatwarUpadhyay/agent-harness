@@ -108,6 +108,11 @@ It is built for teams who want a shared visual language for AI systems before wr
 | 48 | Server-persisted team budgets — cloud caps, enforcement, and status across sessions | Shipped |
 | 49 | Server-persisted company activity feed & notifications center | Shipped |
 | 50 | Billing meters & plan enforcement — cloud-persisted entitlements, usage meters, run-time limit checks, and upgrade prompts | Shipped |
+| 51 | Team invitations & member management — owner invites by email, pending/active roster, role badges, auto-accept on signup | Shipped |
+
+
+
+
 
 
 
