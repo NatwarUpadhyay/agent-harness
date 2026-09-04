@@ -11,8 +11,14 @@ import {
   type BillingPlan,
   type UsageMeter,
 } from "@/lib/data/billing.functions";
+import {
+  getTeamRoster,
+  inviteTeamMember,
+  revokeInvitation,
+  type TeamRoster,
+} from "@/lib/data/team.functions";
 import { formatMeterValue, planDisplayName } from "@/lib/data/billing";
-import { CreditCard, Users, Zap, Coins, Activity, Check } from "lucide-react";
+import { CreditCard, Users, Zap, Coins, Activity, Check, X, Mail, Shield, User } from "lucide-react";
 
 const tabs = ["General", "Team", "API keys", "Billing", "Integrations"] as const;
 type Tab = (typeof tabs)[number];
