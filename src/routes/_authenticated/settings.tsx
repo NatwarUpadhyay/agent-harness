@@ -85,7 +85,7 @@ function SettingsPage() {
           ))}
         </div>
       </div>
-      {tab === "Billing" ? <BillingTab /> : (
+      {tab === "Billing" ? <BillingTab /> : tab === "Team" ? <TeamTab /> : (
         <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 max-w-2xl">
           <div className="space-y-4">
             {fieldsByTab[tab].map(([label, value]) => (
