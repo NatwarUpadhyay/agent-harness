@@ -27,6 +27,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 - **Run experiments** — A/B variants with animated trial batches and auto-detected winners.
 - **Ground flows in data** — upload CSV/JSON/JSONL datasets and inspect them before wiring them in.
 - **Track spend** — per-employee, per-model token usage and cost analytics with CSV export.
+- **Invite the team** — send email invitations, assign roles, and manage pending/active members from Settings.
 - **Stay compliant** — tamper-evident audit log and scoped API keys with request tracking.
 - **Stay in flow** — undo/redo, auto-layout, snapshots, and a first-visit onboarding card keep the canvas friction-free.
 
