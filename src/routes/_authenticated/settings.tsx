@@ -237,7 +237,7 @@ function BillingTab() {
 
 const roleBadge = {
   owner: "bg-[var(--accent-muted)] text-[var(--accent)]",
-  admin: "bg-[var(--warning-muted)] text-[var(--warning)]",
+  admin: "bg-[rgba(255,159,10,0.12)] text-[var(--warning)]",
   member: "bg-[var(--bg-elevated)] text-[var(--text-secondary)]",
   viewer: "bg-[var(--bg-elevated)] text-[var(--text-muted)]",
 };
