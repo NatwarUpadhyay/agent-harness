@@ -197,6 +197,7 @@ export const acceptPendingInvitations = createServerFn({ method: "POST" })
           await supabase.from("team_members").insert({
             owner_id: inv.owner_id,
             user_id: userId,
+            email,
             role: inv.role,
           });
           accepted++;
