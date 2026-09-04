@@ -27,6 +27,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 - **Run experiments** — A/B variants with animated trial batches and auto-detected winners.
 - **Ground flows in data** — upload CSV/JSON/JSONL datasets and inspect them before wiring them in.
 - **Track spend** — per-employee, per-model token usage and cost analytics with CSV export.
+- **Invite the team** — send email invitations, assign roles, and manage pending/active members from Settings.
 - **Stay compliant** — tamper-evident audit log and scoped API keys with request tracking.
 - **Stay in flow** — undo/redo, auto-layout, snapshots, and a first-visit onboarding card keep the canvas friction-free.
 
@@ -34,7 +35,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 
 ## Current status
 
-> **MVP launch ready** — auth, cloud persistence, the harness canvas, the production execution engine, scheduling, remediation guardrails, cost governance, fleet-wide burn recommendations, a server-persisted activity feed, real-time notifications, and billing meters & plan enforcement are all live and wired end to end. Team budgets, activity events, and plan entitlements are now persisted in the cloud, so every user sees the same caps, enforcement settings, notifications, and usage limits across sessions and devices. The regression suite runs green (156 tests) with a clean TypeScript check and a clean security scan (no open findings). The latest published build is at **[harness-flow-control.lovable.app](https://harness-flow-control.lovable.app)**.
+> **MVP launch ready** — auth, cloud persistence, the harness canvas, the production execution engine, scheduling, remediation guardrails, cost governance, fleet-wide burn recommendations, a server-persisted activity feed, real-time notifications, billing meters & plan enforcement, and team invitations are all live and wired end to end. Team budgets, activity events, plan entitlements, and team memberships are now persisted in the cloud, so every user sees the same caps, enforcement settings, notifications, colleagues, and usage limits across sessions and devices. The regression suite runs green (156 tests) with a clean TypeScript check and a clean security scan (no open findings). The latest published build is at **[harness-flow-control.lovable.app](https://harness-flow-control.lovable.app)**.
 
 ### MVP launch checklist
 
@@ -42,12 +43,13 @@ It is built for teams who want a shared visual language for AI systems before wr
 | --- | --- |
 | Auth (email/password, OTP magic link, password reset, leaked-password protection) | Ready |
 | Route protection (`_authenticated` gate + public share/SCIM/webhook routes) | Ready |
-| Cloud persistence (workflows, prompts, datasets, API keys, org settings, runs, schedules, remediation ledger, team budgets, activity events) | Ready |
+| Cloud persistence (workflows, prompts, datasets, API keys, org settings, runs, schedules, remediation ledger, team budgets, activity events, team memberships) | Ready |
 | Row-level security + explicit grants on every public table | Ready |
 | Production execution engine with retries, backoff and full per-node traces | Ready |
 | Scheduling + inbound webhook triggers | Ready |
 | Cost governance (budgets, attribution, anomaly detection, guarded auto-remediation) | Ready |
 | Billing meters & plan enforcement (cloud-persisted entitlements, run-time limit checks) | Ready |
+| Team invitations & member management (owner invites by email, pending/active roster, auto-accept on signup) | Ready |
 | Enterprise SSO/SCIM provisioning endpoint | Ready |
 | Observability (usage, audit log, SLOs, topology audit, alerts/incidents) | Ready |
 | Responsive UI + command palette + onboarding | Ready |
@@ -107,6 +109,11 @@ It is built for teams who want a shared visual language for AI systems before wr
 | 48 | Server-persisted team budgets — cloud caps, enforcement, and status across sessions | Shipped |
 | 49 | Server-persisted company activity feed & notifications center | Shipped |
 | 50 | Billing meters & plan enforcement — cloud-persisted entitlements, usage meters, run-time limit checks, and upgrade prompts | Shipped |
+| 51 | Team invitations & member management — owner invites by email, pending/active roster, role badges, auto-accept on signup | Shipped |
+
+
+
+
 
 
 

@@ -11,15 +11,21 @@ import {
   type BillingPlan,
   type UsageMeter,
 } from "@/lib/data/billing.functions";
+import {
+  getTeamRoster,
+  inviteTeamMember,
+  revokeInvitation,
+  type TeamRoster,
+} from "@/lib/data/team.functions";
 import { formatMeterValue, planDisplayName } from "@/lib/data/billing";
-import { CreditCard, Users, Zap, Coins, Activity, Check } from "lucide-react";
+import { CreditCard, Users, Zap, Coins, Activity, Check, X, Mail, Shield, User } from "lucide-react";
 
 const tabs = ["General", "Team", "API keys", "Billing", "Integrations"] as const;
 type Tab = (typeof tabs)[number];
 
 const fieldsByTab: Record<Tab, Array<[string, string]>> = {
   General:       [["Organization name", "Acme AI"], ["Default region", "us-east-1"], ["Timezone", "America/New_York"]],
-  Team:          [["Owner", "avery@acme.ai"], ["Seats used", "12 / 25"], ["SSO provider", "Okta"]],
+  Team:          [],
   "API keys":    [["Public key", "pk_live_•••••••••••• 38af"], ["Last rotated", "2025-06-14"], ["Rate limit", "1000 req/min"]],
   Billing:       [],
   Integrations:  [["Slack", "Connected · #ai-ops"], ["PagerDuty", "Not connected"], ["Datadog", "Connected"]],
@@ -79,7 +85,7 @@ function SettingsPage() {
           ))}
         </div>
       </div>
-      {tab === "Billing" ? <BillingTab /> : (
+      {tab === "Billing" ? <BillingTab /> : tab === "Team" ? <TeamTab /> : (
         <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-6 max-w-2xl">
           <div className="space-y-4">
             {fieldsByTab[tab].map(([label, value]) => (
@@ -224,6 +230,172 @@ function BillingTab() {
             );
           })}
         </div>
+      </div>
+    </div>
+  );
+}
+
+const roleBadge = {
+  owner: "bg-[var(--accent-muted)] text-[var(--accent)]",
+  admin: "bg-[rgba(255,159,10,0.12)] text-[var(--warning)]",
+  member: "bg-[var(--bg-elevated)] text-[var(--text-secondary)]",
+  viewer: "bg-[var(--bg-elevated)] text-[var(--text-muted)]",
+};
+
+function TeamTab() {
+  const qc = useQueryClient();
+  const fetchRoster = useServerFn(getTeamRoster);
+  const doInvite = useServerFn(inviteTeamMember);
+  const doRevoke = useServerFn(revokeInvitation);
+
+  const { data: roster, isLoading } = useQuery<TeamRoster>({
+    queryKey: ["team-roster"],
+    queryFn: () => fetchRoster(),
+  });
+
+  const inviteMutation = useMutation({
+    mutationFn: ({ email, role }: { email: string; role: "admin" | "member" | "viewer" }) =>
+      doInvite({ data: { email, role } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["team-roster"] });
+      toast.success("Invitation sent");
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Failed to send invite"),
+  });
+
+  const revokeMutation = useMutation({
+    mutationFn: (id: string) => doRevoke({ data: { id } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["team-roster"] });
+      toast.success("Invitation revoked");
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Failed to revoke invite"),
+  });
+
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState<"admin" | "member" | "viewer">("member");
+
+  const members = roster?.members ?? [];
+  const invitations = roster?.invitations ?? [];
+  const totalSeats = members.length + invitations.filter((i) => i.status === "pending").length;
+
+  return (
+    <div className="space-y-6 max-w-3xl">
+      <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-6">
+        <div className="flex items-center gap-2 text-[var(--text-primary)] mb-4">
+          <Users className="h-4 w-4 text-[var(--accent)]" />
+          <h3 className="text-[15px] font-medium">Invite teammates</h3>
+        </div>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!email.trim()) return;
+            inviteMutation.mutate({ email: email.trim(), role });
+            setEmail("");
+          }}
+          className="flex flex-col sm:flex-row gap-3"
+        >
+          <div className="flex-1 relative">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--text-muted)]" />
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="colleague@company.com"
+              className="w-full h-10 pl-9 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-default)] px-3 text-[13px] focus:outline-none focus:border-[var(--accent)]"
+            />
+          </div>
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value as typeof role)}
+            className="h-10 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-default)] px-3 text-[13px] text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent)]"
+          >
+            <option value="member">Member</option>
+            <option value="admin">Admin</option>
+            <option value="viewer">Viewer</option>
+          </select>
+          <button
+            type="submit"
+            disabled={inviteMutation.isPending || !email.trim()}
+            className="h-10 px-4 rounded-md bg-[var(--accent)] text-[var(--bg-base)] text-[13px] font-medium hover:bg-[var(--accent-hover)] disabled:opacity-60"
+          >
+            {inviteMutation.isPending ? "Sending…" : "Send invite"}
+          </button>
+        </form>
+        <div className="mt-4 text-[12px] text-[var(--text-muted)]">
+          {totalSeats} seat{totalSeats === 1 ? "" : "s"} used · Pending invites expire in 7 days.
+        </div>
+      </div>
+
+      <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-6">
+        <h3 className="text-[15px] font-medium text-[var(--text-primary)] mb-4">Active members</h3>
+        {isLoading ? (
+          <div className="text-[13px] text-[var(--text-muted)]">Loading team…</div>
+        ) : members.length === 0 ? (
+          <div className="text-[13px] text-[var(--text-muted)]">No active members yet. Invite someone above.</div>
+        ) : (
+          <div className="space-y-2">
+            {members.map((m) => (
+              <div
+                key={m.id}
+                className="flex items-center justify-between rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-4 py-3"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-full bg-[var(--bg-surface)] flex items-center justify-center">
+                    <User className="h-4 w-4 text-[var(--text-muted)]" />
+                  </div>
+                  <div>
+                    <div className="text-[13px] text-[var(--text-primary)]">{m.email ?? "Unknown member"}</div>
+                    <div className="text-[11px] text-[var(--text-muted)]">Joined {new Date(m.joined_at).toLocaleDateString()}</div>
+                  </div>
+                </div>
+                <span className={`px-2 py-0.5 rounded-md text-[11px] font-medium ${roleBadge[m.role as keyof typeof roleBadge] ?? roleBadge.member}`}>
+                  {m.role}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-6">
+        <h3 className="text-[15px] font-medium text-[var(--text-primary)] mb-4">Pending invitations</h3>
+        {invitations.filter((i) => i.status === "pending").length === 0 ? (
+          <div className="text-[13px] text-[var(--text-muted)]">No pending invitations.</div>
+        ) : (
+          <div className="space-y-2">
+            {invitations
+              .filter((i) => i.status === "pending")
+              .map((i) => (
+                <div
+                  key={i.id}
+                  className="flex items-center justify-between rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-4 py-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <Mail className="h-4 w-4 text-[var(--text-muted)]" />
+                    <div>
+                      <div className="text-[13px] text-[var(--text-primary)]">{i.email}</div>
+                      <div className="text-[11px] text-[var(--text-muted)]">Expires {new Date(i.expires_at).toLocaleDateString()}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2 py-0.5 rounded-md text-[11px] font-medium ${roleBadge[i.role as keyof typeof roleBadge] ?? roleBadge.member}`}>
+                      {i.role}
+                    </span>
+                    <button
+                      onClick={() => revokeMutation.mutate(i.id)}
+                      disabled={revokeMutation.isPending}
+                      className="h-8 w-8 rounded-md flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--danger)] hover:bg-[var(--danger-muted)] transition-colors"
+                      aria-label="Revoke invitation"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+          </div>
+        )}
       </div>
     </div>
   );

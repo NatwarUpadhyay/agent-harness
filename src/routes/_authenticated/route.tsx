@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { seedDemoData } from "@/lib/data/seed.functions";
+import { acceptPendingInvitations } from "@/lib/data/team.functions";
 import { AppShell } from "@/components/layout/AppShell";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -24,6 +25,8 @@ export const Route = createFileRoute("/_authenticated")({
     }
     // Fire-and-forget seed (idempotent). Doesn't block navigation.
     seedDemoData().catch(() => {});
+    // Auto-accept any pending team invitations for this user.
+    acceptPendingInvitations().catch(() => {});
     return { user: data.user };
   },
   component: () => (
