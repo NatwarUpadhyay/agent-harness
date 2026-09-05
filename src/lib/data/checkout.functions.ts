@@ -46,7 +46,7 @@ const PLAN_CATALOG: Record<
 function getStripe(): Stripe | null {
   const key = process.env["STRIPE_SECRET_KEY"];
   if (!key || key.length < 10) return null;
-  return new Stripe(key, { apiVersion: "2025-06-30.basil" });
+  return new Stripe(key, { apiVersion: "2026-08-26.dahlia" });
 }
 
 const createCheckoutInput = z.object({
