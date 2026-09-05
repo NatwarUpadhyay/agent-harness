@@ -7,6 +7,7 @@ import { loadEnterpriseAuth, isSsoEnforced, getPrimarySsoDomain } from "@/lib/da
 
 const searchSchema = z.object({
   redirect: z.string().optional(),
+  mode: z.enum(["signup", "signin"]).optional(),
 });
 
 export const Route = createFileRoute("/login")({
@@ -29,7 +30,7 @@ type Mode = "signin" | "signup" | "otp";
 function LoginPage() {
   const navigate = useNavigate();
   const search = useSearch({ from: "/login" });
-  const [mode, setMode] = useState<Mode>("signin");
+  const [mode, setMode] = useState<Mode>(search.mode === "signup" ? "signup" : "signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
