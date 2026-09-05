@@ -50,6 +50,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 | Cost governance (budgets, attribution, anomaly detection, guarded auto-remediation) | Ready |
 | Billing meters & plan enforcement (cloud-persisted entitlements, run-time limit checks) | Ready |
 | Team invitations & member management (owner invites by email, pending/active roster, auto-accept on signup) | Ready |
+| Public pricing page & self-serve checkout (Stripe checkout scaffolded; add STRIPE_SECRET_KEY to go live) | Ready |
 | Enterprise SSO/SCIM provisioning endpoint | Ready |
 | Observability (usage, audit log, SLOs, topology audit, alerts/incidents) | Ready |
 | Responsive UI + command palette + onboarding | Ready |
@@ -110,6 +111,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 | 49 | Server-persisted company activity feed & notifications center | Shipped |
 | 50 | Billing meters & plan enforcement — cloud-persisted entitlements, usage meters, run-time limit checks, and upgrade prompts | Shipped |
 | 51 | Team invitations & member management — owner invites by email, pending/active roster, role badges, auto-accept on signup | Shipped |
+| 52 | Public pricing page & self-serve checkout — `/pricing`, Stripe checkout scaffolding, checkout success provisioning, Settings plan link | Shipped |
 
 
 
@@ -287,9 +289,11 @@ The fastest way to understand Harness is to use the preview:
 
 - **Phase 50 — Billing meters & plan enforcement.** Cloud-persisted `public.billing_plans` and `public.usage_meters` tables store subscription tiers and per-user consumption for seats, runs, tokens, and monthly spend. Pure entitlement helpers in `src/lib/data/billing.ts` and server functions in `src/lib/data/billing.functions.ts` seed Starter defaults, enforce limits before workflow execution, and record consumption after each run. The `/settings` Billing tab shows live usage with upgrade prompts, and `/org` surfaces plan entitlements to leadership. Unit tests cover limits, entitlement checks, meter formatting, and plan display.
 
+- **Phase 52 — Public pricing page & self-serve checkout.** A public `/pricing` page compares Starter, Team, and Enterprise tiers with feature lists and CTAs. Authenticated users can upgrade free plans instantly; paid plans route through a Stripe Checkout session when `STRIPE_SECRET_KEY` is configured, or fall back to a sales hand-off until keys are added. The `/checkout/success` route provisions the purchased plan and updates entitlements, and the Settings Billing tab links directly to the pricing page.
+
 ## Next up
 
-**Phase 51 — Public sign-up and checkout flow.** Connect the billing tables to a self-serve upgrade path: a public `/pricing` page, Stripe/Paddle checkout, automatic plan provisioning on payment confirmation, and metered usage billing that ties `usage_meters` rows to the invoice cycle.
+**Phase 53 — Metered usage billing.** Tie `usage_meters` rows to the invoice cycle: record per-run consumption against Stripe meter events or Paddle usage records, surface upcoming invoice estimates, and add usage-based overage handling.
 
 Then, post-launch:
 
