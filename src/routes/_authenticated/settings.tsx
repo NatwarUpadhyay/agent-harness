@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { toast } from "sonner";
@@ -18,7 +18,7 @@ import {
   type TeamRoster,
 } from "@/lib/data/team.functions";
 import { formatMeterValue, planDisplayName } from "@/lib/data/billing";
-import { CreditCard, Users, Zap, Coins, Activity, Check, X, Mail, Shield, User } from "lucide-react";
+import { CreditCard, Users, Zap, Coins, Activity, Check, X, Mail, Shield, User, ArrowUpRight } from "lucide-react";
 
 const tabs = ["General", "Team", "API keys", "Billing", "Integrations"] as const;
 type Tab = (typeof tabs)[number];
@@ -199,7 +199,15 @@ function BillingTab() {
       </div>
 
       <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-6">
-        <h3 className="text-[15px] font-medium text-[var(--text-primary)] mb-4">Change plan</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-[15px] font-medium text-[var(--text-primary)]">Change plan</h3>
+          <Link
+            to="/pricing"
+            className="inline-flex items-center gap-1 text-[12px] text-[var(--accent)] hover:text-[var(--accent-hover)]"
+          >
+            View plans <ArrowUpRight className="h-3 w-3" />
+          </Link>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {PLAN_TIERS.map((tier) => {
             const active = currentPlanName === tier.name;

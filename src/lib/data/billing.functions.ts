@@ -26,7 +26,7 @@ const DEFAULT_PLAN = {
 
 const METER_NAMES: MeterName[] = ["seats", "runs", "tokens", "cost_usd"];
 
-async function loadOrSeedPlan(supabase: AppSupabaseClient, userId: string): Promise<BillingPlan> {
+export async function loadOrSeedPlan(supabase: AppSupabaseClient, userId: string): Promise<BillingPlan> {
   const { data, error } = await supabase
     .from("billing_plans")
     .select("*")
@@ -67,7 +67,7 @@ async function loadOrSeedPlan(supabase: AppSupabaseClient, userId: string): Prom
   return toPlan(row as Record<string, unknown>);
 }
 
-async function loadOrSeedMeters(supabase: AppSupabaseClient, userId: string, plan: BillingPlan): Promise<UsageMeter[]> {
+export async function loadOrSeedMeters(supabase: AppSupabaseClient, userId: string, plan: BillingPlan): Promise<UsageMeter[]> {
   const { data, error } = await supabase
     .from("usage_meters")
     .select("*")

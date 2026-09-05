@@ -10,10 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as ShareIdRouteImport } from './routes/share/$id'
+import { Route as CheckoutSuccessRouteImport } from './routes/checkout/success'
 import { Route as AuthenticatedUsageRouteImport } from './routes/_authenticated/usage'
 import { Route as AuthenticatedTopologyRouteImport } from './routes/_authenticated/topology'
 import { Route as AuthenticatedToolsRouteImport } from './routes/_authenticated/tools'
@@ -64,6 +66,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -81,6 +88,11 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
 const ShareIdRoute = ShareIdRouteImport.update({
   id: '/share/$id',
   path: '/share/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutSuccessRoute = CheckoutSuccessRouteImport.update({
+  id: '/checkout/success',
+  path: '/checkout/success',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedUsageRoute = AuthenticatedUsageRouteImport.update({
@@ -316,6 +328,7 @@ const ApiPublicScimV2UsersIdRoute = ApiPublicScimV2UsersIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof LoginRoute
+  '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/activity': typeof AuthenticatedActivityRoute
   '/agents': typeof AuthenticatedAgentsRoute
@@ -356,6 +369,7 @@ export interface FileRoutesByFullPath {
   '/tools': typeof AuthenticatedToolsRoute
   '/topology': typeof AuthenticatedTopologyRoute
   '/usage': typeof AuthenticatedUsageRoute
+  '/checkout/success': typeof CheckoutSuccessRoute
   '/share/$id': typeof ShareIdRoute
   '/api/public/scheduler/tick': typeof ApiPublicSchedulerTickRoute
   '/api/public/scim/v2': typeof ApiPublicScimV2RouteWithChildren
@@ -365,6 +379,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
+  '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/activity': typeof AuthenticatedActivityRoute
   '/agents': typeof AuthenticatedAgentsRoute
@@ -405,6 +420,7 @@ export interface FileRoutesByTo {
   '/tools': typeof AuthenticatedToolsRoute
   '/topology': typeof AuthenticatedTopologyRoute
   '/usage': typeof AuthenticatedUsageRoute
+  '/checkout/success': typeof CheckoutSuccessRoute
   '/share/$id': typeof ShareIdRoute
   '/': typeof AuthenticatedIndexRoute
   '/api/public/scheduler/tick': typeof ApiPublicSchedulerTickRoute
@@ -417,6 +433,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/login': typeof LoginRoute
+  '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/activity': typeof AuthenticatedActivityRoute
   '/_authenticated/agents': typeof AuthenticatedAgentsRoute
@@ -457,6 +474,7 @@ export interface FileRoutesById {
   '/_authenticated/tools': typeof AuthenticatedToolsRoute
   '/_authenticated/topology': typeof AuthenticatedTopologyRoute
   '/_authenticated/usage': typeof AuthenticatedUsageRoute
+  '/checkout/success': typeof CheckoutSuccessRoute
   '/share/$id': typeof ShareIdRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/api/public/scheduler/tick': typeof ApiPublicSchedulerTickRoute
@@ -470,6 +488,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/pricing'
     | '/reset-password'
     | '/activity'
     | '/agents'
@@ -510,6 +529,7 @@ export interface FileRouteTypes {
     | '/tools'
     | '/topology'
     | '/usage'
+    | '/checkout/success'
     | '/share/$id'
     | '/api/public/scheduler/tick'
     | '/api/public/scim/v2'
@@ -519,6 +539,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
+    | '/pricing'
     | '/reset-password'
     | '/activity'
     | '/agents'
@@ -559,6 +580,7 @@ export interface FileRouteTypes {
     | '/tools'
     | '/topology'
     | '/usage'
+    | '/checkout/success'
     | '/share/$id'
     | '/'
     | '/api/public/scheduler/tick'
@@ -570,6 +592,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_authenticated'
     | '/login'
+    | '/pricing'
     | '/reset-password'
     | '/_authenticated/activity'
     | '/_authenticated/agents'
@@ -610,6 +633,7 @@ export interface FileRouteTypes {
     | '/_authenticated/tools'
     | '/_authenticated/topology'
     | '/_authenticated/usage'
+    | '/checkout/success'
     | '/share/$id'
     | '/_authenticated/'
     | '/api/public/scheduler/tick'
@@ -622,7 +646,9 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   LoginRoute: typeof LoginRoute
+  PricingRoute: typeof PricingRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  CheckoutSuccessRoute: typeof CheckoutSuccessRoute
   ShareIdRoute: typeof ShareIdRoute
   ApiPublicSchedulerTickRoute: typeof ApiPublicSchedulerTickRoute
   ApiPublicScimV2Route: typeof ApiPublicScimV2RouteWithChildren
@@ -636,6 +662,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -664,6 +697,13 @@ declare module '@tanstack/react-router' {
       path: '/share/$id'
       fullPath: '/share/$id'
       preLoaderRoute: typeof ShareIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout/success': {
+      id: '/checkout/success'
+      path: '/checkout/success'
+      fullPath: '/checkout/success'
+      preLoaderRoute: typeof CheckoutSuccessRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/usage': {
@@ -1092,7 +1132,9 @@ const ApiPublicScimV2RouteWithChildren = ApiPublicScimV2Route._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   LoginRoute: LoginRoute,
+  PricingRoute: PricingRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  CheckoutSuccessRoute: CheckoutSuccessRoute,
   ShareIdRoute: ShareIdRoute,
   ApiPublicSchedulerTickRoute: ApiPublicSchedulerTickRoute,
   ApiPublicScimV2Route: ApiPublicScimV2RouteWithChildren,
