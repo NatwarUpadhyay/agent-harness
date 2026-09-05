@@ -5,6 +5,10 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { loadOrSeedPlan, loadOrSeedMeters } from "./billing.functions";
 import { parseLimits } from "./billing";
 import type { Json } from "@/integrations/supabase/types";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
+
+type AppSupabaseClient = SupabaseClient<Database>;
 
 const PLAN_CATALOG: Record<
   string,
@@ -55,13 +59,13 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => createCheckoutInput.parse(data))
   .handler(async ({ context, data }) => {
-    const { userId } = context;
+    const { userId, supabase } = context;
     const plan = PLAN_CATALOG[data.planName];
     if (!plan) throw new Error("Unknown plan.");
 
     // Free plans don't need checkout; upgrade immediately.
     if (plan.price_usd === 0) {
-      await applyPlanUpgrade(context.supabase, userId, plan);
+      await applyPlanUpgrade(supabase, userId, plan);
       return { mode: "free-upgraded" as const, plan: plan.name };
     }
 
@@ -84,9 +88,10 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       recurring: { interval: data.billingInterval === "annual" ? "year" : "month" },
     });
 
+    const authUser = await supabase.auth.getUser();
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
-      customer_email: (await context.supabase.auth.getUser()).data.user?.email,
+      customer_email: authUser.data.user?.email,
       line_items: [{ price: price.id, quantity: 1 }],
       success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/pricing`,
@@ -122,11 +127,11 @@ export const provisionPlanFromCheckout = createServerFn({ method: "POST" })
   });
 
 async function applyPlanUpgrade(
-  supabase: Awaited<ReturnType<typeof import("@/integrations/supabase/client.server").createServerSupabaseClient>> extends infer C ? C : never,
+  supabase: AppSupabaseClient,
   userId: string,
   plan: (typeof PLAN_CATALOG)["Team"],
 ) {
-  const existing = await loadOrSeedPlan(supabase as never, userId);
+  const existing = await loadOrSeedPlan(supabase, userId);
   const limits = parseLimits(plan.limits as Record<string, unknown>);
 
   const { error } = await supabase
@@ -144,14 +149,14 @@ async function applyPlanUpgrade(
 
   if (error) throw new Error(`Failed to update billing plan: ${error.message}`);
 
+  await loadOrSeedMeters(supabase, userId, { ...existing, limits } as unknown as Awaited<ReturnType<typeof loadOrSeedPlan>>);
+
   const limitMap: Record<"seats" | "runs" | "tokens" | "cost_usd", number> = {
     seats: limits.seats,
     runs: limits.runs_per_month,
     tokens: limits.tokens_per_month,
     cost_usd: limits.cost_usd_per_month,
   };
-
-  await loadOrSeedMeters(supabase as never, userId, { ...existing, limits } as never);
 
   for (const [name, limit] of Object.entries(limitMap)) {
     const { error: meterError } = await supabase
