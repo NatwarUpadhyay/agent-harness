@@ -36,6 +36,8 @@ It is built for teams who want a shared visual language for AI systems before wr
 ## Current status
 
 > **MVP launch ready** — auth, cloud persistence, the harness canvas, the production execution engine, scheduling, remediation guardrails, cost governance, fleet-wide burn recommendations, a server-persisted activity feed, real-time notifications, billing meters & plan enforcement, team invitations, and a public pricing page with Stripe checkout scaffolding are all live and wired end to end. Team budgets, activity events, plan entitlements, team memberships, and self-serve upgrades are now persisted in the cloud, so every user sees the same caps, enforcement settings, notifications, colleagues, and usage limits across sessions and devices. The regression suite runs green (156 tests) with a clean TypeScript check and a clean security scan (no open findings). The latest published build is at **[harness-flow-control.lovable.app](https://harness-flow-control.lovable.app)**.
+>
+> **Bugfix release (Phase 52.1)** — fixed the pricing page render loop, made team invitations work for existing users, and ensured auto-joined teammates display their email instead of "Unknown member".
 
 ### MVP launch checklist
 
@@ -290,6 +292,8 @@ The fastest way to understand Harness is to use the preview:
 - **Phase 50 — Billing meters & plan enforcement.** Cloud-persisted `public.billing_plans` and `public.usage_meters` tables store subscription tiers and per-user consumption for seats, runs, tokens, and monthly spend. Pure entitlement helpers in `src/lib/data/billing.ts` and server functions in `src/lib/data/billing.functions.ts` seed Starter defaults, enforce limits before workflow execution, and record consumption after each run. The `/settings` Billing tab shows live usage with upgrade prompts, and `/org` surfaces plan entitlements to leadership. Unit tests cover limits, entitlement checks, meter formatting, and plan display.
 
 - **Phase 52 — Public pricing page & self-serve checkout.** A public `/pricing` page compares Starter, Team, and Enterprise tiers with feature lists and CTAs. Authenticated users can upgrade free plans instantly; paid plans route through a Stripe Checkout session when `STRIPE_SECRET_KEY` is configured, or fall back to a sales hand-off until keys are added. The `/checkout/success` route provisions the purchased plan and updates entitlements, and the Settings Billing tab links directly to the pricing page.
+
+- **Bugfix release — Pricing page & team invitations.** Fixed an infinite render loop on `/pricing` by moving the auth session check into a one-time `useEffect`. Updated RLS policies so existing users can accept team invitations themselves (not just new signups through the trigger). Updated the signup trigger and backfilled missing rows so auto-joined teammates show their email in the roster instead of "Unknown member".
 
 ## Next up
 

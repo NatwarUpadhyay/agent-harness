@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
@@ -75,10 +75,12 @@ function PricingPage() {
   const [session, setSession] = useState<unknown>(null);
   const [authChecked, setAuthChecked] = useState(false);
 
-  supabase.auth.getSession().then(({ data }) => {
-    setSession(data.session);
-    setAuthChecked(true);
-  });
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setAuthChecked(true);
+    });
+  }, []);
 
   const fetchPlan = useServerFn(getBillingPlan);
   const doCheckout = useServerFn(createCheckoutSession);
