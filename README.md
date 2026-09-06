@@ -293,6 +293,8 @@ The fastest way to understand Harness is to use the preview:
 
 - **Phase 52 — Public pricing page & self-serve checkout.** A public `/pricing` page compares Starter, Team, and Enterprise tiers with feature lists and CTAs. Authenticated users can upgrade free plans instantly; paid plans route through a Stripe Checkout session when `STRIPE_SECRET_KEY` is configured, or fall back to a sales hand-off until keys are added. The `/checkout/success` route provisions the purchased plan and updates entitlements, and the Settings Billing tab links directly to the pricing page.
 
+- **Bugfix release — Pricing page & team invitations.** Fixed an infinite render loop on `/pricing` by moving the auth session check into a one-time `useEffect`. Updated RLS policies so existing users can accept team invitations themselves (not just new signups through the trigger). Updated the signup trigger and backfilled missing rows so auto-joined teammates show their email in the roster instead of "Unknown member".
+
 ## Next up
 
 **Phase 53 — Metered usage billing.** Tie `usage_meters` rows to the invoice cycle: record per-run consumption against Stripe meter events or Paddle usage records, surface upcoming invoice estimates, and add usage-based overage handling.
