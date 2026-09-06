@@ -75,10 +75,12 @@ function PricingPage() {
   const [session, setSession] = useState<unknown>(null);
   const [authChecked, setAuthChecked] = useState(false);
 
-  supabase.auth.getSession().then(({ data }) => {
-    setSession(data.session);
-    setAuthChecked(true);
-  });
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setAuthChecked(true);
+    });
+  }, []);
 
   const fetchPlan = useServerFn(getBillingPlan);
   const doCheckout = useServerFn(createCheckoutSession);
