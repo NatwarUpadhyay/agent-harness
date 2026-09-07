@@ -147,7 +147,9 @@ export const provisionPlanFromCheckout = createServerFn({ method: "POST" })
     // Persist the Stripe subscription and customer IDs so metered usage can be
     // reported against the right invoice.
     const subscription = session.subscription as Stripe.Subscription | null;
-    const customerId = typeof subscription?.customer === "string" ? subscription.customer : session.customer;
+    const customerId =
+      (typeof subscription?.customer === "string" ? subscription.customer : null) ??
+      (typeof session.customer === "string" ? session.customer : null);
     const subscriptionId = subscription?.id ?? null;
     if (customerId || subscriptionId) {
       const existingPlan = await loadOrSeedPlan(context.supabase, context.userId);
