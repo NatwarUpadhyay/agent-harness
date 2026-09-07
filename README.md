@@ -160,6 +160,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 - **Budgets & alerts** — Per-team spend caps with burn-down forecasting, rule-driven alerting, an incident triage console, and a server-persisted activity feed that captures every remediation action and escalation.
 - **Activity feed & notifications** — A server-persisted company activity stream with kind-based filtering and a header notification bell that surfaces budget breaches, remediation actions, and alert escalations in real time.
 - **Billing meters & plan enforcement** — Cloud-persisted subscription plans and usage meters for seats, runs, tokens, and monthly spend. The execution engine checks entitlements before firing a run, records consumption after each run, and surfaces upgrade prompts in Settings and the Control Room.
+- **Metered usage billing** — Every run writes a timestamped `billing_usage_events` row, deltas are mirrored to Stripe Billing Meters when configured, and the Settings Billing tab renders an upcoming invoice estimate with base price plus metered overages.
 - **Spend enforcement** — Real-time budget breach enforcement (notify / throttle / block) with a run simulator, z-score burn-rate anomaly detection, a live enforcement log, and CSV export.
 - **Integrations & library** — Vendor capability matrix with compatibility checks, and a community library for cloning public workflows.
 - **Collaboration** — Multi-cursor presence, activity stream, collaborative node editing, threaded node comments, and canvas snapshots.
