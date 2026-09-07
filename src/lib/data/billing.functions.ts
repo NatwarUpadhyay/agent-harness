@@ -214,6 +214,16 @@ export const recordUsage = createServerFn({ method: "POST" })
     return loadOrSeedMeters(supabase, userId, plan);
   });
 
+/** Get the upcoming invoice estimate: base plan price plus metered overages. */
+export const getInvoiceEstimate = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const plan = await loadOrSeedPlan(supabase, userId);
+    const meters = await loadOrSeedMeters(supabase, userId, plan);
+    return invoiceEstimate(plan, meters);
+  });
+
 const checkPlanInput = z.object({
   runs: z.number().min(0).optional(),
   tokens: z.number().min(0).optional(),
