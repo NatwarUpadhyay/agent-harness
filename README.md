@@ -115,6 +115,11 @@ It is built for teams who want a shared visual language for AI systems before wr
 | 50 | Billing meters & plan enforcement — cloud-persisted entitlements, usage meters, run-time limit checks, and upgrade prompts | Shipped |
 | 51 | Team invitations & member management — owner invites by email, pending/active roster, role badges, auto-accept on signup | Shipped |
 | 52 | Public pricing page & self-serve checkout — `/pricing`, Stripe checkout scaffolding, checkout success provisioning, Settings plan link | Shipped |
+| 53 | Metered usage billing — per-run usage events, Stripe meter events, invoice estimates, overage math | Shipped |
+
+
+
+
 
 
 
