@@ -16,8 +16,17 @@ export const Route = createFileRoute("/_authenticated")({
         throw redirect({ to: "/reset-password" });
       }
     }
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) {
+    // A network hiccup makes getUser() reject (e.g. "Failed to fetch"). Let that
+    // escape and the protected shell renders nothing at all — treat it the same
+    // as "not signed in" and send the visitor to the login screen instead.
+    let user: Awaited<ReturnType<typeof supabase.auth.getUser>>["data"]["user"] = null;
+    try {
+      const { data, error } = await supabase.auth.getUser();
+      if (!error) user = data.user;
+    } catch {
+      user = null;
+    }
+    if (!user) {
       throw redirect({
         to: "/login",
         search: { redirect: location.href },
@@ -27,8 +36,24 @@ export const Route = createFileRoute("/_authenticated")({
     seedDemoData().catch(() => {});
     // Auto-accept any pending team invitations for this user.
     acceptPendingInvitations().catch(() => {});
-    return { user: data.user };
+    return { user };
   },
+  errorComponent: () => (
+    <div className="flex min-h-screen items-center justify-center bg-[var(--bg-base)] px-4">
+      <div className="max-w-md text-center">
+        <h1 className="text-xl font-semibold">We couldn't load your workspace</h1>
+        <p className="mt-2 text-sm text-[var(--text-secondary)]">
+          The connection dropped while signing you in. Reload to try again.
+        </p>
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-6 rounded-md bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--bg-base)]"
+        >
+          Reload
+        </button>
+      </div>
+    </div>
+  ),
   component: () => (
     <AppShell>
       <Outlet />
