@@ -75,24 +75,42 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
     }
 
     const origin = process.env["ORIGIN"] || "http://localhost:8080";
-    const product = await stripe.products.create({
-      name: `Harness ${plan.name}`,
-      description: plan.features.join(" · "),
-    });
+    const existingPlan = await loadOrSeedPlan(supabase, userId);
 
-    const unitAmount = data.billingInterval === "annual" ? Math.round(plan.price_usd * 12 * 0.85) : plan.price_usd;
-    const price = await stripe.prices.create({
-      product: product.id,
-      unit_amount: unitAmount * 100,
-      currency: "usd",
-      recurring: { interval: data.billingInterval === "annual" ? "year" : "month" },
-    });
+    // Reuse the previously created Stripe price when the tier and interval match,
+    // so repeated upgrades don't litter the Stripe product catalog.
+    let priceId = existingPlan.stripe_price_id;
+    if (existingPlan.name !== data.planName || existingPlan.billing_interval !== data.billingInterval) {
+      priceId = null;
+    }
+
+    if (!priceId) {
+      const product = await stripe.products.create({
+        name: `Harness ${plan.name}`,
+        description: plan.features.join(" · "),
+      });
+
+      const unitAmount = data.billingInterval === "annual" ? Math.round(plan.price_usd * 12 * 0.85) : plan.price_usd;
+      const price = await stripe.prices.create({
+        product: product.id,
+        unit_amount: unitAmount * 100,
+        currency: "usd",
+        recurring: { interval: data.billingInterval === "annual" ? "year" : "month" },
+      });
+      priceId = price.id;
+
+      await supabase
+        .from("billing_plans")
+        .update({ stripe_price_id: priceId } as any)
+        .eq("id", existingPlan.id)
+        .eq("user_id", userId);
+    }
 
     const authUser = await supabase.auth.getUser();
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       customer_email: authUser.data.user?.email,
-      line_items: [{ price: price.id, quantity: 1 }],
+      line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/pricing`,
       metadata: { userId, planName: plan.name },
