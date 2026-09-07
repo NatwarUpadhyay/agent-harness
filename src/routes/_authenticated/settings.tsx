@@ -130,10 +130,12 @@ function BillingTab() {
   const qc = useQueryClient();
   const fetchPlan = useServerFn(getBillingPlan);
   const fetchMeters = useServerFn(getUsageMeters);
+  const fetchInvoice = useServerFn(getInvoiceEstimate);
   const changePlan = useServerFn(updateBillingPlan);
 
   const planQuery = useQuery({ queryKey: ["billing-plan"], queryFn: () => fetchPlan() });
   const metersQuery = useQuery({ queryKey: ["usage-meters"], queryFn: () => fetchMeters() });
+  const invoiceQuery = useQuery({ queryKey: ["invoice-estimate"], queryFn: () => fetchInvoice() });
   const plan = planQuery.data;
   const meters = metersQuery.data ?? [];
 
