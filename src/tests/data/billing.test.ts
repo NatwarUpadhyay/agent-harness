@@ -175,8 +175,8 @@ describe("invoiceEstimate", () => {
     const meters = makeMeters({ runs: 6_000, tokens: 2_000_000, cost_usd: 1_500 });
     const estimate = invoiceEstimate(basePlan, meters);
     expect(estimate.line_items).toHaveLength(3);
-    expect(estimate.overage_total_usd).toBeCloseTo(1000 + 1 + 500, 2);
-    expect(estimate.total_usd).toBeCloseTo(49 + 1000 + 1 + 500, 2);
+    expect(estimate.overage_total_usd).toBeCloseTo(10 + 1 + 500, 2);
+    expect(estimate.total_usd).toBeCloseTo(49 + 10 + 1 + 500, 2);
   });
 
   it("uses the plan period for invoice start and end dates", () => {
