@@ -201,10 +201,12 @@ export function planDisplayName(plan: BillingPlan): string {
 }
 
 export interface InvoiceLineItem {
+  meter_name: UsageMeter["name"];
   label: string;
   quantity: number;
   unit_cost_usd: number;
   amount_usd: number;
+  line_total_usd: number;
 }
 
 export interface InvoiceEstimate {
