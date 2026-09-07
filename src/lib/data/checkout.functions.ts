@@ -131,7 +131,9 @@ export const provisionPlanFromCheckout = createServerFn({ method: "POST" })
     const stripe = getStripe();
     if (!stripe) throw new Error("Stripe is not configured.");
 
-    const session = await stripe.checkout.sessions.retrieve(data.sessionId);
+    const session = await stripe.checkout.sessions.retrieve(data.sessionId, {
+      expand: ["subscription"],
+    });
     if (session.payment_status !== "paid") {
       throw new Error(`Payment status is ${session.payment_status}.`);
     }
@@ -141,6 +143,24 @@ export const provisionPlanFromCheckout = createServerFn({ method: "POST" })
     if (!plan) throw new Error("Checkout session does not reference a valid Harness plan.");
 
     await applyPlanUpgrade(context.supabase, context.userId, plan);
+
+    // Persist the Stripe subscription and customer IDs so metered usage can be
+    // reported against the right invoice.
+    const subscription = session.subscription as Stripe.Subscription | null;
+    const customerId = typeof subscription?.customer === "string" ? subscription.customer : session.customer;
+    const subscriptionId = subscription?.id ?? null;
+    if (customerId || subscriptionId) {
+      const existingPlan = await loadOrSeedPlan(context.supabase, context.userId);
+      await context.supabase
+        .from("billing_plans")
+        .update({
+          stripe_customer_id: customerId,
+          stripe_subscription_id: subscriptionId,
+        } as any)
+        .eq("id", existingPlan.id)
+        .eq("user_id", context.userId);
+    }
+
     return { plan: plan.name };
   });
 
