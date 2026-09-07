@@ -8,6 +8,7 @@ import {
   checkEntitlement,
   formatMeterValue,
   planDisplayName,
+  invoiceEstimate,
   type BillingPlan,
   type UsageMeter,
 } from "@/lib/data/billing";
@@ -27,10 +28,10 @@ const basePlan: BillingPlan = {
 function makeMeters(overrides: Partial<Record<UsageMeter["name"], number>> = {}): UsageMeter[] {
   const base = { id: "m", user_id: "user_1", plan_id: "plan_1", period_start: "2026-01-01T00:00:00Z", period_end: "2026-02-01T00:00:00Z", created_at: "", updated_at: "" };
   return [
-    { ...base, name: "seats", current_value: overrides.seats ?? 1, limit_value: basePlan.limits.seats },
-    { ...base, name: "runs", current_value: overrides.runs ?? 0, limit_value: basePlan.limits.runs_per_month },
-    { ...base, name: "tokens", current_value: overrides.tokens ?? 0, limit_value: basePlan.limits.tokens_per_month },
-    { ...base, name: "cost_usd", current_value: overrides.cost_usd ?? 0, limit_value: basePlan.limits.cost_usd_per_month },
+    { ...base, name: "seats", current_value: overrides.seats ?? 1, limit_value: basePlan.limits.seats, unit_cost_usd: 0, stripe_meter_event_name: null },
+    { ...base, name: "runs", current_value: overrides.runs ?? 0, limit_value: basePlan.limits.runs_per_month, unit_cost_usd: 0.01, stripe_meter_event_name: "harness.runs" },
+    { ...base, name: "tokens", current_value: overrides.tokens ?? 0, limit_value: basePlan.limits.tokens_per_month, unit_cost_usd: 0.000001, stripe_meter_event_name: "harness.tokens" },
+    { ...base, name: "cost_usd", current_value: overrides.cost_usd ?? 0, limit_value: basePlan.limits.cost_usd_per_month, unit_cost_usd: 1, stripe_meter_event_name: "harness.spend" },
   ];
 }
 
@@ -144,5 +145,43 @@ describe("formatMeterValue", () => {
 describe("planDisplayName", () => {
   it("renders name, price and interval", () => {
     expect(planDisplayName(basePlan)).toBe("Team · $49/mo");
+  });
+});
+
+describe("invoiceEstimate", () => {
+  it("returns only the base price when no meters are over their limit", () => {
+    const estimate = invoiceEstimate(basePlan, makeMeters());
+    expect(estimate.base_price_usd).toBe(49);
+    expect(estimate.line_items).toHaveLength(0);
+    expect(estimate.overage_total_usd).toBe(0);
+    expect(estimate.total_usd).toBe(49);
+  });
+
+  it("charges overage for a single meter above its limit", () => {
+    const meters = makeMeters({ runs: 5_500 });
+    const estimate = invoiceEstimate(basePlan, meters);
+    expect(estimate.line_items).toHaveLength(1);
+    expect(estimate.line_items[0]).toMatchObject({
+      meter_name: "runs",
+      quantity: 500,
+      unit_cost_usd: 0.01,
+      line_total_usd: 5,
+    });
+    expect(estimate.overage_total_usd).toBe(5);
+    expect(estimate.total_usd).toBe(54);
+  });
+
+  it("sums overages across all meters", () => {
+    const meters = makeMeters({ runs: 6_000, tokens: 2_000_000, cost_usd: 1_500 });
+    const estimate = invoiceEstimate(basePlan, meters);
+    expect(estimate.line_items).toHaveLength(3);
+    expect(estimate.overage_total_usd).toBeCloseTo(10 + 1 + 500, 2);
+    expect(estimate.total_usd).toBeCloseTo(49 + 10 + 1 + 500, 2);
+  });
+
+  it("uses the plan period for invoice start and end dates", () => {
+    const estimate = invoiceEstimate(basePlan, makeMeters());
+    expect(estimate.period_start).toBe(basePlan.created_at);
+    expect(estimate.period_end).toBe("2026-02-01T00:00:00Z");
   });
 });

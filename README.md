@@ -35,9 +35,9 @@ It is built for teams who want a shared visual language for AI systems before wr
 
 ## Current status
 
-> **MVP launch ready** — auth, cloud persistence, the harness canvas, the production execution engine, scheduling, remediation guardrails, cost governance, fleet-wide burn recommendations, a server-persisted activity feed, real-time notifications, billing meters & plan enforcement, team invitations, and a public pricing page with Stripe checkout scaffolding are all live and wired end to end. Team budgets, activity events, plan entitlements, team memberships, and self-serve upgrades are now persisted in the cloud, so every user sees the same caps, enforcement settings, notifications, colleagues, and usage limits across sessions and devices. The regression suite runs green (156 tests) with a clean TypeScript check and a clean security scan (no open findings). The latest published build is at **[harness-flow-control.lovable.app](https://harness-flow-control.lovable.app)**.
+> **MVP launch ready** — auth, cloud persistence, the harness canvas, the production execution engine, scheduling, remediation guardrails, cost governance, fleet-wide burn recommendations, a server-persisted activity feed, real-time notifications, billing meters & plan enforcement, metered usage billing, team invitations, and a public pricing page with Stripe checkout scaffolding are all live and wired end to end. Team budgets, activity events, plan entitlements, usage events, team memberships, and self-serve upgrades are now persisted in the cloud, so every user sees the same caps, enforcement settings, notifications, colleagues, and usage limits across sessions and devices. The regression suite runs green (160 tests) with a clean TypeScript check and a clean security scan (no open findings). The latest published build is at **[harness-flow-control.lovable.app](https://harness-flow-control.lovable.app)**.
 >
-> **Bugfix release (Phase 52.1)** — fixed the pricing page render loop, made team invitations work for existing users, and ensured auto-joined teammates display their email instead of "Unknown member".
+> **Phase 53 — Metered usage billing** — every workflow run now writes a `billing_usage_events` row, mirrors the delta to Stripe Billing Meters when `STRIPE_SECRET_KEY` is configured, and the Settings Billing tab shows an upcoming invoice estimate with base price plus overage line items.
 
 ### MVP launch checklist
 
@@ -51,12 +51,13 @@ It is built for teams who want a shared visual language for AI systems before wr
 | Scheduling + inbound webhook triggers | Ready |
 | Cost governance (budgets, attribution, anomaly detection, guarded auto-remediation) | Ready |
 | Billing meters & plan enforcement (cloud-persisted entitlements, run-time limit checks) | Ready |
+| Metered usage billing (per-run usage events, Stripe meter events, invoice estimates) | Ready |
 | Team invitations & member management (owner invites by email, pending/active roster, auto-accept on signup) | Ready |
 | Public pricing page & self-serve checkout (Stripe checkout scaffolded; add STRIPE_SECRET_KEY to go live) | Ready |
 | Enterprise SSO/SCIM provisioning endpoint | Ready |
 | Observability (usage, audit log, SLOs, topology audit, alerts/incidents) | Ready |
 | Responsive UI + command palette + onboarding | Ready |
-| Tests (22 files / 156 tests) and TypeScript check | Green |
+| Tests (22 files / 160 tests) and TypeScript check | Green |
 | Security scan | No open findings |
 
 
@@ -114,6 +115,11 @@ It is built for teams who want a shared visual language for AI systems before wr
 | 50 | Billing meters & plan enforcement — cloud-persisted entitlements, usage meters, run-time limit checks, and upgrade prompts | Shipped |
 | 51 | Team invitations & member management — owner invites by email, pending/active roster, role badges, auto-accept on signup | Shipped |
 | 52 | Public pricing page & self-serve checkout — `/pricing`, Stripe checkout scaffolding, checkout success provisioning, Settings plan link | Shipped |
+| 53 | Metered usage billing — per-run usage events, Stripe meter events, invoice estimates, overage math | Shipped |
+
+
+
+
 
 
 
@@ -154,6 +160,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 - **Budgets & alerts** — Per-team spend caps with burn-down forecasting, rule-driven alerting, an incident triage console, and a server-persisted activity feed that captures every remediation action and escalation.
 - **Activity feed & notifications** — A server-persisted company activity stream with kind-based filtering and a header notification bell that surfaces budget breaches, remediation actions, and alert escalations in real time.
 - **Billing meters & plan enforcement** — Cloud-persisted subscription plans and usage meters for seats, runs, tokens, and monthly spend. The execution engine checks entitlements before firing a run, records consumption after each run, and surfaces upgrade prompts in Settings and the Control Room.
+- **Metered usage billing** — Every run writes a timestamped `billing_usage_events` row, deltas are mirrored to Stripe Billing Meters when configured, and the Settings Billing tab renders an upcoming invoice estimate with base price plus metered overages.
 - **Spend enforcement** — Real-time budget breach enforcement (notify / throttle / block) with a run simulator, z-score burn-rate anomaly detection, a live enforcement log, and CSV export.
 - **Integrations & library** — Vendor capability matrix with compatibility checks, and a community library for cloning public workflows.
 - **Collaboration** — Multi-cursor presence, activity stream, collaborative node editing, threaded node comments, and canvas snapshots.
@@ -190,7 +197,7 @@ python3 context/loops/loop_detection.py
 
 ## Testing
 
-Vitest + Testing Library regression suite covering the main interactive surfaces: harness canvas, dashboard, evaluations, agents, layout controls, usage math, remediation, attribution, anomaly detection, cost remediation, billing entitlements, and auth flows. Runs green (22 files / 156 tests) alongside a clean TypeScript check.
+Vitest + Testing Library regression suite covering the main interactive surfaces: harness canvas, dashboard, evaluations, agents, layout controls, usage math, remediation, attribution, anomaly detection, cost remediation, billing entitlements, invoice estimates, and auth flows. Runs green (22 files / 160 tests) alongside a clean TypeScript check.
 
 The current suite is a focused smoke/regression layer rather than exhaustive coverage for every page, so it is a good starting point for validating future UI changes.
 
@@ -293,11 +300,13 @@ The fastest way to understand Harness is to use the preview:
 
 - **Phase 52 — Public pricing page & self-serve checkout.** A public `/pricing` page compares Starter, Team, and Enterprise tiers with feature lists and CTAs. Authenticated users can upgrade free plans instantly; paid plans route through a Stripe Checkout session when `STRIPE_SECRET_KEY` is configured, or fall back to a sales hand-off until keys are added. The `/checkout/success` route provisions the purchased plan and updates entitlements, and the Settings Billing tab links directly to the pricing page.
 
+- **Phase 53 — Metered usage billing.** Every production run now writes a `billing_usage_events` row with the meter delta and optional source run id, mirrors the delta to Stripe Billing Meters when `STRIPE_SECRET_KEY` and a Stripe customer/subscription are present, and surfaces an upcoming invoice estimate in Settings with base price plus overage line items. Invoice math lives in `src/lib/data/billing.ts` as pure, unit-tested functions.
+
 - **Bugfix release — Pricing page & team invitations.** Fixed an infinite render loop on `/pricing` by moving the auth session check into a one-time `useEffect`. Updated RLS policies so existing users can accept team invitations themselves (not just new signups through the trigger). Updated the signup trigger and backfilled missing rows so auto-joined teammates show their email in the roster instead of "Unknown member".
 
 ## Next up
 
-**Phase 53 — Metered usage billing.** Tie `usage_meters` rows to the invoice cycle: record per-run consumption against Stripe meter events or Paddle usage records, surface upcoming invoice estimates, and add usage-based overage handling.
+**Phase 54 — Invoice lifecycle & usage exports.** Add invoice PDF generation, a downloadable usage-events CSV, and webhook support for external billing systems so finance teams can reconcile Harness usage in their own tools.
 
 Then, post-launch:
 

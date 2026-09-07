@@ -75,24 +75,42 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
     }
 
     const origin = process.env["ORIGIN"] || "http://localhost:8080";
-    const product = await stripe.products.create({
-      name: `Harness ${plan.name}`,
-      description: plan.features.join(" · "),
-    });
+    const existingPlan = await loadOrSeedPlan(supabase, userId);
 
-    const unitAmount = data.billingInterval === "annual" ? Math.round(plan.price_usd * 12 * 0.85) : plan.price_usd;
-    const price = await stripe.prices.create({
-      product: product.id,
-      unit_amount: unitAmount * 100,
-      currency: "usd",
-      recurring: { interval: data.billingInterval === "annual" ? "year" : "month" },
-    });
+    // Reuse the previously created Stripe price when the tier and interval match,
+    // so repeated upgrades don't litter the Stripe product catalog.
+    let priceId = existingPlan.stripe_price_id;
+    if (existingPlan.name !== data.planName || existingPlan.billing_interval !== data.billingInterval) {
+      priceId = null;
+    }
+
+    if (!priceId) {
+      const product = await stripe.products.create({
+        name: `Harness ${plan.name}`,
+        description: plan.features.join(" · "),
+      });
+
+      const unitAmount = data.billingInterval === "annual" ? Math.round(plan.price_usd * 12 * 0.85) : plan.price_usd;
+      const price = await stripe.prices.create({
+        product: product.id,
+        unit_amount: unitAmount * 100,
+        currency: "usd",
+        recurring: { interval: data.billingInterval === "annual" ? "year" : "month" },
+      });
+      priceId = price.id;
+
+      await supabase
+        .from("billing_plans")
+        .update({ stripe_price_id: priceId } as any)
+        .eq("id", existingPlan.id)
+        .eq("user_id", userId);
+    }
 
     const authUser = await supabase.auth.getUser();
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       customer_email: authUser.data.user?.email,
-      line_items: [{ price: price.id, quantity: 1 }],
+      line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/pricing`,
       metadata: { userId, planName: plan.name },
@@ -113,7 +131,9 @@ export const provisionPlanFromCheckout = createServerFn({ method: "POST" })
     const stripe = getStripe();
     if (!stripe) throw new Error("Stripe is not configured.");
 
-    const session = await stripe.checkout.sessions.retrieve(data.sessionId);
+    const session = await stripe.checkout.sessions.retrieve(data.sessionId, {
+      expand: ["subscription"],
+    });
     if (session.payment_status !== "paid") {
       throw new Error(`Payment status is ${session.payment_status}.`);
     }
@@ -123,6 +143,26 @@ export const provisionPlanFromCheckout = createServerFn({ method: "POST" })
     if (!plan) throw new Error("Checkout session does not reference a valid Harness plan.");
 
     await applyPlanUpgrade(context.supabase, context.userId, plan);
+
+    // Persist the Stripe subscription and customer IDs so metered usage can be
+    // reported against the right invoice.
+    const subscription = session.subscription as Stripe.Subscription | null;
+    const customerId =
+      (typeof subscription?.customer === "string" ? subscription.customer : null) ??
+      (typeof session.customer === "string" ? session.customer : null);
+    const subscriptionId = subscription?.id ?? null;
+    if (customerId || subscriptionId) {
+      const existingPlan = await loadOrSeedPlan(context.supabase, context.userId);
+      await context.supabase
+        .from("billing_plans")
+        .update({
+          stripe_customer_id: customerId,
+          stripe_subscription_id: subscriptionId,
+        } as any)
+        .eq("id", existingPlan.id)
+        .eq("user_id", context.userId);
+    }
+
     return { plan: plan.name };
   });
 

@@ -101,6 +101,10 @@ export type Database = {
           limits: Json
           name: string
           price_usd: number
+          stripe_customer_id: string | null
+          stripe_meter_event_name: string | null
+          stripe_price_id: string | null
+          stripe_subscription_id: string | null
           updated_at: string
           user_id: string
         }
@@ -112,6 +116,10 @@ export type Database = {
           limits?: Json
           name?: string
           price_usd?: number
+          stripe_customer_id?: string | null
+          stripe_meter_event_name?: string | null
+          stripe_price_id?: string | null
+          stripe_subscription_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -123,10 +131,58 @@ export type Database = {
           limits?: Json
           name?: string
           price_usd?: number
+          stripe_customer_id?: string | null
+          stripe_meter_event_name?: string | null
+          stripe_price_id?: string | null
+          stripe_subscription_id?: string | null
           updated_at?: string
           user_id?: string
         }
         Relationships: []
+      }
+      billing_usage_events: {
+        Row: {
+          created_at: string
+          delta: number
+          description: string | null
+          id: string
+          meter_name: string
+          plan_id: string | null
+          source_run_id: string | null
+          stripe_event_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          delta?: number
+          description?: string | null
+          id?: string
+          meter_name: string
+          plan_id?: string | null
+          source_run_id?: string | null
+          stripe_event_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          delta?: number
+          description?: string | null
+          id?: string
+          meter_name?: string
+          plan_id?: string | null
+          source_run_id?: string | null
+          stripe_event_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_usage_events_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "billing_plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       experiments: {
         Row: {
@@ -393,6 +449,8 @@ export type Database = {
           period_end: string
           period_start: string
           plan_id: string | null
+          stripe_meter_event_name: string | null
+          unit_cost_usd: number
           updated_at: string
           user_id: string
         }
@@ -405,6 +463,8 @@ export type Database = {
           period_end?: string
           period_start?: string
           plan_id?: string | null
+          stripe_meter_event_name?: string | null
+          unit_cost_usd?: number
           updated_at?: string
           user_id: string
         }
@@ -417,6 +477,8 @@ export type Database = {
           period_end?: string
           period_start?: string
           plan_id?: string | null
+          stripe_meter_event_name?: string | null
+          unit_cost_usd?: number
           updated_at?: string
           user_id?: string
         }

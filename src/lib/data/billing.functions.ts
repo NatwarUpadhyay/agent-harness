@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { randomUUID } from "crypto";
 import { type SupabaseClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database, Json } from "@/integrations/supabase/types";
@@ -9,6 +10,7 @@ import {
   parseLimits,
   defaultMeters,
   checkEntitlement,
+  invoiceEstimate,
   type BillingPlan,
   type UsageMeter,
   type MeterName,
@@ -82,7 +84,7 @@ export async function loadOrSeedMeters(supabase: AppSupabaseClient, userId: stri
   const inserts = defaultMeters(plan.id, plan.limits).map((m) => ({ ...m, user_id: userId }));
   const { error: insertError } = await supabase
     .from("usage_meters")
-    .upsert(inserts, { onConflict: "user_id,name", ignoreDuplicates: true });
+    .upsert(inserts as any, { onConflict: "user_id,name", ignoreDuplicates: true });
 
   if (insertError) throw new Error(`Failed to seed usage meters: ${insertError.message}`);
 
@@ -118,15 +120,85 @@ const recordUsageInput = z.object({
   runs: z.number().min(0).optional(),
   tokens: z.number().min(0).optional(),
   cost_usd: z.number().min(0).optional(),
+  sourceRunId: z.string().uuid().optional(),
 });
 
-/** Atomically increment usage meters and return the updated meters. */
+function getStripe() {
+  const key = process.env["STRIPE_SECRET_KEY"];
+  if (!key || key.length < 10) return null;
+  try {
+    const Stripe = require("stripe") as typeof import("stripe").default;
+    return new Stripe(key, { apiVersion: "2026-08-26.dahlia" });
+  } catch {
+    return null;
+  }
+}
+
+async function emitStripeMeterEvent(
+  stripe: ReturnType<typeof getStripe>,
+  meter: UsageMeter,
+  plan: BillingPlan,
+  delta: number,
+): Promise<string | null> {
+  if (!stripe || !plan.stripe_customer_id || !meter.stripe_meter_event_name) return null;
+  try {
+    const eventName = meter.stripe_meter_event_name;
+    const identifier = `${plan.user_id}-${meter.name}-${Date.now()}-${randomUUID()}`;
+    // Stripe Billing Meter Events API is nested under stripe.billing.meterEvents.
+    const api = (stripe as any).billing?.meterEvents;
+    if (!api?.create) return null;
+    const event = await api.create({
+      event_name: eventName,
+      payload: {
+        value: String(Math.round(delta)),
+        stripe_customer_id: plan.stripe_customer_id,
+      },
+      identifier,
+    });
+    return event?.id ?? null;
+  } catch {
+    return null;
+  }
+}
+
+async function recordMeterDelta(
+  supabase: AppSupabaseClient,
+  userId: string,
+  plan: BillingPlan,
+  meter: UsageMeter,
+  delta: number,
+  sourceRunId?: string,
+) {
+  const { error } = await supabase
+    .from("usage_meters")
+    .update({ current_value: meter.current_value + delta })
+    .eq("id", meter.id)
+    .eq("user_id", userId);
+  if (error) throw new Error(`Failed to update meter ${meter.name}: ${error.message}`);
+
+  const stripeEventId = await emitStripeMeterEvent(getStripe(), meter, plan, delta);
+
+  const { error: eventError } = await supabase.from("billing_usage_events").insert({
+    user_id: userId,
+    plan_id: plan.id,
+    meter_name: meter.name,
+    delta,
+    description: sourceRunId ? `Run ${sourceRunId}` : "Usage recorded",
+    source_run_id: sourceRunId ?? null,
+    stripe_event_id: stripeEventId,
+  } as any);
+  if (eventError) throw new Error(`Failed to record usage event for ${meter.name}: ${eventError.message}`);
+}
+
+/** Atomically increment usage meters, write usage-event line items, and optionally
+ *  mirror the event to Stripe Billing Meters when STRIPE_SECRET_KEY is configured. */
 export const recordUsage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => recordUsageInput.parse(data))
   .handler(async ({ context, data }) => {
     const { supabase, userId } = context;
-    const meters = await loadOrSeedMeters(supabase, userId, await loadOrSeedPlan(supabase, userId));
+    const plan = await loadOrSeedPlan(supabase, userId);
+    const meters = await loadOrSeedMeters(supabase, userId, plan);
 
     const updates: Partial<Record<MeterName, number>> = {};
     if (data.runs) updates.runs = data.runs;
@@ -136,15 +208,20 @@ export const recordUsage = createServerFn({ method: "POST" })
     for (const [name, delta] of Object.entries(updates)) {
       const meter = meters.find((m) => m.name === name);
       if (!meter) continue;
-      const { error } = await supabase
-        .from("usage_meters")
-        .update({ current_value: meter.current_value + delta })
-        .eq("id", meter.id)
-        .eq("user_id", userId);
-      if (error) throw new Error(`Failed to update meter ${name}: ${error.message}`);
+      await recordMeterDelta(supabase, userId, plan, meter, delta, data.sourceRunId);
     }
 
-    return loadOrSeedMeters(supabase, userId, await loadOrSeedPlan(supabase, userId));
+    return loadOrSeedMeters(supabase, userId, plan);
+  });
+
+/** Get the upcoming invoice estimate: base plan price plus metered overages. */
+export const getInvoiceEstimate = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const plan = await loadOrSeedPlan(supabase, userId);
+    const meters = await loadOrSeedMeters(supabase, userId, plan);
+    return invoiceEstimate(plan, meters);
   });
 
 const checkPlanInput = z.object({

@@ -84,7 +84,14 @@ function RunsView() {
         throw new Error(`Plan limit reached: ${first?.reason ?? "upgrade required"}`);
       }
       const row = await execute({ data: { workflowId: selected, input } });
-      await bumpUsage({ data: { runs: 1, tokens: row.total_tokens ?? 0, cost_usd: row.cost_usd ?? 0 } });
+      await bumpUsage({
+        data: {
+          runs: 1,
+          tokens: row.total_tokens ?? 0,
+          cost_usd: row.cost_usd ?? 0,
+          sourceRunId: row.id,
+        },
+      });
       return row;
     },
     onSuccess: (row) => {
