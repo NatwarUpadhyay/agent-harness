@@ -232,10 +232,12 @@ export function invoiceEstimate(plan: BillingPlan, meters: UsageMeter[]): Invoic
     if (overage > 0 && meter.unit_cost_usd > 0) {
       const amount = overage * meter.unit_cost_usd;
       lineItems.push({
+        meter_name: meter.name,
         label: `${METER_LABELS[meter.name]} overage`,
         quantity: overage,
         unit_cost_usd: meter.unit_cost_usd,
         amount_usd: amount,
+        line_total_usd: amount,
       });
       overageTotal += amount;
     }
