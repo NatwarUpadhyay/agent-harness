@@ -242,6 +242,54 @@ function BillingTab() {
           })}
         </div>
       </div>
+
+      <InvoiceEstimateCard invoice={invoiceQuery.data} />
+    </div>
+  );
+}
+
+function InvoiceEstimateCard({ invoice }: { invoice: InvoiceEstimate | undefined }) {
+  if (!invoice) {
+    return (
+      <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-6">
+        <div className="flex items-center gap-2 text-[var(--text-primary)] mb-2">
+          <CreditCard className="h-4 w-4 text-[var(--accent)]" />
+          <h3 className="text-[15px] font-medium">Upcoming invoice</h3>
+        </div>
+        <div className="text-[13px] text-[var(--text-muted)]">Calculating estimate…</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-6">
+      <div className="flex items-center gap-2 text-[var(--text-primary)] mb-4">
+        <CreditCard className="h-4 w-4 text-[var(--accent)]" />
+        <h3 className="text-[15px] font-medium">Upcoming invoice</h3>
+      </div>
+      <div className="space-y-3">
+        <div className="flex items-center justify-between text-[13px]">
+          <span className="text-[var(--text-secondary)]">Base plan</span>
+          <span className="font-mono-tabular text-[var(--text-primary)]">${invoice.base_price_usd.toFixed(2)}</span>
+        </div>
+        {invoice.line_items.map((item) => (
+          <div key={item.meter_name} className="flex items-center justify-between text-[13px]">
+            <span className="text-[var(--text-secondary)]">
+              {item.meter_name.replace("cost_usd", "Spend").replace("_", " ")} overage
+              <span className="text-[var(--text-muted)] ml-1">({item.quantity})</span>
+            </span>
+            <span className="font-mono-tabular text-[var(--text-primary)]">${item.line_total_usd.toFixed(2)}</span>
+          </div>
+        ))}
+        <div className="pt-3 border-t border-[var(--border-default)] flex items-center justify-between text-[14px] font-medium">
+          <span className="text-[var(--text-primary)]">Estimated total</span>
+          <span className="font-mono-tabular text-[var(--accent)]">${invoice.total_usd.toFixed(2)}</span>
+        </div>
+      </div>
+      <div className="mt-4 text-[11px] text-[var(--text-muted)]">
+        Billing period: {new Date(invoice.period_start).toLocaleDateString()} —{" "}
+        {new Date(invoice.period_end).toLocaleDateString()}
+      </div>
     </div>
   );
 }
