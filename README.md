@@ -51,12 +51,13 @@ It is built for teams who want a shared visual language for AI systems before wr
 | Scheduling + inbound webhook triggers | Ready |
 | Cost governance (budgets, attribution, anomaly detection, guarded auto-remediation) | Ready |
 | Billing meters & plan enforcement (cloud-persisted entitlements, run-time limit checks) | Ready |
+| Metered usage billing (per-run usage events, Stripe meter events, invoice estimates) | Ready |
 | Team invitations & member management (owner invites by email, pending/active roster, auto-accept on signup) | Ready |
 | Public pricing page & self-serve checkout (Stripe checkout scaffolded; add STRIPE_SECRET_KEY to go live) | Ready |
 | Enterprise SSO/SCIM provisioning endpoint | Ready |
 | Observability (usage, audit log, SLOs, topology audit, alerts/incidents) | Ready |
 | Responsive UI + command palette + onboarding | Ready |
-| Tests (22 files / 156 tests) and TypeScript check | Green |
+| Tests (22 files / 160 tests) and TypeScript check | Green |
 | Security scan | No open findings |
 
 
