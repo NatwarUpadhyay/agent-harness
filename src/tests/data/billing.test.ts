@@ -28,10 +28,10 @@ const basePlan: BillingPlan = {
 function makeMeters(overrides: Partial<Record<UsageMeter["name"], number>> = {}): UsageMeter[] {
   const base = { id: "m", user_id: "user_1", plan_id: "plan_1", period_start: "2026-01-01T00:00:00Z", period_end: "2026-02-01T00:00:00Z", created_at: "", updated_at: "" };
   return [
-    { ...base, name: "seats", current_value: overrides.seats ?? 1, limit_value: basePlan.limits.seats },
-    { ...base, name: "runs", current_value: overrides.runs ?? 0, limit_value: basePlan.limits.runs_per_month },
-    { ...base, name: "tokens", current_value: overrides.tokens ?? 0, limit_value: basePlan.limits.tokens_per_month },
-    { ...base, name: "cost_usd", current_value: overrides.cost_usd ?? 0, limit_value: basePlan.limits.cost_usd_per_month },
+    { ...base, name: "seats", current_value: overrides.seats ?? 1, limit_value: basePlan.limits.seats, unit_cost_usd: 0, stripe_meter_event_name: null },
+    { ...base, name: "runs", current_value: overrides.runs ?? 0, limit_value: basePlan.limits.runs_per_month, unit_cost_usd: 0.01, stripe_meter_event_name: "harness.runs" },
+    { ...base, name: "tokens", current_value: overrides.tokens ?? 0, limit_value: basePlan.limits.tokens_per_month, unit_cost_usd: 0.000001, stripe_meter_event_name: "harness.tokens" },
+    { ...base, name: "cost_usd", current_value: overrides.cost_usd ?? 0, limit_value: basePlan.limits.cost_usd_per_month, unit_cost_usd: 1, stripe_meter_event_name: "harness.spend" },
   ];
 }
 
