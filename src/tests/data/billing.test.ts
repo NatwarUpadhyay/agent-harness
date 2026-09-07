@@ -147,3 +147,41 @@ describe("planDisplayName", () => {
     expect(planDisplayName(basePlan)).toBe("Team · $49/mo");
   });
 });
+
+describe("invoiceEstimate", () => {
+  it("returns only the base price when no meters are over their limit", () => {
+    const estimate = invoiceEstimate(basePlan, makeMeters());
+    expect(estimate.base_price_usd).toBe(49);
+    expect(estimate.line_items).toHaveLength(0);
+    expect(estimate.overage_total_usd).toBe(0);
+    expect(estimate.total_usd).toBe(49);
+  });
+
+  it("charges overage for a single meter above its limit", () => {
+    const meters = makeMeters({ runs: 5_500 });
+    const estimate = invoiceEstimate(basePlan, meters);
+    expect(estimate.line_items).toHaveLength(1);
+    expect(estimate.line_items[0]).toMatchObject({
+      meter_name: "runs",
+      quantity: 500,
+      unit_cost_usd: 0.01,
+      line_total_usd: 5,
+    });
+    expect(estimate.overage_total_usd).toBe(5);
+    expect(estimate.total_usd).toBe(54);
+  });
+
+  it("sums overages across all meters", () => {
+    const meters = makeMeters({ runs: 6_000, tokens: 2_000_000, cost_usd: 1_500 });
+    const estimate = invoiceEstimate(basePlan, meters);
+    expect(estimate.line_items).toHaveLength(3);
+    expect(estimate.overage_total_usd).toBeCloseTo(1000 + 1 + 500, 2);
+    expect(estimate.total_usd).toBeCloseTo(49 + 1000 + 1 + 500, 2);
+  });
+
+  it("uses the plan period for invoice start and end dates", () => {
+    const estimate = invoiceEstimate(basePlan, makeMeters());
+    expect(estimate.period_start).toBe(basePlan.created_at);
+    expect(estimate.period_end).toBe("2026-02-01T00:00:00Z");
+  });
+});
