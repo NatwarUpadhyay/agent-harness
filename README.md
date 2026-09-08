@@ -313,6 +313,6 @@ Then, post-launch:
 1. **Org-level RBAC on the server** — move the governance capability matrix from client state into server-enforced roles.
 2. **Real integrations** — replace the vendor capability matrix with live provider connections and key vaulting.
 3. **Deeper eval coverage** — scheduled regression evals against production traces, with drift alerts.
-4. **Mobile apps** — native-feel PWA/phone experience for approvals and incident triage on the go.
+4. **Mobile apps** — native-feel PWA/phone experience for approvals and incident triage on the go..
 
 
