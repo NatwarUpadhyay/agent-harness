@@ -65,7 +65,7 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
 
     // Free plans don't need checkout; upgrade immediately.
     if (plan.price_usd === 0) {
-      await applyPlanUpgrade(supabase, userId, plan);
+      await applyPlanUpgrade(supabase, userId, plan, data.billingInterval);
       return { mode: "free-upgraded" as const, plan: plan.name };
     }
 
@@ -113,8 +113,8 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/pricing`,
-      metadata: { userId, planName: plan.name },
-      subscription_data: { metadata: { userId, planName: plan.name } },
+      metadata: { userId, planName: plan.name, billingInterval: data.billingInterval },
+      subscription_data: { metadata: { userId, planName: plan.name, billingInterval: data.billingInterval } },
     });
 
     if (!session.url) throw new Error("Stripe did not return a checkout URL.");
@@ -142,7 +142,8 @@ export const provisionPlanFromCheckout = createServerFn({ method: "POST" })
     const plan = planName ? PLAN_CATALOG[planName] : null;
     if (!plan) throw new Error("Checkout session does not reference a valid Harness plan.");
 
-    await applyPlanUpgrade(context.supabase, context.userId, plan);
+    const billingInterval = session.metadata?.billingInterval === "annual" ? "annual" : "monthly";
+    await applyPlanUpgrade(context.supabase, context.userId, plan, billingInterval);
 
     // Persist the Stripe subscription and customer IDs so metered usage can be
     // reported against the right invoice.
@@ -170,6 +171,7 @@ async function applyPlanUpgrade(
   supabase: AppSupabaseClient,
   userId: string,
   plan: (typeof PLAN_CATALOG)["Team"],
+  billingInterval: "monthly" | "annual" = "monthly",
 ) {
   const existing = await loadOrSeedPlan(supabase, userId);
   const limits = parseLimits(plan.limits as Record<string, unknown>);
