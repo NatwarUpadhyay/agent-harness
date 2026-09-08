@@ -181,7 +181,7 @@ async function applyPlanUpgrade(
     .update({
       name: plan.name,
       price_usd: plan.price_usd,
-      billing_interval: plan.billing_interval,
+      billing_interval: billingInterval,
       limits: plan.limits as unknown as Json,
       features: plan.features as unknown as Json,
       updated_at: new Date().toISOString(),

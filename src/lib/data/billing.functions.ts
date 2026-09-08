@@ -123,19 +123,14 @@ const recordUsageInput = z.object({
   sourceRunId: z.string().uuid().optional(),
 });
 
-function getStripe() {
+function getStripe(): Stripe | null {
   const key = process.env["STRIPE_SECRET_KEY"];
   if (!key || key.length < 10) return null;
-  try {
-    const Stripe = require("stripe") as typeof import("stripe").default;
-    return new Stripe(key, { apiVersion: "2026-08-26.dahlia" });
-  } catch {
-    return null;
-  }
+  return new Stripe(key, { apiVersion: "2026-08-26.dahlia" });
 }
 
 async function emitStripeMeterEvent(
-  stripe: ReturnType<typeof getStripe>,
+  stripe: Stripe | null,
   meter: UsageMeter,
   plan: BillingPlan,
   delta: number,
