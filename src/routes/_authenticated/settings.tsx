@@ -383,6 +383,126 @@ function InvoiceEstimateCard({
   );
 }
 
+function BillingWebhooksCard({
+  webhooks,
+  isLoading,
+  onSave,
+  onDelete,
+  onTest,
+  saving,
+}: {
+  webhooks: BillingWebhook[];
+  isLoading: boolean;
+  onSave: (data: Partial<Omit<BillingWebhook, "id" | "user_id" | "created_at" | "updated_at">> & { id?: string }) => void;
+  onDelete: (id: string) => void;
+  onTest: (id: string) => void;
+  saving: boolean;
+}) {
+  const [url, setUrl] = useState("");
+  const [secret, setSecret] = useState("");
+  const [events, setEvents] = useState<string[]>(["usage_event"]);
+
+  const toggleEvent = (e: string) => {
+    setEvents((prev) => (prev.includes(e) ? prev.filter((x) => x !== e) : [...prev, e]));
+  };
+
+  const canSubmit = url.trim().startsWith("http") && events.length > 0;
+
+  return (
+    <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-6">
+      <div className="flex items-center gap-2 text-[var(--text-primary)] mb-4">
+        <Webhook className="h-4 w-4 text-[var(--accent)]" />
+        <h3 className="text-[15px] font-medium">Billing webhooks</h3>
+      </div>
+      <p className="text-[13px] text-[var(--text-secondary)] mb-4">
+        Notify external finance tools when usage is recorded or invoices are ready.
+      </p>
+
+      <div className="space-y-3 mb-6">
+        <input
+          type="url"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          placeholder="https://finance.company.com/harness/webhook"
+          className="w-full h-10 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-default)] px-3 text-[13px] focus:outline-none focus:border-[var(--accent)]"
+        />
+        <input
+          type="text"
+          value={secret}
+          onChange={(e) => setSecret(e.target.value)}
+          placeholder="Optional HMAC secret"
+          className="w-full h-10 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-default)] px-3 text-[13px] font-mono-tabular focus:outline-none focus:border-[var(--accent)]"
+        />
+        <div className="flex flex-wrap gap-2">
+          {["usage_event", "invoice_ready", "plan_changed"].map((e) => (
+            <button
+              key={e}
+              onClick={() => toggleEvent(e)}
+              className={`h-7 px-2 rounded-md text-[11px] border transition-colors ${
+                events.includes(e)
+                  ? "border-[var(--accent)] bg-[var(--accent-muted)] text-[var(--accent)]"
+                  : "border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[var(--border-strong)]"
+              }`}
+            >
+              {events.includes(e) && <Check className="inline h-3 w-3 mr-1" />} {e.replace("_", " ")}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={() => {
+            if (!canSubmit) return;
+            onSave({ url: url.trim(), secret: secret.trim() || undefined, events });
+            setUrl("");
+            setSecret("");
+            setEvents(["usage_event"]);
+          }}
+          disabled={!canSubmit || saving}
+          className="inline-flex items-center gap-1.5 h-9 px-3 rounded-md bg-[var(--accent)] text-[var(--bg-base)] text-[13px] font-medium hover:bg-[var(--accent-hover)] disabled:opacity-60"
+        >
+          <Plus className="h-4 w-4" /> {saving ? "Saving…" : "Add webhook"}
+        </button>
+      </div>
+
+      {isLoading ? (
+        <div className="text-[13px] text-[var(--text-muted)]">Loading webhooks…</div>
+      ) : webhooks.length === 0 ? (
+        <div className="text-[13px] text-[var(--text-muted)]">No webhooks configured yet.</div>
+      ) : (
+        <div className="space-y-2">
+          {webhooks.map((hook) => (
+            <div
+              key={hook.id}
+              className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-4 py-3"
+            >
+              <div className="min-w-0">
+                <div className="text-[13px] text-[var(--text-primary)] truncate">{hook.url}</div>
+                <div className="text-[11px] text-[var(--text-muted)]">
+                  {hook.events.join(", ")} · {hook.active ? "Active" : "Paused"} {hook.secret && "· signed"}
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={() => onTest(hook.id)}
+                  className="h-8 px-3 rounded-md border border-[var(--border-default)] text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)]"
+                >
+                  Test
+                </button>
+                <button
+                  onClick={() => onDelete(hook.id)}
+                  className="h-8 w-8 rounded-md flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--danger)] hover:bg-[var(--danger-muted)] transition-colors"
+                  aria-label="Delete webhook"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 const roleBadge = {
   owner: "bg-[var(--accent-muted)] text-[var(--accent)]",
   admin: "bg-[rgba(255,159,10,0.12)] text-[var(--warning)]",
