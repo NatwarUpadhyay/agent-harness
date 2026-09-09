@@ -271,7 +271,19 @@ function BillingTab() {
         </div>
       </div>
 
-      <InvoiceEstimateCard invoice={invoiceQuery.data} />
+      <InvoiceEstimateCard
+        invoice={invoiceQuery.data}
+        isExporting={exportMutation.isPending}
+        onExport={() => exportMutation.mutate()}
+      />
+      <BillingWebhooksCard
+        webhooks={webhooks}
+        isLoading={webhooksQuery.isLoading}
+        onSave={(data) => webhookMutation.mutate(data)}
+        onDelete={(id) => deleteMutation.mutate(id)}
+        onTest={(id) => testMutation.mutate(id)}
+        saving={webhookMutation.isPending}
+      />
     </div>
   );
 }
