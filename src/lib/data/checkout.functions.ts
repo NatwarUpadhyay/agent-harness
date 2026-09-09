@@ -116,7 +116,6 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
       metadata: { userId, planName: plan.name, billingInterval: data.billingInterval },
       subscription_data: { metadata: { userId, planName: plan.name, billingInterval: data.billingInterval } },
     });
-    });
 
     if (!session.url) throw new Error("Stripe did not return a checkout URL.");
     return { mode: "stripe" as const, url: session.url };
