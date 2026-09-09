@@ -184,6 +184,39 @@ export type Database = {
           },
         ]
       }
+      billing_webhooks: {
+        Row: {
+          active: boolean
+          created_at: string
+          events: Json
+          id: string
+          secret: string | null
+          updated_at: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          events?: Json
+          id?: string
+          secret?: string | null
+          updated_at?: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          events?: Json
+          id?: string
+          secret?: string | null
+          updated_at?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       experiments: {
         Row: {
           avg_latency: number

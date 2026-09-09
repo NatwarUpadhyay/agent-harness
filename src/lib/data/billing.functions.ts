@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { randomUUID } from "crypto";
+import { randomUUID, createHmac } from "crypto";
+import Stripe from "stripe";
 import { type SupabaseClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database, Json } from "@/integrations/supabase/types";
@@ -123,15 +124,10 @@ const recordUsageInput = z.object({
   sourceRunId: z.string().uuid().optional(),
 });
 
-function getStripe() {
+function getStripe(): Stripe | null {
   const key = process.env["STRIPE_SECRET_KEY"];
   if (!key || key.length < 10) return null;
-  try {
-    const Stripe = require("stripe") as typeof import("stripe").default;
-    return new Stripe(key, { apiVersion: "2026-08-26.dahlia" });
-  } catch {
-    return null;
-  }
+  return new Stripe(key, { apiVersion: "2026-08-26.dahlia" });
 }
 
 async function emitStripeMeterEvent(
@@ -294,6 +290,213 @@ export const updateBillingPlan = createServerFn({ method: "POST" })
     }
 
     return loadOrSeedPlan(supabase, userId);
+  });
+
+export interface BillingWebhook {
+  id: string;
+  user_id: string;
+  url: string;
+  events: string[];
+  secret: string | null;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+function toBillingWebhook(row: Record<string, unknown>): BillingWebhook {
+  const events = Array.isArray(row.events) ? row.events.filter((e): e is string => typeof e === "string") : [];
+  return {
+    id: String(row.id),
+    user_id: String(row.user_id),
+    url: String(row.url || ""),
+    events,
+    secret: row.secret ? String(row.secret) : null,
+    active: Boolean(row.active),
+    created_at: String(row.created_at),
+    updated_at: String(row.updated_at),
+  };
+}
+
+/** Export this period's usage events as a CSV string for finance reconciliation. */
+export const exportUsageEventsCsv = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const plan = await loadOrSeedPlan(supabase, userId);
+
+    const { data, error } = await supabase
+      .from("billing_usage_events")
+      .select("*")
+      .eq("user_id", userId)
+      .gte("created_at", plan.created_at)
+      .order("created_at", { ascending: false })
+      .limit(10_000);
+
+    if (error) throw new Error(`Failed to export usage events: ${error.message}`);
+
+    const rows = (data ?? []) as Record<string, unknown>[];
+    const headers = ["timestamp", "meter_name", "delta", "description", "source_run_id", "stripe_event_id"];
+    const csvRows = rows.map((r) => [
+      new Date(String(r.created_at)).toISOString(),
+      String(r.meter_name || ""),
+      String(r.delta || 0),
+      String(r.description || ""),
+      String(r.source_run_id || ""),
+      String(r.stripe_event_id || ""),
+    ]);
+    return [headers, ...csvRows].map((row) => row.map(csvEscape).join(",")).join("\n");
+  });
+
+function csvEscape(value: string) {
+  if (/[",\n]/.test(value)) return `"${value.replace(/"/g, "\"\"")}"`;
+  return value;
+}
+
+const webhookInput = z.object({
+  id: z.string().uuid().optional(),
+  url: z.string().url().max(500),
+  events: z.array(z.enum(["usage_event", "invoice_ready", "plan_changed"])).default([]),
+  secret: z.string().max(200).optional(),
+  active: z.boolean().default(true),
+});
+
+/** List configured billing webhooks for the authenticated user. */
+export const listBillingWebhooks = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("billing_webhooks")
+      .select("*")
+      .eq("user_id", context.userId)
+      .order("created_at", { ascending: false });
+    if (error) throw new Error(`Failed to load webhooks: ${error.message}`);
+    return (data ?? []).map(toBillingWebhook);
+  });
+
+/** Create or update a billing webhook endpoint. */
+export const upsertBillingWebhook = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => webhookInput.parse(data))
+  .handler(async ({ context, data }) => {
+    const { supabase, userId } = context;
+    if (data.id) {
+      const { data: row, error } = await supabase
+        .from("billing_webhooks")
+        .update({
+          url: data.url,
+          events: data.events as unknown as Json,
+          secret: data.secret ?? null,
+          active: data.active,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", data.id)
+        .eq("user_id", userId)
+        .select()
+        .single();
+      if (error) throw new Error(`Failed to update webhook: ${error.message}`);
+      return toBillingWebhook(row);
+    }
+    const { data: row, error } = await supabase
+      .from("billing_webhooks")
+      .insert({
+        user_id: userId,
+        url: data.url,
+        events: data.events as unknown as Json,
+        secret: data.secret ?? null,
+        active: data.active,
+      })
+      .select()
+      .single();
+    if (error) throw new Error(`Failed to create webhook: ${error.message}`);
+    return toBillingWebhook(row);
+  });
+
+/** Delete a billing webhook endpoint. */
+export const deleteBillingWebhook = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => z.object({ id: z.string().uuid() }).parse(data))
+  .handler(async ({ context, data }) => {
+    const { error } = await context.supabase
+      .from("billing_webhooks")
+      .delete()
+      .eq("id", data.id)
+      .eq("user_id", context.userId);
+    if (error) throw new Error(`Failed to delete webhook: ${error.message}`);
+    return { deleted: true };
+  });
+
+async function emitBillingWebhooks(
+  supabase: AppSupabaseClient,
+  userId: string,
+  event: string,
+  payload: Record<string, unknown>,
+) {
+  const { data: hooks, error } = await supabase
+    .from("billing_webhooks")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("active", true)
+    .contains("events", [event]);
+
+  if (error || !hooks || hooks.length === 0) return;
+
+  const body = JSON.stringify({ event, timestamp: new Date().toISOString(), payload });
+  await Promise.all(
+    hooks.map(async (hook) => {
+      try {
+        const headers: Record<string, string> = { "content-type": "application/json" };
+        if (hook.secret) {
+          headers["x-harness-signature"] = createHmac("sha256", String(hook.secret)).update(body).digest("hex");
+        }
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+        await fetch(String(hook.url), {
+          method: "POST",
+          headers,
+          body,
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
+      } catch {
+        // Fire-and-forget: delivery failures are not surfaced to the caller.
+      }
+    }),
+  );
+}
+
+const testWebhookInput = z.object({ id: z.string().uuid() });
+
+/** Send a test payload to a configured billing webhook. */
+export const testBillingWebhook = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => testWebhookInput.parse(data))
+  .handler(async ({ context, data }) => {
+    const { data: hook, error } = await context.supabase
+      .from("billing_webhooks")
+      .select("*")
+      .eq("id", data.id)
+      .eq("user_id", context.userId)
+      .single();
+    if (error || !hook) throw new Error("Webhook not found.");
+
+    const payload = { event: "usage_event", timestamp: new Date().toISOString(), payload: { test: true, meter_name: "runs", delta: 1 } };
+    const body = JSON.stringify(payload);
+    const headers: Record<string, string> = { "content-type": "application/json" };
+    if (hook.secret) {
+      headers["x-harness-signature"] = createHmac("sha256", String(hook.secret)).update(body).digest("hex");
+    }
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch(String(hook.url), {
+      method: "POST",
+      headers,
+      body,
+      signal: controller.signal,
+    }).catch((e) => ({ ok: false, statusText: e instanceof Error ? e.message : String(e) }));
+    clearTimeout(timeout);
+
+    if (!res.ok) throw new Error(`Test delivery failed: ${"statusText" in res ? res.statusText : "unknown"}`);
+    return { ok: true };
   });
 
 export type { BillingPlan, UsageMeter, MeterName };
