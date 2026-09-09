@@ -139,10 +139,10 @@ export const provisionPlanFromCheckout = createServerFn({ method: "POST" })
     }
 
     const planName = session.metadata?.planName;
+    const billingInterval = session.metadata?.billingInterval === "annual" ? "annual" : "monthly";
     const plan = planName ? PLAN_CATALOG[planName] : null;
     if (!plan) throw new Error("Checkout session does not reference a valid Harness plan.");
 
-    const billingInterval = session.metadata?.billingInterval === "annual" ? "annual" : "monthly";
     await applyPlanUpgrade(context.supabase, context.userId, plan, billingInterval);
 
     // Persist the Stripe subscription and customer IDs so metered usage can be

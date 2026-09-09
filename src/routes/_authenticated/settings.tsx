@@ -9,8 +9,14 @@ import {
   getUsageMeters,
   getInvoiceEstimate,
   updateBillingPlan,
+  exportUsageEventsCsv,
+  listBillingWebhooks,
+  upsertBillingWebhook,
+  deleteBillingWebhook,
+  testBillingWebhook,
   type BillingPlan,
   type UsageMeter,
+  type BillingWebhook,
 } from "@/lib/data/billing.functions";
 import {
   getTeamRoster,
@@ -19,7 +25,7 @@ import {
   type TeamRoster,
 } from "@/lib/data/team.functions";
 import { formatMeterValue, planDisplayName, type InvoiceEstimate } from "@/lib/data/billing";
-import { CreditCard, Users, Zap, Coins, Activity, Check, X, Mail, Shield, User, ArrowUpRight } from "lucide-react";
+import { CreditCard, Users, Zap, Coins, Activity, Check, X, Mail, Shield, User, ArrowUpRight, Download, Printer, Webhook, Trash2, Plus } from "lucide-react";
 
 const tabs = ["General", "Team", "API keys", "Billing", "Integrations"] as const;
 type Tab = (typeof tabs)[number];
@@ -132,12 +138,19 @@ function BillingTab() {
   const fetchMeters = useServerFn(getUsageMeters);
   const fetchInvoice = useServerFn(getInvoiceEstimate);
   const changePlan = useServerFn(updateBillingPlan);
+  const exportCsv = useServerFn(exportUsageEventsCsv);
+  const fetchWebhooks = useServerFn(listBillingWebhooks);
+  const saveWebhook = useServerFn(upsertBillingWebhook);
+  const removeWebhook = useServerFn(deleteBillingWebhook);
+  const testWebhook = useServerFn(testBillingWebhook);
 
   const planQuery = useQuery({ queryKey: ["billing-plan"], queryFn: () => fetchPlan() });
   const metersQuery = useQuery({ queryKey: ["usage-meters"], queryFn: () => fetchMeters() });
   const invoiceQuery = useQuery({ queryKey: ["invoice-estimate"], queryFn: () => fetchInvoice() });
+  const webhooksQuery = useQuery({ queryKey: ["billing-webhooks"], queryFn: () => fetchWebhooks() });
   const plan = planQuery.data;
   const meters = metersQuery.data ?? [];
+  const webhooks = webhooksQuery.data ?? [];
 
   const planMutation = useMutation({
     mutationFn: (tier: typeof PLAN_TIERS[number]) => changePlan({ data: tier }),
@@ -147,6 +160,45 @@ function BillingTab() {
       toast.success("Plan updated");
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : "Failed to update plan"),
+  });
+
+  const exportMutation = useMutation({
+    mutationFn: () => exportCsv(),
+    onSuccess: (csv) => {
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `harness-usage-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Usage CSV exported");
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Export failed"),
+  });
+
+  const webhookMutation = useMutation({
+    mutationFn: (data: Partial<Omit<BillingWebhook, "id">> & { id?: string }) => saveWebhook({ data }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["billing-webhooks"] });
+      toast.success("Webhook saved");
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Failed to save webhook"),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => removeWebhook({ data: { id } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["billing-webhooks"] });
+      toast.success("Webhook removed");
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Failed to remove webhook"),
+  });
+
+  const testMutation = useMutation({
+    mutationFn: (id: string) => testWebhook({ data: { id } }),
+    onSuccess: () => toast.success("Test payload delivered"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Webhook test failed"),
   });
 
   const currentPlanName = plan?.name ?? "Starter";
@@ -243,12 +295,32 @@ function BillingTab() {
         </div>
       </div>
 
-      <InvoiceEstimateCard invoice={invoiceQuery.data} />
+      <InvoiceEstimateCard
+        invoice={invoiceQuery.data}
+        isExporting={exportMutation.isPending}
+        onExport={() => exportMutation.mutate()}
+      />
+      <BillingWebhooksCard
+        webhooks={webhooks}
+        isLoading={webhooksQuery.isLoading}
+        onSave={(data) => webhookMutation.mutate(data)}
+        onDelete={(id) => deleteMutation.mutate(id)}
+        onTest={(id) => testMutation.mutate(id)}
+        saving={webhookMutation.isPending}
+      />
     </div>
   );
 }
 
-function InvoiceEstimateCard({ invoice }: { invoice: InvoiceEstimate | undefined }) {
+function InvoiceEstimateCard({
+  invoice,
+  isExporting,
+  onExport,
+}: {
+  invoice: InvoiceEstimate | undefined;
+  isExporting: boolean;
+  onExport: () => void;
+}) {
   if (!invoice) {
     return (
       <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-6">
@@ -263,9 +335,26 @@ function InvoiceEstimateCard({ invoice }: { invoice: InvoiceEstimate | undefined
 
   return (
     <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-6">
-      <div className="flex items-center gap-2 text-[var(--text-primary)] mb-4">
-        <CreditCard className="h-4 w-4 text-[var(--accent)]" />
-        <h3 className="text-[15px] font-medium">Upcoming invoice</h3>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2 text-[var(--text-primary)]">
+          <CreditCard className="h-4 w-4 text-[var(--accent)]" />
+          <h3 className="text-[15px] font-medium">Upcoming invoice</h3>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onExport}
+            disabled={isExporting}
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-[var(--border-default)] text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)] disabled:opacity-60"
+          >
+            <Download className="h-3.5 w-3.5" /> {isExporting ? "Exporting…" : "Export CSV"}
+          </button>
+          <button
+            onClick={() => window.print()}
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-[var(--border-default)] text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)]"
+          >
+            <Printer className="h-3.5 w-3.5" /> Print
+          </button>
+        </div>
       </div>
       <div className="space-y-3">
         <div className="flex items-center justify-between text-[13px]">
@@ -290,6 +379,126 @@ function InvoiceEstimateCard({ invoice }: { invoice: InvoiceEstimate | undefined
         Billing period: {new Date(invoice.period_start).toLocaleDateString()} —{" "}
         {new Date(invoice.period_end).toLocaleDateString()}
       </div>
+    </div>
+  );
+}
+
+function BillingWebhooksCard({
+  webhooks,
+  isLoading,
+  onSave,
+  onDelete,
+  onTest,
+  saving,
+}: {
+  webhooks: BillingWebhook[];
+  isLoading: boolean;
+  onSave: (data: Partial<Omit<BillingWebhook, "id" | "user_id" | "created_at" | "updated_at">> & { id?: string }) => void;
+  onDelete: (id: string) => void;
+  onTest: (id: string) => void;
+  saving: boolean;
+}) {
+  const [url, setUrl] = useState("");
+  const [secret, setSecret] = useState("");
+  const [events, setEvents] = useState<string[]>(["usage_event"]);
+
+  const toggleEvent = (e: string) => {
+    setEvents((prev) => (prev.includes(e) ? prev.filter((x) => x !== e) : [...prev, e]));
+  };
+
+  const canSubmit = url.trim().startsWith("http") && events.length > 0;
+
+  return (
+    <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-6">
+      <div className="flex items-center gap-2 text-[var(--text-primary)] mb-4">
+        <Webhook className="h-4 w-4 text-[var(--accent)]" />
+        <h3 className="text-[15px] font-medium">Billing webhooks</h3>
+      </div>
+      <p className="text-[13px] text-[var(--text-secondary)] mb-4">
+        Notify external finance tools when usage is recorded or invoices are ready.
+      </p>
+
+      <div className="space-y-3 mb-6">
+        <input
+          type="url"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          placeholder="https://finance.company.com/harness/webhook"
+          className="w-full h-10 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-default)] px-3 text-[13px] focus:outline-none focus:border-[var(--accent)]"
+        />
+        <input
+          type="text"
+          value={secret}
+          onChange={(e) => setSecret(e.target.value)}
+          placeholder="Optional HMAC secret"
+          className="w-full h-10 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-default)] px-3 text-[13px] font-mono-tabular focus:outline-none focus:border-[var(--accent)]"
+        />
+        <div className="flex flex-wrap gap-2">
+          {["usage_event", "invoice_ready", "plan_changed"].map((e) => (
+            <button
+              key={e}
+              onClick={() => toggleEvent(e)}
+              className={`h-7 px-2 rounded-md text-[11px] border transition-colors ${
+                events.includes(e)
+                  ? "border-[var(--accent)] bg-[var(--accent-muted)] text-[var(--accent)]"
+                  : "border-[var(--border-default)] text-[var(--text-secondary)] hover:border-[var(--border-strong)]"
+              }`}
+            >
+              {events.includes(e) && <Check className="inline h-3 w-3 mr-1" />} {e.replace("_", " ")}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={() => {
+            if (!canSubmit) return;
+            onSave({ url: url.trim(), secret: secret.trim() || undefined, events });
+            setUrl("");
+            setSecret("");
+            setEvents(["usage_event"]);
+          }}
+          disabled={!canSubmit || saving}
+          className="inline-flex items-center gap-1.5 h-9 px-3 rounded-md bg-[var(--accent)] text-[var(--bg-base)] text-[13px] font-medium hover:bg-[var(--accent-hover)] disabled:opacity-60"
+        >
+          <Plus className="h-4 w-4" /> {saving ? "Saving…" : "Add webhook"}
+        </button>
+      </div>
+
+      {isLoading ? (
+        <div className="text-[13px] text-[var(--text-muted)]">Loading webhooks…</div>
+      ) : webhooks.length === 0 ? (
+        <div className="text-[13px] text-[var(--text-muted)]">No webhooks configured yet.</div>
+      ) : (
+        <div className="space-y-2">
+          {webhooks.map((hook) => (
+            <div
+              key={hook.id}
+              className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-4 py-3"
+            >
+              <div className="min-w-0">
+                <div className="text-[13px] text-[var(--text-primary)] truncate">{hook.url}</div>
+                <div className="text-[11px] text-[var(--text-muted)]">
+                  {hook.events.join(", ")} · {hook.active ? "Active" : "Paused"} {hook.secret && "· signed"}
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={() => onTest(hook.id)}
+                  className="h-8 px-3 rounded-md border border-[var(--border-default)] text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)]"
+                >
+                  Test
+                </button>
+                <button
+                  onClick={() => onDelete(hook.id)}
+                  className="h-8 w-8 rounded-md flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--danger)] hover:bg-[var(--danger-muted)] transition-colors"
+                  aria-label="Delete webhook"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
