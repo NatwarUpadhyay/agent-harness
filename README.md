@@ -35,9 +35,11 @@ It is built for teams who want a shared visual language for AI systems before wr
 
 ## Current status
 
-> **MVP launch ready** — auth, cloud persistence, the harness canvas, the production execution engine, scheduling, remediation guardrails, cost governance, fleet-wide burn recommendations, a server-persisted activity feed, real-time notifications, billing meters & plan enforcement, metered usage billing, team invitations, and a public pricing page with Stripe checkout scaffolding are all live and wired end to end. Team budgets, activity events, plan entitlements, usage events, team memberships, and self-serve upgrades are now persisted in the cloud, so every user sees the same caps, enforcement settings, notifications, colleagues, and usage limits across sessions and devices. The regression suite runs green (160 tests) with a clean TypeScript check and a clean security scan (no open findings). The latest published build is at **[harness-flow-control.lovable.app](https://harness-flow-control.lovable.app)**.
+> **MVP launch ready** — auth, cloud persistence, the harness canvas, the production execution engine, scheduling, remediation guardrails, cost governance, fleet-wide burn recommendations, a server-persisted activity feed, real-time notifications, billing meters & plan enforcement, metered usage billing, team invitations, invoice lifecycle tools, and a public pricing page with Stripe checkout scaffolding are all live and wired end to end. Team budgets, activity events, plan entitlements, usage events, team memberships, billing webhooks, and self-serve upgrades are now persisted in the cloud, so every user sees the same caps, enforcement settings, notifications, colleagues, and usage limits across sessions and devices. The regression suite runs green (160 tests) with a clean TypeScript check and a clean security scan (no open findings). The latest published build is at **[harness-flow-control.lovable.app](https://harness-flow-control.lovable.app)**.
 >
 > **Phase 53 — Metered usage billing** — every workflow run now writes a `billing_usage_events` row, mirrors the delta to Stripe Billing Meters when `STRIPE_SECRET_KEY` is configured, and the Settings Billing tab shows an upcoming invoice estimate with base price plus overage line items.
+>
+> **Phase 54 — Invoice lifecycle & usage exports** — finance teams can now download a usage-events CSV, print the upcoming invoice, and configure billing webhooks that deliver signed `usage_event`, `invoice_ready`, and `plan_changed` payloads to external finance systems. The checkout flow also persists the selected billing interval so annual and monthly plans are priced correctly.
 
 ### MVP launch checklist
 
@@ -45,7 +47,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 | --- | --- |
 | Auth (email/password, OTP magic link, password reset, leaked-password protection) | Ready |
 | Route protection (`_authenticated` gate + public share/SCIM/webhook routes) | Ready |
-| Cloud persistence (workflows, prompts, datasets, API keys, org settings, runs, schedules, remediation ledger, team budgets, activity events, team memberships) | Ready |
+| Cloud persistence (workflows, prompts, datasets, API keys, org settings, runs, schedules, remediation ledger, team budgets, activity events, team memberships, billing webhooks) | Ready |
 | Row-level security + explicit grants on every public table | Ready |
 | Production execution engine with retries, backoff and full per-node traces | Ready |
 | Scheduling + inbound webhook triggers | Ready |
