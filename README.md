@@ -304,11 +304,13 @@ The fastest way to understand Harness is to use the preview:
 
 - **Phase 53 — Metered usage billing.** Every production run now writes a `billing_usage_events` row with the meter delta and optional source run id, mirrors the delta to Stripe Billing Meters when `STRIPE_SECRET_KEY` and a Stripe customer/subscription are present, and surfaces an upcoming invoice estimate in Settings with base price plus overage line items. Invoice math lives in `src/lib/data/billing.ts` as pure, unit-tested functions.
 
+- **Phase 54 — Invoice lifecycle & usage exports.** The Settings Billing tab now exports usage events as a CSV, prints the upcoming invoice, and lets users configure signed billing webhooks that deliver `usage_event`, `invoice_ready`, and `plan_changed` payloads to external finance systems. New `public.billing_webhooks` rows are RLS-scoped per user, and `recordUsage` emits matching events after each run. The Stripe checkout flow also persists the selected billing interval so annual and monthly plans price correctly.
+
 - **Bugfix release — Pricing page & team invitations.** Fixed an infinite render loop on `/pricing` by moving the auth session check into a one-time `useEffect`. Updated RLS policies so existing users can accept team invitations themselves (not just new signups through the trigger). Updated the signup trigger and backfilled missing rows so auto-joined teammates show their email in the roster instead of "Unknown member".
 
 ## Next up
 
-**Phase 54 — Invoice lifecycle & usage exports.** Add invoice PDF generation, a downloadable usage-events CSV, and webhook support for external billing systems so finance teams can reconcile Harness usage in their own tools.
+**Phase 55 — Server-enforced org RBAC.** Move the governance capability matrix from client state into RLS-backed roles and server-side checks so admin/viewer permissions cannot be bypassed in the browser.
 
 Then, post-launch:
 
