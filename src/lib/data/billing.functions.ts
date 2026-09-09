@@ -184,6 +184,13 @@ async function recordMeterDelta(
     stripe_event_id: stripeEventId,
   } as any);
   if (eventError) throw new Error(`Failed to record usage event for ${meter.name}: ${eventError.message}`);
+
+  await emitBillingWebhooks(supabase, userId, "usage_event", {
+    plan_id: plan.id,
+    meter_name: meter.name,
+    delta,
+    source_run_id: sourceRunId ?? null,
+  });
 }
 
 /** Atomically increment usage meters, write usage-event line items, and optionally
