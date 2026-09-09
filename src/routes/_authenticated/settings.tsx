@@ -177,6 +177,30 @@ function BillingTab() {
     onError: (err) => toast.error(err instanceof Error ? err.message : "Export failed"),
   });
 
+  const webhookMutation = useMutation({
+    mutationFn: (data: Partial<Omit<BillingWebhook, "id">> & { id?: string }) => saveWebhook({ data }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["billing-webhooks"] });
+      toast.success("Webhook saved");
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Failed to save webhook"),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => removeWebhook({ data: { id } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["billing-webhooks"] });
+      toast.success("Webhook removed");
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Failed to remove webhook"),
+  });
+
+  const testMutation = useMutation({
+    mutationFn: (id: string) => testWebhook({ data: { id } }),
+    onSuccess: () => toast.success("Test payload delivered"),
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Webhook test failed"),
+  });
+
   const currentPlanName = plan?.name ?? "Starter";
 
   return (
