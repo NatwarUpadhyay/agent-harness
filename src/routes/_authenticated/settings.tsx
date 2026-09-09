@@ -312,7 +312,15 @@ function BillingTab() {
   );
 }
 
-function InvoiceEstimateCard({ invoice }: { invoice: InvoiceEstimate | undefined }) {
+function InvoiceEstimateCard({
+  invoice,
+  isExporting,
+  onExport,
+}: {
+  invoice: InvoiceEstimate | undefined;
+  isExporting: boolean;
+  onExport: () => void;
+}) {
   if (!invoice) {
     return (
       <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-6">
@@ -327,9 +335,26 @@ function InvoiceEstimateCard({ invoice }: { invoice: InvoiceEstimate | undefined
 
   return (
     <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-6">
-      <div className="flex items-center gap-2 text-[var(--text-primary)] mb-4">
-        <CreditCard className="h-4 w-4 text-[var(--accent)]" />
-        <h3 className="text-[15px] font-medium">Upcoming invoice</h3>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2 text-[var(--text-primary)]">
+          <CreditCard className="h-4 w-4 text-[var(--accent)]" />
+          <h3 className="text-[15px] font-medium">Upcoming invoice</h3>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onExport}
+            disabled={isExporting}
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-[var(--border-default)] text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)] disabled:opacity-60"
+          >
+            <Download className="h-3.5 w-3.5" /> {isExporting ? "Exporting…" : "Export CSV"}
+          </button>
+          <button
+            onClick={() => window.print()}
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-[var(--border-default)] text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)]"
+          >
+            <Printer className="h-3.5 w-3.5" /> Print
+          </button>
+        </div>
       </div>
       <div className="space-y-3">
         <div className="flex items-center justify-between text-[13px]">
