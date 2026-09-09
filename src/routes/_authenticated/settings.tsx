@@ -138,12 +138,19 @@ function BillingTab() {
   const fetchMeters = useServerFn(getUsageMeters);
   const fetchInvoice = useServerFn(getInvoiceEstimate);
   const changePlan = useServerFn(updateBillingPlan);
+  const exportCsv = useServerFn(exportUsageEventsCsv);
+  const fetchWebhooks = useServerFn(listBillingWebhooks);
+  const saveWebhook = useServerFn(upsertBillingWebhook);
+  const removeWebhook = useServerFn(deleteBillingWebhook);
+  const testWebhook = useServerFn(testBillingWebhook);
 
   const planQuery = useQuery({ queryKey: ["billing-plan"], queryFn: () => fetchPlan() });
   const metersQuery = useQuery({ queryKey: ["usage-meters"], queryFn: () => fetchMeters() });
   const invoiceQuery = useQuery({ queryKey: ["invoice-estimate"], queryFn: () => fetchInvoice() });
+  const webhooksQuery = useQuery({ queryKey: ["billing-webhooks"], queryFn: () => fetchWebhooks() });
   const plan = planQuery.data;
   const meters = metersQuery.data ?? [];
+  const webhooks = webhooksQuery.data ?? [];
 
   const planMutation = useMutation({
     mutationFn: (tier: typeof PLAN_TIERS[number]) => changePlan({ data: tier }),
@@ -153,6 +160,21 @@ function BillingTab() {
       toast.success("Plan updated");
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : "Failed to update plan"),
+  });
+
+  const exportMutation = useMutation({
+    mutationFn: () => exportCsv(),
+    onSuccess: (csv) => {
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `harness-usage-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Usage CSV exported");
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Export failed"),
   });
 
   const currentPlanName = plan?.name ?? "Starter";
