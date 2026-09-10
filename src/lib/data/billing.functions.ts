@@ -5,6 +5,7 @@ import Stripe from "stripe";
 import { type SupabaseClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database, Json } from "@/integrations/supabase/types";
+import { requireCapability } from "./rbac.functions";
 import {
   toPlan,
   toMeter,
@@ -263,6 +264,7 @@ export const updateBillingPlan = createServerFn({ method: "POST" })
   )
   .handler(async ({ context, data }) => {
     const { supabase, userId } = context;
+    await requireCapability(supabase, userId, userId, "billing");
     const plan = await loadOrSeedPlan(supabase, userId);
 
     const { error } = await supabase
@@ -424,6 +426,7 @@ export const deleteBillingWebhook = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => z.object({ id: z.string().uuid() }).parse(data))
   .handler(async ({ context, data }) => {
+    await requireCapability(context.supabase, context.userId, context.userId, "billing");
     const { error } = await context.supabase
       .from("billing_webhooks")
       .delete()
