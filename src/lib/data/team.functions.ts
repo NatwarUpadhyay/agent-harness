@@ -209,6 +209,12 @@ export const acceptPendingInvitations = createServerFn({ method: "POST" })
             email,
             role: inv.role,
           });
+
+          // Mirror the team role into governance RBAC.
+          await supabase.from("user_roles").upsert(
+            { user_id: userId, owner_id: inv.owner_id, role: teamRoleToGovRole(inv.role) },
+            { onConflict: "user_id,owner_id" },
+          );
           accepted++;
         }
       } catch {
