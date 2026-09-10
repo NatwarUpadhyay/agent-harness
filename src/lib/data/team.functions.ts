@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { teamRoleToGovRole } from "./rbac.functions";
 
 const inviteInput = z.object({
   email: z.string().email(),
@@ -159,6 +160,14 @@ export const acceptInvitation = createServerFn({ method: "POST" })
     });
 
     if (memberError) throw new Error(`Failed to join team: ${memberError.message}`);
+
+    // Assign a governance role so the new member appears on /governance.
+    const govRole = teamRoleToGovRole(invite.role);
+    const { error: roleError } = await supabase.from("user_roles").upsert(
+      { user_id: userId, owner_id: invite.owner_id, role: govRole },
+      { onConflict: "user_id,owner_id" },
+    );
+    if (roleError) throw new Error(`Failed to assign governance role: ${roleError.message}`);
 
     return { ok: true, owner_id: invite.owner_id };
   });
