@@ -306,17 +306,19 @@ The fastest way to understand Harness is to use the preview:
 
 - **Phase 54 — Invoice lifecycle & usage exports.** The Settings Billing tab now exports usage events as a CSV, prints the upcoming invoice, and lets users configure signed billing webhooks that deliver `usage_event`, `invoice_ready`, and `plan_changed` payloads to external finance systems. New `public.billing_webhooks` rows are RLS-scoped per user, and `recordUsage` emits matching events after each run. The Stripe checkout flow also persists the selected billing interval so annual and monthly plans price correctly.
 
+- **Phase 55 — Server-enforced org RBAC.** A new `public.app_role` enum and `public.user_roles` table persist workspace roles with RLS/grants. Server functions in `src/lib/data/rbac.functions.ts` evaluate the capability matrix, `team.functions.ts` assigns governance roles when invitations are accepted, and `_authenticated/route.tsx` seeds every user as owner of their own workspace. Billing (`updateBillingPlan`, `deleteBillingWebhook`) and member-invitation server functions now require the matching capability before mutating state, so admin/viewer permissions cannot be bypassed in the browser. The `/governance` page reads live member roles from the server, lets the owner edit them, and exposes the capability matrix for audit.
+
 - **Bugfix release — Pricing page & team invitations.** Fixed an infinite render loop on `/pricing` by moving the auth session check into a one-time `useEffect`. Updated RLS policies so existing users can accept team invitations themselves (not just new signups through the trigger). Updated the signup trigger and backfilled missing rows so auto-joined teammates show their email in the roster instead of "Unknown member".
 
 ## Next up
 
-**Phase 55 — Server-enforced org RBAC.** Move the governance capability matrix from client state into RLS-backed roles and server-side checks so admin/viewer permissions cannot be bypassed in the browser.
+**Phase 56 — Workspace-scoped resource sharing.** Switch harness runs, prompts, and budgets from user-scoped rows to workspace-scoped rows (`owner_id`) so invited teammates can truly collaborate inside the same org, with viewer/operator permissions enforced by RLS + `user_roles`.
 
 Then, post-launch:
 
-1. **Org-level RBAC on the server** — move the governance capability matrix from client state into server-enforced roles.
-2. **Real integrations** — replace the vendor capability matrix with live provider connections and key vaulting.
-3. **Deeper eval coverage** — scheduled regression evals against production traces, with drift alerts.
-4. **Mobile apps** — native-feel PWA/phone experience for approvals and incident triage on the go..
+1. **Real integrations** — replace the vendor capability matrix with live provider connections and key vaulting.
+2. **Deeper eval coverage** — scheduled regression evals against production traces, with drift alerts.
+3. **Mobile apps** — native-feel PWA/phone experience for approvals and incident triage on the go.
+
 
 
