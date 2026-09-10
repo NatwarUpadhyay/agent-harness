@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { teamRoleToGovRole } from "./rbac.functions";
+import { teamRoleToGovRole, requireCapability } from "./rbac.functions";
 
 const inviteInput = z.object({
   email: z.string().email(),
@@ -45,6 +45,7 @@ export const inviteTeamMember = createServerFn({ method: "POST" })
   .inputValidator((data) => inviteInput.parse(data))
   .handler(async ({ context, data }) => {
     const { supabase, userId } = context;
+    await requireCapability(supabase, userId, userId, "members");
     const email = data.email.toLowerCase().trim();
 
     // Prevent self-invite.
