@@ -185,12 +185,13 @@ async function recordMeterDelta(
   } as any);
   if (eventError) throw new Error(`Failed to record usage event for ${meter.name}: ${eventError.message}`);
 
-  await emitBillingWebhooks(supabase, userId, "usage_event", {
+  // Fire-and-forget: delivery failures are swallowed and must not block the run.
+  void emitBillingWebhooks(supabase, userId, "usage_event", {
     plan_id: plan.id,
     meter_name: meter.name,
     delta,
     source_run_id: sourceRunId ?? null,
-  });
+  }).catch(() => {});
 }
 
 /** Atomically increment usage meters, write usage-event line items, and optionally
