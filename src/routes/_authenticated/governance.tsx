@@ -1,31 +1,26 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import {
   Gavel, Users, Plus, Trash2, ShieldCheck, KeyRound, Building2, Check, X,
-  Clock, Lock, Globe, Download,
+  Clock, Lock, Globe, Download, Loader2,
 } from "lucide-react";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { toast } from "sonner";
+import { getOrgRoles, updateOrgRole, removeOrgRole, ensureOwnerRole, type AppRole, type OrgRole, CAPABILITIES } from "@/lib/data/rbac.functions";
+import { inviteTeamMember } from "@/lib/data/team.functions";
 
-type Role = "owner" | "admin" | "operator" | "analyst" | "viewer";
 type ReqStatus = "pending" | "approved" | "denied";
-
-interface Member {
-  id: string;
-  name: string;
-  email: string;
-  team: string;
-  role: Role;
-  lastActive: string;
-}
+type RoleFilter = AppRole | "all";
 
 interface AccessRequest {
   id: string;
   requester: string;
   resource: string;
   reason: string;
-  requestedRole: Role;
+  requestedRole: AppRole;
   status: ReqStatus;
   created: string;
 }
@@ -40,25 +35,17 @@ interface GovSettings {
   approvalRequired: boolean;
 }
 
-const ROLES: Role[] = ["owner", "admin", "operator", "analyst", "viewer"];
+const ROLES: AppRole[] = ["owner", "admin", "operator", "analyst", "viewer"];
 
-const CAPABILITIES: { key: string; label: string; allow: Role[] }[] = [
-  { key: "view", label: "View dashboards & traces", allow: ["owner", "admin", "operator", "analyst", "viewer"] },
-  { key: "run", label: "Run harness simulations", allow: ["owner", "admin", "operator", "analyst"] },
-  { key: "edit", label: "Edit workflows & prompts", allow: ["owner", "admin", "operator"] },
-  { key: "deploy", label: "Promote deployments", allow: ["owner", "admin"] },
-  { key: "keys", label: "Manage API keys & secrets", allow: ["owner", "admin"] },
-  { key: "budget", label: "Set budgets & spend caps", allow: ["owner", "admin"] },
-  { key: "members", label: "Invite & remove members", allow: ["owner", "admin"] },
-  { key: "billing", label: "Billing & org deletion", allow: ["owner"] },
-];
-
-const SEED_MEMBERS: Member[] = [
-  { id: "m1", name: "Natwar Singh",   email: "natwar@acme.io",  team: "Platform",  role: "owner",    lastActive: "2m ago" },
-  { id: "m2", name: "Priya Raman",    email: "priya@acme.io",   team: "Platform",  role: "admin",    lastActive: "18m ago" },
-  { id: "m3", name: "Dan Whitfield",  email: "dan@acme.io",     team: "Support AI",role: "operator", lastActive: "1h ago" },
-  { id: "m4", name: "Mei Tanaka",     email: "mei@acme.io",     team: "Research",  role: "analyst",  lastActive: "3h ago" },
-  { id: "m5", name: "Omar Haddad",    email: "omar@acme.io",    team: "Finance",   role: "viewer",   lastActive: "1d ago" },
+const CAPABILITY_ROWS: { key: keyof typeof CAPABILITIES; label: string }[] = [
+  { key: "view", label: "View dashboards & traces" },
+  { key: "run", label: "Run harness simulations" },
+  { key: "edit", label: "Edit workflows & prompts" },
+  { key: "deploy", label: "Promote deployments" },
+  { key: "keys", label: "Manage API keys & secrets" },
+  { key: "budget", label: "Set budgets & spend caps" },
+  { key: "members", label: "Invite & remove members" },
+  { key: "billing", label: "Billing & org deletion" },
 ];
 
 const SEED_REQUESTS: AccessRequest[] = [
@@ -72,7 +59,6 @@ const DEFAULTS: GovSettings = {
   ipAllowlist: false, residency: "us", retentionDays: 365, approvalRequired: true,
 };
 
-const MK = "harness.governance.members.v1";
 const RK = "harness.governance.requests.v1";
 const SK = "harness.governance.settings.v1";
 
@@ -87,7 +73,7 @@ function save(key: string, value: unknown) {
   try { window.localStorage.setItem(key, JSON.stringify(value)); } catch { /* ignore */ }
 }
 
-const roleColor: Record<Role, string> = {
+const roleColor: Record<AppRole, string> = {
   owner: "var(--danger)", admin: "var(--warning)", operator: "var(--accent)",
   analyst: "var(--teal)", viewer: "var(--text-secondary)",
 };
@@ -107,21 +93,35 @@ export const Route = createFileRoute("/_authenticated/governance")({
 });
 
 function GovernancePage() {
-  const [members, setMembers] = useState<Member[]>(SEED_MEMBERS);
+  const qc = useQueryClient();
+  const fetchRoles = useServerFn(getOrgRoles);
+  const setRoleFn = useServerFn(updateOrgRole);
+  const removeRoleFn = useServerFn(removeOrgRole);
+  const inviteFn = useServerFn(inviteTeamMember);
+  const ensureOwner = useServerFn(ensureOwnerRole);
+
+  const rolesQuery = useQuery({
+    queryKey: ["org-roles"],
+    queryFn: () => fetchRoles(),
+  });
+  const members = rolesQuery.data ?? [];
+
+  useEffect(() => {
+    ensureOwner().catch(() => {});
+  }, [ensureOwner]);
+
   const [requests, setRequests] = useState<AccessRequest[]>(SEED_REQUESTS);
   const [settings, setSettings] = useState<GovSettings>(DEFAULTS);
   const [hydrated, setHydrated] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
-  const [draft, setDraft] = useState({ name: "", email: "", team: "Platform", role: "viewer" as Role });
-  const [roleFilter, setRoleFilter] = useState<Role | "all">("all");
+  const [draft, setDraft] = useState({ name: "", email: "", team: "Platform", role: "viewer" as AppRole });
+  const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
 
   useEffect(() => {
-    setMembers(load(MK, SEED_MEMBERS));
     setRequests(load(RK, SEED_REQUESTS));
     setSettings({ ...DEFAULTS, ...load(SK, DEFAULTS) });
     setHydrated(true);
   }, []);
-  useEffect(() => { if (hydrated) save(MK, members); }, [members, hydrated]);
   useEffect(() => { if (hydrated) save(RK, requests); }, [requests, hydrated]);
   useEffect(() => { if (hydrated) save(SK, settings); }, [settings, hydrated]);
 
@@ -132,40 +132,44 @@ function GovernancePage() {
   );
   const privileged = members.filter((m) => m.role === "owner" || m.role === "admin").length;
 
+  const inviteMutation = useMutation({
+    mutationFn: async () => {
+      if (!draft.email.trim()) throw new Error("Email is required");
+      return inviteFn({ data: { email: draft.email, role: draft.role === "viewer" ? "viewer" : "member" } });
+    },
+    onSuccess: () => {
+      toast.success(`Invite sent to ${draft.email.trim()}`);
+      setDraft({ name: "", email: "", team: "Platform", role: "viewer" });
+      setInviteOpen(false);
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Invite failed"),
+  });
+
   const addMember = () => {
     if (!draft.name.trim() || !draft.email.trim()) {
       toast.error("Name and email are required");
       return;
     }
-    const m: Member = {
-      id: `m_${Date.now().toString(36)}`,
-      name: draft.name.trim(),
-      email: draft.email.trim(),
-      team: draft.team,
-      role: draft.role,
-      lastActive: "never",
-    };
-    setMembers((ms) => [m, ...ms]);
-    setDraft({ name: "", email: "", team: "Platform", role: "viewer" });
-    setInviteOpen(false);
-    toast.success(`Invite sent to ${m.email}`);
+    inviteMutation.mutate();
   };
 
-  const setRole = (id: string, role: Role) => {
-    setMembers((ms) => ms.map((m) => (m.id === id ? { ...m, role } : m)));
-    const m = members.find((x) => x.id === id);
-    toast.success(`${m?.name ?? "Member"} is now ${role}`);
-  };
+  const roleMutation = useMutation({
+    mutationFn: ({ user_id, role }: { user_id: string; role: AppRole }) => setRoleFn({ data: { user_id, role } }),
+    onSuccess: () => {
+      toast.success("Role updated");
+      qc.invalidateQueries({ queryKey: ["org-roles"] });
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Failed to update role"),
+  });
 
-  const removeMember = (id: string) => {
-    const m = members.find((x) => x.id === id);
-    if (m?.role === "owner") {
-      toast.error("You cannot remove the workspace owner");
-      return;
-    }
-    setMembers((ms) => ms.filter((x) => x.id !== id));
-    toast.message(`${m?.name ?? "Member"} removed from workspace`);
-  };
+  const removeMutation = useMutation({
+    mutationFn: (user_id: string) => removeRoleFn({ data: { user_id } }),
+    onSuccess: () => {
+      toast.message("Member governance role removed");
+      qc.invalidateQueries({ queryKey: ["org-roles"] });
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Failed to remove member"),
+  });
 
   const decide = (id: string, status: ReqStatus) => {
     setRequests((rs) => rs.map((r) => (r.id === id ? { ...r, status } : r)));
@@ -185,8 +189,8 @@ function GovernancePage() {
 
   const exportMatrix = () => {
     const header = ["capability", ...ROLES].join(",");
-    const rows = CAPABILITIES.map((c) =>
-      [c.label, ...ROLES.map((r) => (c.allow.includes(r) ? "allow" : "deny"))].join(","),
+    const rows = CAPABILITY_ROWS.map((c) =>
+      [c.label, ...ROLES.map((r) => (CAPABILITIES[c.key].includes(r) ? "allow" : "deny"))].join(","),
     );
     const blob = new Blob([[header, ...rows].join("\n")], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -274,15 +278,17 @@ function GovernancePage() {
               />
               <select
                 value={draft.role}
-                onChange={(e) => setDraft({ ...draft, role: e.target.value as Role })}
+                onChange={(e) => setDraft({ ...draft, role: e.target.value as AppRole })}
                 className="h-9 px-3 rounded-[8px] bg-[var(--bg-base)] border border-[var(--border-default)] text-[13px]"
               >
                 {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
               </select>
               <button
                 onClick={addMember}
-                className="h-9 px-3 rounded-[8px] bg-[var(--accent)] text-[var(--bg-base)] text-[13px] font-medium hover:opacity-90"
+                disabled={inviteMutation.isPending}
+                className="h-9 px-3 rounded-[8px] bg-[var(--accent)] text-[var(--bg-base)] text-[13px] font-medium hover:opacity-90 disabled:opacity-60 inline-flex items-center justify-center gap-2"
               >
+                {inviteMutation.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                 Send invite
               </button>
             </div>
@@ -303,12 +309,12 @@ function GovernancePage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--border-subtle)]">
-            {CAPABILITIES.map((c) => (
+            {CAPABILITY_ROWS.map((c) => (
               <tr key={c.key} className="hover:bg-[var(--bg-elevated)]/40">
                 <td className="px-4 py-2.5">{c.label}</td>
                 {ROLES.map((r) => (
                   <td key={r} className="px-3 py-2.5 text-center">
-                    {c.allow.includes(r) ? (
+                    {CAPABILITIES[c.key].includes(r) ? (
                       <Check className="h-3.5 w-3.5 mx-auto" style={{ color: "var(--teal)" }} />
                     ) : (
                       <X className="h-3.5 w-3.5 mx-auto text-[var(--text-secondary)]/40" />
@@ -327,7 +333,7 @@ function GovernancePage() {
         action={
           <select
             value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value as Role | "all")}
+            onChange={(e) => setRoleFilter(e.target.value as RoleFilter)}
             aria-label="Filter by role"
             className="h-8 px-2 rounded-[8px] bg-[var(--bg-base)] border border-[var(--border-default)] text-[12px]"
           >
@@ -337,36 +343,43 @@ function GovernancePage() {
         }
       />
       <div className="rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] divide-y divide-[var(--border-subtle)]">
-        {shown.map((m) => (
-          <div key={m.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
+        {rolesQuery.isLoading && (
+          <div className="px-4 py-8 text-center text-[13px] text-[var(--text-secondary)]">
+            <Loader2 className="h-4 w-4 animate-spin mx-auto mb-2" /> Loading members…
+          </div>
+        )}
+        {!rolesQuery.isLoading && shown.map((m) => (
+          <div key={m.user_id} className="flex flex-wrap items-center gap-3 px-4 py-3">
             <div
               className="h-8 w-8 shrink-0 rounded-full grid place-items-center text-[11px] font-medium"
               style={{ background: `color-mix(in oklab, ${roleColor[m.role]} 18%, transparent)`, color: roleColor[m.role] }}
             >
-              {m.name.split(" ").map((p) => p[0]).slice(0, 2).join("")}
+              {(m.email ?? "?").split("@")[0]?.slice(0, 2).toUpperCase() ?? "?"}
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-[13px] font-medium truncate">{m.name}</div>
-              <div className="text-[11px] text-[var(--text-secondary)] truncate">{m.email} · {m.team} · {m.lastActive}</div>
+              <div className="text-[13px] font-medium truncate">{m.email ?? "Unknown member"}</div>
+              <div className="text-[11px] text-[var(--text-secondary)] truncate">{m.user_id.slice(0, 8)} · added {new Date(m.created_at).toLocaleDateString()}</div>
             </div>
             <select
               value={m.role}
-              onChange={(e) => setRole(m.id, e.target.value as Role)}
-              aria-label={`Role for ${m.name}`}
-              className="h-8 px-2 rounded-[8px] bg-[var(--bg-base)] border border-[var(--border-default)] text-[12px]"
+              onChange={(e) => roleMutation.mutate({ user_id: m.user_id, role: e.target.value as AppRole })}
+              disabled={roleMutation.isPending}
+              aria-label={`Role for ${m.email ?? m.user_id}`}
+              className="h-8 px-2 rounded-[8px] bg-[var(--bg-base)] border border-[var(--border-default)] text-[12px] disabled:opacity-60"
             >
               {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
             </select>
             <button
-              onClick={() => removeMember(m.id)}
-              aria-label={`Remove ${m.name}`}
-              className="h-8 w-8 grid place-items-center rounded-[8px] border border-[var(--border-default)] hover:bg-[var(--bg-elevated)]"
+              onClick={() => removeMutation.mutate(m.user_id)}
+              disabled={removeMutation.isPending || m.role === "owner"}
+              aria-label={`Remove ${m.email ?? m.user_id}`}
+              className="h-8 w-8 grid place-items-center rounded-[8px] border border-[var(--border-default)] hover:bg-[var(--bg-elevated)] disabled:opacity-40"
             >
               <Trash2 className="h-3.5 w-3.5" />
             </button>
           </div>
         ))}
-        {shown.length === 0 && (
+        {!rolesQuery.isLoading && shown.length === 0 && (
           <div className="px-4 py-8 text-center text-[13px] text-[var(--text-secondary)]">No members with that role.</div>
         )}
       </div>
@@ -488,7 +501,7 @@ function GovernancePage() {
             />
           </div>
           <div className="text-[11px] text-[var(--text-secondary)] leading-relaxed border-t border-[var(--border-subtle)] pt-3">
-            Every change on this page emits a signed entry into the audit log with actor, before/after value, and timestamp.
+            Governance roles are now enforced server-side in the database. Only the workspace owner can change roles; the capability matrix is evaluated by server functions before privileged actions are allowed.
           </div>
         </div>
       </div>
