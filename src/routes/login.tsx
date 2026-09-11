@@ -374,7 +374,7 @@ function LoginPage() {
           <div className="mt-6 pt-5 border-t border-[var(--border-subtle)] text-center">
             <p className="text-[12px] text-[var(--text-secondary)]">
               SSO is enforced for {ssoDomain || "your organization"}.{" "}
-              {loadEnterpriseAuth().passwordLoginEnabled && (
+              {passwordLoginEnabled && (
                 <button
                   type="button"
                   onClick={() => setSsoOnly(false)}
