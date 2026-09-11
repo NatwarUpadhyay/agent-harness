@@ -283,7 +283,7 @@ function GovernancePage() {
                 onChange={(e) => setDraft({ ...draft, role: e.target.value as AppRole })}
                 className="h-9 px-3 rounded-[8px] bg-[var(--bg-base)] border border-[var(--border-default)] text-[13px]"
               >
-                {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
+                {INVITABLE_ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
               </select>
               <button
                 onClick={addMember}
