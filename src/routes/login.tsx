@@ -11,6 +11,9 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/login")({
+  // The form's initial state comes from browser-stored org auth settings, so
+  // rendering it on the server produces a hydration mismatch (blank screen).
+  ssr: false,
   validateSearch: searchSchema,
   head: () => ({
     meta: [
@@ -40,11 +43,13 @@ function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [ssoDomain, setSsoDomain] = useState<string | undefined>();
   const [ssoOnly, setSsoOnly] = useState(false);
+  const [passwordLoginEnabled, setPasswordLoginEnabled] = useState(true);
 
   useEffect(() => {
     const cfg = loadEnterpriseAuth();
     setSsoDomain(getPrimarySsoDomain(cfg));
     setSsoOnly(!cfg.passwordLoginEnabled && cfg.sso.length > 0);
+    setPasswordLoginEnabled(cfg.passwordLoginEnabled);
   }, []);
 
   // If a recovery link lands here (hash or ?code=), forward it to /reset-password.
@@ -369,7 +374,7 @@ function LoginPage() {
           <div className="mt-6 pt-5 border-t border-[var(--border-subtle)] text-center">
             <p className="text-[12px] text-[var(--text-secondary)]">
               SSO is enforced for {ssoDomain || "your organization"}.{" "}
-              {loadEnterpriseAuth().passwordLoginEnabled && (
+              {passwordLoginEnabled && (
                 <button
                   type="button"
                   onClick={() => setSsoOnly(false)}
