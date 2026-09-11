@@ -11,6 +11,9 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/login")({
+  // The form's initial state comes from browser-stored org auth settings, so
+  // rendering it on the server produces a hydration mismatch (blank screen).
+  ssr: false,
   validateSearch: searchSchema,
   head: () => ({
     meta: [
