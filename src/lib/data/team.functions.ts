@@ -203,6 +203,7 @@ export const acceptPendingInvitations = createServerFn({ method: "POST" })
       .gt("expires_at", new Date().toISOString())
       .ilike("email", email);
 
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     let accepted = 0;
     for (const invite of pending ?? []) {
       try {
@@ -218,16 +219,20 @@ export const acceptPendingInvitations = createServerFn({ method: "POST" })
           .single();
 
         if (inv) {
+          const govRole = (inv.role as AppRole) ?? "viewer";
+          const teamRole = govRoleToTeamRole(govRole);
+
           await supabase.from("team_members").insert({
             owner_id: inv.owner_id,
             user_id: userId,
             email,
-            role: inv.role,
+            role: teamRole,
           });
 
           // Mirror the team role into governance RBAC.
-          await supabase.from("user_roles").upsert(
-            { user_id: userId, owner_id: inv.owner_id, role: teamRoleToGovRole(inv.role) },
+          // Use the admin client because the invitee is not the workspace owner.
+          await supabaseAdmin.from("user_roles").upsert(
+            { user_id: userId, owner_id: inv.owner_id, role: govRole },
             { onConflict: "user_id,owner_id" },
           );
           accepted++;
