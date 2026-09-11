@@ -163,18 +163,22 @@ export const acceptInvitation = createServerFn({ method: "POST" })
 
     if (updateError) throw new Error(`Failed to accept invitation: ${updateError.message}`);
 
+    const govRole = (invite.role as AppRole) ?? "viewer";
+    const teamRole = govRoleToTeamRole(govRole);
+
     const { error: memberError } = await supabase.from("team_members").insert({
       owner_id: invite.owner_id,
       user_id: userId,
       email: user.user.email,
-      role: invite.role,
+      role: teamRole,
     });
 
     if (memberError) throw new Error(`Failed to join team: ${memberError.message}`);
 
     // Assign a governance role so the new member appears on /governance.
-    const govRole = teamRoleToGovRole(invite.role);
-    const { error: roleError } = await supabase.from("user_roles").upsert(
+    // This must bypass RLS because the invitee is not the workspace owner.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error: roleError } = await supabaseAdmin.from("user_roles").upsert(
       { user_id: userId, owner_id: invite.owner_id, role: govRole },
       { onConflict: "user_id,owner_id" },
     );
