@@ -1,11 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { teamRoleToGovRole, requireCapability } from "./rbac.functions";
+import { teamRoleToGovRole, requireCapability, type AppRole } from "./rbac.functions";
+
+const INVITABLE_ROLES = ["admin", "operator", "analyst", "viewer"] as const;
 
 const inviteInput = z.object({
   email: z.string().email(),
-  role: z.enum(["admin", "member", "viewer"]).default("member"),
+  role: z.enum(INVITABLE_ROLES).default("viewer"),
 });
 
 const revokeInput = z.object({
@@ -39,6 +41,13 @@ export interface TeamRoster {
   invitations: TeamInvitation[];
 }
 
+/** Map a governance role to the team_members role stored in the database. */
+function govRoleToTeamRole(govRole: AppRole): "admin" | "member" | "viewer" {
+  if (govRole === "admin") return "admin";
+  if (govRole === "viewer") return "viewer";
+  return "member";
+}
+
 /** Invite a new teammate by email. Idempotent per owner+email. */
 export const inviteTeamMember = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -55,6 +64,7 @@ export const inviteTeamMember = createServerFn({ method: "POST" })
     }
 
     // Upsert invitation; refresh expiration if re-invited.
+    // We store the governance role directly so the owner-selected capability is preserved.
     const { error } = await supabase
       .from("team_invitations")
       .upsert(
@@ -153,18 +163,22 @@ export const acceptInvitation = createServerFn({ method: "POST" })
 
     if (updateError) throw new Error(`Failed to accept invitation: ${updateError.message}`);
 
+    const govRole = (invite.role as AppRole) ?? "viewer";
+    const teamRole = govRoleToTeamRole(govRole);
+
     const { error: memberError } = await supabase.from("team_members").insert({
       owner_id: invite.owner_id,
       user_id: userId,
       email: user.user.email,
-      role: invite.role,
+      role: teamRole,
     });
 
     if (memberError) throw new Error(`Failed to join team: ${memberError.message}`);
 
     // Assign a governance role so the new member appears on /governance.
-    const govRole = teamRoleToGovRole(invite.role);
-    const { error: roleError } = await supabase.from("user_roles").upsert(
+    // This must bypass RLS because the invitee is not the workspace owner.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error: roleError } = await supabaseAdmin.from("user_roles").upsert(
       { user_id: userId, owner_id: invite.owner_id, role: govRole },
       { onConflict: "user_id,owner_id" },
     );
@@ -189,6 +203,7 @@ export const acceptPendingInvitations = createServerFn({ method: "POST" })
       .gt("expires_at", new Date().toISOString())
       .ilike("email", email);
 
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     let accepted = 0;
     for (const invite of pending ?? []) {
       try {
@@ -204,16 +219,20 @@ export const acceptPendingInvitations = createServerFn({ method: "POST" })
           .single();
 
         if (inv) {
+          const govRole = (inv.role as AppRole) ?? "viewer";
+          const teamRole = govRoleToTeamRole(govRole);
+
           await supabase.from("team_members").insert({
             owner_id: inv.owner_id,
             user_id: userId,
             email,
-            role: inv.role,
+            role: teamRole,
           });
 
           // Mirror the team role into governance RBAC.
-          await supabase.from("user_roles").upsert(
-            { user_id: userId, owner_id: inv.owner_id, role: teamRoleToGovRole(inv.role) },
+          // Use the admin client because the invitee is not the workspace owner.
+          await supabaseAdmin.from("user_roles").upsert(
+            { user_id: userId, owner_id: inv.owner_id, role: govRole },
             { onConflict: "user_id,owner_id" },
           );
           accepted++;

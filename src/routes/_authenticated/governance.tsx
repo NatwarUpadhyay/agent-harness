@@ -132,10 +132,12 @@ function GovernancePage() {
   );
   const privileged = members.filter((m) => m.role === "owner" || m.role === "admin").length;
 
+  const INVITABLE_ROLES: AppRole[] = ["admin", "operator", "analyst", "viewer"];
+
   const inviteMutation = useMutation({
     mutationFn: async () => {
       if (!draft.email.trim()) throw new Error("Email is required");
-      return inviteFn({ data: { email: draft.email, role: draft.role === "viewer" ? "viewer" : "member" } });
+      return inviteFn({ data: { email: draft.email, role: draft.role } });
     },
     onSuccess: () => {
       toast.success(`Invite sent to ${draft.email.trim()}`);
@@ -281,7 +283,7 @@ function GovernancePage() {
                 onChange={(e) => setDraft({ ...draft, role: e.target.value as AppRole })}
                 className="h-9 px-3 rounded-[8px] bg-[var(--bg-base)] border border-[var(--border-default)] text-[13px]"
               >
-                {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
+                {INVITABLE_ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
               </select>
               <button
                 onClick={addMember}
