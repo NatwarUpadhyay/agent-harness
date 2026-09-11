@@ -64,6 +64,7 @@ export const inviteTeamMember = createServerFn({ method: "POST" })
     }
 
     // Upsert invitation; refresh expiration if re-invited.
+    // We store the governance role directly so the owner-selected capability is preserved.
     const { error } = await supabase
       .from("team_invitations")
       .upsert(
