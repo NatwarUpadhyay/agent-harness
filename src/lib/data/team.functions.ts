@@ -1,11 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { teamRoleToGovRole, requireCapability } from "./rbac.functions";
+import { teamRoleToGovRole, requireCapability, type AppRole } from "./rbac.functions";
+
+const INVITABLE_ROLES = ["admin", "operator", "analyst", "viewer"] as const;
 
 const inviteInput = z.object({
   email: z.string().email(),
-  role: z.enum(["admin", "member", "viewer"]).default("member"),
+  role: z.enum(INVITABLE_ROLES).default("viewer"),
 });
 
 const revokeInput = z.object({
@@ -37,6 +39,13 @@ export interface TeamInvitation {
 export interface TeamRoster {
   members: TeamMember[];
   invitations: TeamInvitation[];
+}
+
+/** Map a governance role to the team_members role stored in the database. */
+function govRoleToTeamRole(govRole: AppRole): "admin" | "member" | "viewer" {
+  if (govRole === "admin") return "admin";
+  if (govRole === "viewer") return "viewer";
+  return "member";
 }
 
 /** Invite a new teammate by email. Idempotent per owner+email. */
