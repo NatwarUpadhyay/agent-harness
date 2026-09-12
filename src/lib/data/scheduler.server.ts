@@ -87,6 +87,7 @@ export async function executeSchedule(
     .from("workflow_runs")
     .insert({
       user_id: schedule.user_id,
+      owner_id: (workflow as { owner_id?: string }).owner_id ?? schedule.user_id,
       workflow_id: workflow.id,
       workflow_name: workflow.name,
       status: result.status,
