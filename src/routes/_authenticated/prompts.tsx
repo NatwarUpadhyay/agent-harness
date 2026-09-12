@@ -25,6 +25,7 @@ function PromptsView() {
   const [creating, setCreating] = useState(false);
   const sharePrompt = useServerFn(createWorkspacePrompt);
   const [sharing, setSharing] = useState(false);
+  const queryClient = useQueryClient();
 
   // Editor buffer
   const [body, setBody] = useState("");
