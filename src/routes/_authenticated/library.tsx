@@ -30,13 +30,15 @@ function edgeCount(wf: WorkflowRow): number {
 function LibraryPage() {
   const [tab, setTab] = useState<Tab>("workflows");
   const { data: workflows = [], isLoading: wfLoading } = usePublicWorkflows();
+  const fetchPrompts = useServerFn(listWorkspacePrompts);
+  const doDeletePrompt = useServerFn(deleteWorkspacePrompt);
   const { data: prompts = [], isLoading: promptLoading } = useQuery({
     queryKey: ["workspace-prompts"],
-    queryFn: useServerFn(listWorkspacePrompts),
+    queryFn: () => fetchPrompts(),
   });
   const clone = useCloneWorkflow();
   const deletePrompt = useMutation({
-    mutationFn: (vars: { id: string }) => useServerFn(deleteWorkspacePrompt)({ data: vars }),
+    mutationFn: (vars: { id: string }) => doDeletePrompt({ data: vars }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["workspace-prompts"] });
       toast.success("Prompt deleted");
