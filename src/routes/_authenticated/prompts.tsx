@@ -248,6 +248,15 @@ function PromptsView() {
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleShare}
+                      disabled={sharing}
+                      title="Share to workspace library"
+                    >
+                      <Share2 className="h-3.5 w-3.5 mr-1" /> {sharing ? "Sharing…" : "Share"}
+                    </Button>
                     <Button variant="ghost" size="sm" onClick={() => setShowHistory((v) => !v)}>
                       <History className="h-3.5 w-3.5 mr-1" /> {selected.versions.length}
                     </Button>
