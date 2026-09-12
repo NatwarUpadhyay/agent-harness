@@ -118,21 +118,9 @@ It is built for teams who want a shared visual language for AI systems before wr
 | 51 | Team invitations & member management — owner invites by email, pending/active roster, role badges, auto-accept on signup | Shipped |
 | 52 | Public pricing page & self-serve checkout — `/pricing`, Stripe checkout scaffolding, checkout success provisioning, Settings plan link | Shipped |
 | 53 | Metered usage billing — per-run usage events, Stripe meter events, invoice estimates, overage math | Shipped |
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+| 54 | Invoice lifecycle & usage exports — usage CSV, printable invoice, signed billing webhooks | Shipped |
+| 55 | Server-enforced org RBAC — workspace roles, capability matrix, owner/admin/operator/analyst/viewer | Shipped |
+| 56 | Workspace-scoped resource sharing — owner_id on workflows, runs, and prompts; workspace library | Shipped |
 
 ---
 
