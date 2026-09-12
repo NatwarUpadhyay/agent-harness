@@ -297,11 +297,13 @@ The fastest way to understand Harness is to use the preview:
 
 - **Phase 55 — Server-enforced org RBAC.** A new `public.app_role` enum and `public.user_roles` table persist workspace roles with RLS/grants. Server functions in `src/lib/data/rbac.functions.ts` evaluate the capability matrix, `team.functions.ts` assigns governance roles when invitations are accepted, and `_authenticated/route.tsx` seeds every user as owner of their own workspace. Billing (`updateBillingPlan`, `deleteBillingWebhook`) and member-invitation server functions now require the matching capability before mutating state, so admin/viewer permissions cannot be bypassed in the browser. The `/governance` page reads live member roles from the server, lets the owner edit them, and exposes the capability matrix for audit.
 
-- **Bugfix release — Pricing page & team invitations.** Fixed an infinite render loop on `/pricing` by moving the auth session check into a one-time `useEffect`. Updated RLS policies so existing users can accept team invitations themselves (not just new signups through the trigger). Updated the signup trigger and backfilled missing rows so auto-joined teammates show their email in the roster instead of "Unknown member".
+- **Phase 56 — Workspace-scoped resource sharing.** `workflows`, `workflow_runs`, and a new `prompts` table now carry an `owner_id` workspace key with RLS policies that let every workspace member view shared resources while restricting edit/delete to the owner. The Library page has a new "Prompts" tab for browsing workspace-shared prompts, and the Prompts page can publish a local prompt to the workspace library with one click. All workflow/run inserts (manual, scheduled, remediated, and retried) now set `owner_id`.
+
+- **Bugfix release — Team invitations & roles.** Fixed an issue where inviting an `operator` or `analyst` failed because `team_invitations.role` only accepted `admin`/`member`/`viewer`. The check now allows all governance roles, the signup trigger maps them to the coarser `team_members` shape, and the invitee-insert policy compares the mapped role. Also fixed the infinite render loop on `/pricing` and ensured existing users can accept invitations themselves.
 
 ## Next up
 
-**Phase 56 — Workspace-scoped resource sharing.** Switch harness runs, prompts, and budgets from user-scoped rows to workspace-scoped rows (`owner_id`) so invited teammates can truly collaborate inside the same org, with viewer/operator permissions enforced by RLS + `user_roles`.
+**Post-MVP polish — live integrations and mobile approvals.** Connect the vendor integrations hub to real provider APIs with key vaulting, and add a lightweight mobile view for incident triage and budget approvals on the go.
 
 Then, post-launch:
 
