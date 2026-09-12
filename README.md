@@ -129,7 +129,8 @@ It is built for teams who want a shared visual language for AI systems before wr
 - **Harness Canvas** — React Flow workspace with drag-from-sidebar node creation, edge connections, viewport-aware drop, and topological auto-layout.
 - **Simulate** — Run any wired flow and watch each node activate in sequence.
 - **Usage analytics** — Every simulation records tokens, latency, and estimated cost per node type, surfaced live on the harness page.
-- **Prompt library** — Versioned prompts with `{{variable}}` extraction and live rendering; save new versions with notes.
+- **Prompt library** — Versioned prompts with `{{variable}}` extraction and live rendering; save new versions with notes and share prompts to the workspace library.
+- **Workspace sharing** — Workflows, runs, and prompts are scoped to an `owner_id` workspace. Teammates can view shared resources while the owner retains edit and delete control.
 - **Experiments** — Define two variants with custom success-rate + latency knobs, run animated trial batches, and auto-detect a winner. Trials feed the harness usage analytics.
 - **Datasets** — Drag-drop upload for CSV, JSON, JSONL, and Markdown with automatic parsing, column detection, and a first-50-rows preview drawer.
 - **Evaluations** — Dataset picker, weighted rubric panel, per-run drawer, and two-run comparison with per-metric deltas.
