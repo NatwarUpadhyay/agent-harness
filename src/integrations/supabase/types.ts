@@ -280,6 +280,42 @@ export type Database = {
         }
         Relationships: []
       }
+      prompts: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          name: string
+          owner_id: string
+          tags: string[]
+          updated_at: string
+          user_id: string
+          versions: Json
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          name: string
+          owner_id: string
+          tags?: string[]
+          updated_at?: string
+          user_id: string
+          versions?: Json
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          name?: string
+          owner_id?: string
+          tags?: string[]
+          updated_at?: string
+          user_id?: string
+          versions?: Json
+        }
+        Relationships: []
+      }
       remediation_attempts: {
         Row: {
           created_at: string
@@ -594,6 +630,7 @@ export type Database = {
           input: string
           latency_ms: number
           output: string | null
+          owner_id: string
           status: string
           steps: Json
           total_tokens: number
@@ -610,6 +647,7 @@ export type Database = {
           input?: string
           latency_ms?: number
           output?: string | null
+          owner_id: string
           status?: string
           steps?: Json
           total_tokens?: number
@@ -626,6 +664,7 @@ export type Database = {
           input?: string
           latency_ms?: number
           output?: string | null
+          owner_id?: string
           status?: string
           steps?: Json
           total_tokens?: number
@@ -709,6 +748,7 @@ export type Database = {
           is_template: boolean
           name: string
           nodes: Json
+          owner_id: string
           updated_at: string
           user_id: string
         }
@@ -722,6 +762,7 @@ export type Database = {
           is_template?: boolean
           name: string
           nodes?: Json
+          owner_id: string
           updated_at?: string
           user_id: string
         }
@@ -735,6 +776,7 @@ export type Database = {
           is_template?: boolean
           name?: string
           nodes?: Json
+          owner_id?: string
           updated_at?: string
           user_id?: string
         }

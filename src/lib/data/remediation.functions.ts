@@ -167,6 +167,7 @@ export const requestRemediation = createServerFn({ method: "POST" })
       .from("workflow_runs")
       .insert({
         user_id: userId,
+        owner_id: (workflow as { owner_id?: string }).owner_id ?? userId,
         workflow_id: workflow.id,
         workflow_name: workflow.name,
         status: result.status,

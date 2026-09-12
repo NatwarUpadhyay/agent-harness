@@ -35,11 +35,11 @@ It is built for teams who want a shared visual language for AI systems before wr
 
 ## Current status
 
-> **MVP launch ready** — auth, cloud persistence, the harness canvas, the production execution engine, scheduling, remediation guardrails, cost governance, fleet-wide burn recommendations, a server-persisted activity feed, real-time notifications, billing meters & plan enforcement, metered usage billing, team invitations, invoice lifecycle tools, and a public pricing page with Stripe checkout scaffolding are all live and wired end to end. Team budgets, activity events, plan entitlements, usage events, team memberships, billing webhooks, and self-serve upgrades are now persisted in the cloud, so every user sees the same caps, enforcement settings, notifications, colleagues, and usage limits across sessions and devices. The regression suite runs green (160 tests) with a clean TypeScript check and a clean security scan (no open findings). The latest published build is at **[harness-flow-control.lovable.app](https://harness-flow-control.lovable.app)**.
->
-> **Phase 53 — Metered usage billing** — every workflow run now writes a `billing_usage_events` row, mirrors the delta to Stripe Billing Meters when `STRIPE_SECRET_KEY` is configured, and the Settings Billing tab shows an upcoming invoice estimate with base price plus overage line items.
+> **MVP launch ready** — auth, cloud persistence, the harness canvas, the production execution engine, scheduling, remediation guardrails, cost governance, fleet-wide burn recommendations, a server-persisted activity feed, real-time notifications, billing meters & plan enforcement, metered usage billing, team invitations, invoice lifecycle tools, workspace-scoped resource sharing, and a public pricing page with Stripe checkout scaffolding are all live and wired end to end. Team budgets, activity events, plan entitlements, usage events, team memberships, billing webhooks, workflows, runs, and prompts are now persisted in the cloud with workspace (`owner_id`) scoping, so every teammate sees the same resources, caps, enforcement settings, notifications, colleagues, and usage limits across sessions and devices. The regression suite runs green (160 tests) with a clean TypeScript check and a clean security scan (no open findings). The latest published build is at **[harness-flow-control.lovable.app](https://harness-flow-control.lovable.app)**.
 >
 > **Phase 54 — Invoice lifecycle & usage exports** — finance teams can now download a usage-events CSV, print the upcoming invoice, and configure billing webhooks that deliver signed `usage_event`, `invoice_ready`, and `plan_changed` payloads to external finance systems. The checkout flow also persists the selected billing interval so annual and monthly plans are priced correctly.
+>
+> **Phase 56 — Workspace-scoped resource sharing** — workflows, workflow runs, and prompts now carry an `owner_id` workspace key. RLS policies let every member of a workspace view shared resources while keeping edit/delete rights with the workspace owner. The Library page gained a "Prompts" tab for workspace-shared prompts, and the Prompts page can publish a local prompt to the workspace library with one click.
 
 ### MVP launch checklist
 
@@ -118,21 +118,9 @@ It is built for teams who want a shared visual language for AI systems before wr
 | 51 | Team invitations & member management — owner invites by email, pending/active roster, role badges, auto-accept on signup | Shipped |
 | 52 | Public pricing page & self-serve checkout — `/pricing`, Stripe checkout scaffolding, checkout success provisioning, Settings plan link | Shipped |
 | 53 | Metered usage billing — per-run usage events, Stripe meter events, invoice estimates, overage math | Shipped |
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+| 54 | Invoice lifecycle & usage exports — usage CSV, printable invoice, signed billing webhooks | Shipped |
+| 55 | Server-enforced org RBAC — workspace roles, capability matrix, owner/admin/operator/analyst/viewer | Shipped |
+| 56 | Workspace-scoped resource sharing — owner_id on workflows, runs, and prompts; workspace library | Shipped |
 
 ---
 
@@ -141,7 +129,8 @@ It is built for teams who want a shared visual language for AI systems before wr
 - **Harness Canvas** — React Flow workspace with drag-from-sidebar node creation, edge connections, viewport-aware drop, and topological auto-layout.
 - **Simulate** — Run any wired flow and watch each node activate in sequence.
 - **Usage analytics** — Every simulation records tokens, latency, and estimated cost per node type, surfaced live on the harness page.
-- **Prompt library** — Versioned prompts with `{{variable}}` extraction and live rendering; save new versions with notes.
+- **Prompt library** — Versioned prompts with `{{variable}}` extraction and live rendering; save new versions with notes and share prompts to the workspace library.
+- **Workspace sharing** — Workflows, runs, and prompts are scoped to an `owner_id` workspace. Teammates can view shared resources while the owner retains edit and delete control.
 - **Experiments** — Define two variants with custom success-rate + latency knobs, run animated trial batches, and auto-detect a winner. Trials feed the harness usage analytics.
 - **Datasets** — Drag-drop upload for CSV, JSON, JSONL, and Markdown with automatic parsing, column detection, and a first-50-rows preview drawer.
 - **Evaluations** — Dataset picker, weighted rubric panel, per-run drawer, and two-run comparison with per-metric deltas.
@@ -308,11 +297,13 @@ The fastest way to understand Harness is to use the preview:
 
 - **Phase 55 — Server-enforced org RBAC.** A new `public.app_role` enum and `public.user_roles` table persist workspace roles with RLS/grants. Server functions in `src/lib/data/rbac.functions.ts` evaluate the capability matrix, `team.functions.ts` assigns governance roles when invitations are accepted, and `_authenticated/route.tsx` seeds every user as owner of their own workspace. Billing (`updateBillingPlan`, `deleteBillingWebhook`) and member-invitation server functions now require the matching capability before mutating state, so admin/viewer permissions cannot be bypassed in the browser. The `/governance` page reads live member roles from the server, lets the owner edit them, and exposes the capability matrix for audit.
 
-- **Bugfix release — Pricing page & team invitations.** Fixed an infinite render loop on `/pricing` by moving the auth session check into a one-time `useEffect`. Updated RLS policies so existing users can accept team invitations themselves (not just new signups through the trigger). Updated the signup trigger and backfilled missing rows so auto-joined teammates show their email in the roster instead of "Unknown member".
+- **Phase 56 — Workspace-scoped resource sharing.** `workflows`, `workflow_runs`, and a new `prompts` table now carry an `owner_id` workspace key with RLS policies that let every workspace member view shared resources while restricting edit/delete to the owner. The Library page has a new "Prompts" tab for browsing workspace-shared prompts, and the Prompts page can publish a local prompt to the workspace library with one click. All workflow/run inserts (manual, scheduled, remediated, and retried) now set `owner_id`.
+
+- **Bugfix release — Team invitations & roles.** Fixed an issue where inviting an `operator` or `analyst` failed because `team_invitations.role` only accepted `admin`/`member`/`viewer`. The check now allows all governance roles, the signup trigger maps them to the coarser `team_members` shape, and the invitee-insert policy compares the mapped role. Also fixed the infinite render loop on `/pricing` and ensured existing users can accept invitations themselves.
 
 ## Next up
 
-**Phase 56 — Workspace-scoped resource sharing.** Switch harness runs, prompts, and budgets from user-scoped rows to workspace-scoped rows (`owner_id`) so invited teammates can truly collaborate inside the same org, with viewer/operator permissions enforced by RLS + `user_roles`.
+**Post-MVP polish — live integrations and mobile approvals.** Connect the vendor integrations hub to real provider APIs with key vaulting, and add a lightweight mobile view for incident triage and budget approvals on the go.
 
 Then, post-launch:
 

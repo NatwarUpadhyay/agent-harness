@@ -1,15 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Search, Play, Save, Trash2, History, X, Copy, Check } from "lucide-react";
+import { Plus, Search, Play, Save, Trash2, History, X, Copy, Check, Share2 } from "lucide-react";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useServerFn } from "@tanstack/react-start";
 import {
   usePromptLibrary, extractVariables, renderPrompt,
   type PromptRecord,
 } from "@/lib/data/prompts-store";
+import { createWorkspacePrompt } from "@/lib/data/prompts.functions";
 import { estimateNodeCost, recordRun, formatCost } from "@/lib/data/harness-usage";
 import { toast } from "sonner";
 
@@ -21,6 +24,9 @@ function PromptsView() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string>("All");
   const [creating, setCreating] = useState(false);
+  const sharePrompt = useServerFn(createWorkspacePrompt);
+  const [sharing, setSharing] = useState(false);
+  const queryClient = useQueryClient();
 
   // Editor buffer
   const [body, setBody] = useState("");
@@ -134,6 +140,27 @@ function PromptsView() {
     });
   }
 
+  async function handleShare() {
+    if (!selected) return;
+    setSharing(true);
+    try {
+      await sharePrompt({
+        data: {
+          name: selected.name,
+          category: selected.category,
+          tags: selected.tags,
+          body: selected.versions[selected.versions.length - 1]?.body ?? body,
+        },
+      });
+      queryClient.invalidateQueries({ queryKey: ["workspace-prompts"] });
+      toast.success("Prompt shared to workspace library");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to share prompt");
+    } finally {
+      setSharing(false);
+    }
+  }
+
   return (
     <>
       <PageHeader
@@ -226,6 +253,15 @@ function PromptsView() {
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleShare}
+                      disabled={sharing}
+                      title="Share to workspace library"
+                    >
+                      <Share2 className="h-3.5 w-3.5 mr-1" /> {sharing ? "Sharing…" : "Share"}
+                    </Button>
                     <Button variant="ghost" size="sm" onClick={() => setShowHistory((v) => !v)}>
                       <History className="h-3.5 w-3.5 mr-1" /> {selected.versions.length}
                     </Button>
