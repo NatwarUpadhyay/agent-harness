@@ -138,6 +138,24 @@ function PromptsView() {
     });
   }
 
+  async function handleShare() {
+    if (!selected) return;
+    setSharing(true);
+    try {
+      await sharePrompt({
+        name: selected.name,
+        category: selected.category,
+        tags: selected.tags,
+        body: selected.versions[selected.versions.length - 1]?.body ?? body,
+      });
+      toast.success("Prompt shared to workspace library");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to share prompt");
+    } finally {
+      setSharing(false);
+    }
+  }
+
   return (
     <>
       <PageHeader
