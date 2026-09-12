@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQueryClient, useMemo, useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Search, Play, Save, Trash2, History, X, Copy, Check, Share2 } from "lucide-react";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
