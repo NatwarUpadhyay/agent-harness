@@ -23,7 +23,7 @@ type Tab = "workflows" | "prompts";
 function nodeCount(wf: WorkflowRow): number {
   return Array.isArray(wf.nodes) ? (wf.nodes as unknown[]).length : 0;
 }
-function edgeCount(wf WorkflowRow): number {
+function edgeCount(wf: WorkflowRow): number {
   return Array.isArray(wf.edges) ? (wf.edges as unknown[]).length : 0;
 }
 
