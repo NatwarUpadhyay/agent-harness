@@ -144,11 +144,14 @@ function PromptsView() {
     setSharing(true);
     try {
       await sharePrompt({
-        name: selected.name,
-        category: selected.category,
-        tags: selected.tags,
-        body: selected.versions[selected.versions.length - 1]?.body ?? body,
+        data: {
+          name: selected.name,
+          category: selected.category,
+          tags: selected.tags,
+          body: selected.versions[selected.versions.length - 1]?.body ?? body,
+        },
       });
+      queryClient.invalidateQueries({ queryKey: ["workspace-prompts"] });
       toast.success("Prompt shared to workspace library");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to share prompt");
