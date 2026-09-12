@@ -1,15 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Search, Play, Save, Trash2, History, X, Copy, Check } from "lucide-react";
+import { Plus, Search, Play, Save, Trash2, History, X, Copy, Check, Share2 } from "lucide-react";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useServerFn } from "@tanstack/react-start";
 import {
   usePromptLibrary, extractVariables, renderPrompt,
   type PromptRecord,
 } from "@/lib/data/prompts-store";
+import { createWorkspacePrompt } from "@/lib/data/prompts.functions";
 import { estimateNodeCost, recordRun, formatCost } from "@/lib/data/harness-usage";
 import { toast } from "sonner";
 
