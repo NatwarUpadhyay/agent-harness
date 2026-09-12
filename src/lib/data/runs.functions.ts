@@ -54,6 +54,7 @@ export const runWorkflow = createServerFn({ method: "POST" })
       .from("workflow_runs")
       .insert({
         user_id: userId,
+        owner_id: userId,
         workflow_id: workflow.id,
         workflow_name: workflow.name,
         status: result.status,
@@ -106,6 +107,7 @@ export const retryRun = createServerFn({ method: "POST" })
       .from("workflow_runs")
       .insert({
         user_id: userId,
+        owner_id: userId,
         workflow_id: workflow.id,
         workflow_name: workflow.name,
         status: result.status,
