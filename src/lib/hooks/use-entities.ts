@@ -125,9 +125,9 @@ export function useWorkflows() {
 export function useSaveWorkflow() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: Omit<WorkflowInsert, "user_id">) => {
+    mutationFn: async (input: Omit<WorkflowInsert, "user_id" | "owner_id">) => {
       const user_id = await currentUserId();
-      const payload = { ...input, user_id };
+      const payload = { ...input, user_id, owner_id: user_id };
       const { data, error } = input.id
         ? await supabase.from("workflows").update(payload).eq("id", input.id).select().single()
         : await supabase.from("workflows").insert(payload).select().single();
@@ -156,6 +156,7 @@ export function useDuplicateWorkflow() {
       const user_id = await currentUserId();
       const { data, error } = await supabase.from("workflows").insert({
         user_id,
+        owner_id: user_id,
         name: `${wf.name} (copy)`,
         nodes: wf.nodes,
         edges: wf.edges,
@@ -231,6 +232,7 @@ export function useCloneWorkflow() {
       const user_id = await currentUserId();
       const { data, error } = await supabase.from("workflows").insert({
         user_id,
+        owner_id: user_id,
         name: `${wf.name} (from library)`,
         description: wf.description,
         nodes: wf.nodes,
