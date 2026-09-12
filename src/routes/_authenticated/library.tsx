@@ -36,7 +36,7 @@ function LibraryPage() {
   });
   const clone = useCloneWorkflow();
   const deletePrompt = useMutation({
-    mutationFn: useServerFn(deleteWorkspacePrompt),
+    mutationFn: (vars: { id: string }) => useServerFn(deleteWorkspacePrompt)({ data: vars }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["workspace-prompts"] });
       toast.success("Prompt deleted");
