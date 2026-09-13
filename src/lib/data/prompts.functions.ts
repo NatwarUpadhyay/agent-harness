@@ -65,12 +65,43 @@ export const listWorkspacePrompts = createServerFn({ method: "GET" })
     return (data ?? []).map((p) => ({ ...p, versions: parseVersions(p.versions) }));
   });
 
-/** Create a new workspace-scoped prompt. */
+/** Create or update a workspace-scoped prompt. Sharing the same name again appends a new version instead of creating a duplicate. */
 export const createWorkspacePrompt = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => createInput.parse(data))
   .handler(async ({ context, data }) => {
     const { supabase, userId } = context;
+
+    const { data: existing, error: findError } = await supabase
+      .from("prompts")
+      .select("id, versions")
+      .eq("owner_id", userId)
+      .ilike("name", data.name)
+      .maybeSingle();
+    if (findError) throw new Error(`Failed to look up prompt: ${findError.message}`);
+
+    if (existing) {
+      const versions = parseVersions(existing.versions);
+      const last = versions[versions.length - 1];
+      if (last && last.body === data.body) {
+        return { id: existing.id, unchanged: true };
+      }
+      const nextVersion = bumpVersion(last?.version);
+      const nextVersions: PromptVersion[] = [
+        ...versions,
+        { version: nextVersion, body: data.body, note: "Shared from prompt library", createdAt: Date.now() },
+      ];
+      const { error } = await supabase
+        .from("prompts")
+        .update({
+          versions: nextVersions as unknown as import("@/integrations/supabase/types").Json,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", existing.id);
+      if (error) throw new Error(`Failed to update shared prompt: ${error.message}`);
+      return { id: existing.id, version: nextVersion };
+    }
+
     const { data: row, error } = await supabase
       .from("prompts")
       .insert({
@@ -79,7 +110,7 @@ export const createWorkspacePrompt = createServerFn({ method: "POST" })
         name: data.name,
         category: data.category,
         tags: data.tags,
-        versions: [{ version: "v1.0", body: data.body, createdAt: Date.now() }] as unknown as import("@/integrations/supabase/types").Json,
+        versions: [{ version: "v1.0", body: data.body, note: "Shared from prompt library", createdAt: Date.now() }] as unknown as import("@/integrations/supabase/types").Json,
       })
       .select()
       .single();

@@ -21,6 +21,7 @@ export const seedDemoData = createServerFn({ method: "POST" })
 
     const agentRows = seedAgents.map((a) => ({
       user_id: userId,
+      owner_id: userId,
       name: a.name,
       model: a.model,
       status: a.status,
@@ -31,6 +32,7 @@ export const seedDemoData = createServerFn({ method: "POST" })
     }));
     const toolRows = seedTools.map((t) => ({
       user_id: userId,
+      owner_id: userId,
       name: t.name,
       category: t.category,
       call_count: t.callCount,

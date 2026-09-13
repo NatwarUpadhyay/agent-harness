@@ -35,11 +35,9 @@ It is built for teams who want a shared visual language for AI systems before wr
 
 ## Current status
 
-> **MVP launch ready** — auth, cloud persistence, the harness canvas, the production execution engine, scheduling, remediation guardrails, cost governance, fleet-wide burn recommendations, a server-persisted activity feed, real-time notifications, billing meters & plan enforcement, metered usage billing, team invitations, invoice lifecycle tools, workspace-scoped resource sharing, and a public pricing page with Stripe checkout scaffolding are all live and wired end to end. Team budgets, activity events, plan entitlements, usage events, team memberships, billing webhooks, workflows, runs, and prompts are now persisted in the cloud with workspace (`owner_id`) scoping, so every teammate sees the same resources, caps, enforcement settings, notifications, colleagues, and usage limits across sessions and devices. The regression suite runs green (160 tests) with a clean TypeScript check and a clean security scan (no open findings). The latest published build is at **[harness-flow-control.lovable.app](https://harness-flow-control.lovable.app)**.
+> **MVP launch ready** — auth, cloud persistence, the harness canvas, the production execution engine, scheduling, remediation guardrails, cost governance, fleet-wide burn recommendations, a server-persisted activity feed, real-time notifications, billing meters & plan enforcement, metered usage billing, team invitations, invoice lifecycle tools, workspace-scoped resource sharing, and a public pricing page with Stripe checkout scaffolding are all live and wired end to end. Team budgets, activity events, plan entitlements, usage events, team memberships, billing webhooks, workflows, runs, prompts, agents, and tools are now persisted in the cloud with workspace (`owner_id`) scoping, so every teammate sees the same resources, caps, enforcement settings, notifications, colleagues, agent fleet, tool registry, and usage limits across sessions and devices. The regression suite runs green (160 tests) with a clean TypeScript check and a clean security scan (no open findings). The latest published build is at **[harness-flow-control.lovable.app](https://harness-flow-control.lovable.app)**.
 >
-> **Phase 54 — Invoice lifecycle & usage exports** — finance teams can now download a usage-events CSV, print the upcoming invoice, and configure billing webhooks that deliver signed `usage_event`, `invoice_ready`, and `plan_changed` payloads to external finance systems. The checkout flow also persists the selected billing interval so annual and monthly plans are priced correctly.
->
-> **Phase 56 — Workspace-scoped resource sharing** — workflows, workflow runs, and prompts now carry an `owner_id` workspace key. RLS policies let every member of a workspace view shared resources while keeping edit/delete rights with the workspace owner. The Library page gained a "Prompts" tab for workspace-shared prompts, and the Prompts page can publish a local prompt to the workspace library with one click.
+> **Phase 57 — Workspace-scoped agents & tools + prompt sharing deduplication** — the `agents` and `tools` tables now carry an `owner_id` workspace key with RLS policies that let every workspace member view the shared agent fleet and tool registry while restricting create, edit, and delete to the workspace owner. Demo seeding and the Agents/Tools pages now stamp `owner_id` on every row. Sharing a prompt to the workspace library a second time appends a new version to the existing entry instead of creating a duplicate, backed by a unique `(owner_id, name)` constraint.
 
 ### MVP launch checklist
 
@@ -121,6 +119,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 | 54 | Invoice lifecycle & usage exports — usage CSV, printable invoice, signed billing webhooks | Shipped |
 | 55 | Server-enforced org RBAC — workspace roles, capability matrix, owner/admin/operator/analyst/viewer | Shipped |
 | 56 | Workspace-scoped resource sharing — owner_id on workflows, runs, and prompts; workspace library | Shipped |
+| 57 | Workspace-scoped agents & tools + prompt sharing deduplication | Shipped |
 
 ---
 
