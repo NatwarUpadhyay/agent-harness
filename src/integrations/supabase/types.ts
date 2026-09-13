@@ -58,6 +58,7 @@ export type Database = {
           last_active: string
           model: string
           name: string
+          owner_id: string
           status: string
           success_rate: number
           total_calls: number
@@ -71,6 +72,7 @@ export type Database = {
           last_active?: string
           model?: string
           name: string
+          owner_id: string
           status?: string
           success_rate?: number
           total_calls?: number
@@ -84,6 +86,7 @@ export type Database = {
           last_active?: string
           model?: string
           name?: string
+          owner_id?: string
           status?: string
           success_rate?: number
           total_calls?: number
@@ -480,6 +483,7 @@ export type Database = {
           enabled: boolean
           id: string
           name: string
+          owner_id: string
           success_rate: number
           updated_at: string
           user_id: string
@@ -491,6 +495,7 @@ export type Database = {
           enabled?: boolean
           id?: string
           name: string
+          owner_id: string
           success_rate?: number
           updated_at?: string
           user_id: string
@@ -502,6 +507,7 @@ export type Database = {
           enabled?: boolean
           id?: string
           name?: string
+          owner_id?: string
           success_rate?: number
           updated_at?: string
           user_id?: string
