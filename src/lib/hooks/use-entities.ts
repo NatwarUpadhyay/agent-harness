@@ -34,10 +34,10 @@ export function useAgents() {
 export function useCreateAgent() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: Omit<AgentInsert, "user_id">) => {
+    mutationFn: async (input: Omit<AgentInsert, "user_id" | "owner_id">) => {
       const user_id = await currentUserId();
       const { data, error } = await supabase
-        .from("agents").insert({ ...input, user_id }).select().single();
+        .from("agents").insert({ ...input, user_id, owner_id: user_id }).select().single();
       if (error) throw error;
       return data;
     },
@@ -74,10 +74,10 @@ export function useTools() {
 export function useCreateTool() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: Omit<ToolInsert, "user_id">) => {
+    mutationFn: async (input: Omit<ToolInsert, "user_id" | "owner_id">) => {
       const user_id = await currentUserId();
       const { data, error } = await supabase
-        .from("tools").insert({ ...input, user_id }).select().single();
+        .from("tools").insert({ ...input, user_id, owner_id: user_id }).select().single();
       if (error) throw error;
       return data;
     },
