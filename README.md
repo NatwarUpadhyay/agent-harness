@@ -119,6 +119,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 | 54 | Invoice lifecycle & usage exports — usage CSV, printable invoice, signed billing webhooks | Shipped |
 | 55 | Server-enforced org RBAC — workspace roles, capability matrix, owner/admin/operator/analyst/viewer | Shipped |
 | 56 | Workspace-scoped resource sharing — owner_id on workflows, runs, and prompts; workspace library | Shipped |
+| 57 | Workspace-scoped agents & tools + prompt sharing deduplication | Shipped |
 
 ---
 
