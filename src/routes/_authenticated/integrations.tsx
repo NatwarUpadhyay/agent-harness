@@ -387,6 +387,52 @@ function IntegrationsPage() {
           </table>
         </div>
       </div>
+
+      {/* Connect modal */}
+      {connectingVendor && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setConnectingVendor(null)}>
+          <div
+            className="w-full max-w-md rounded-[12px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="grid h-9 w-9 place-items-center rounded-md" style={{ background: `${connectingVendor.color}22`, color: connectingVendor.color }}>
+                <Plug className="h-4 w-4" />
+              </div>
+              <div>
+                <h3 className="text-[15px] font-semibold">Connect {connectingVendor.name}</h3>
+                <p className="text-[11px] text-[var(--text-muted)]">{connectingVendor.auth} · stored encrypted server-side, only the last 4 characters are shown</p>
+              </div>
+            </div>
+            <label className="block text-[11px] uppercase tracking-wider text-[var(--text-muted)] mb-1.5">API key</label>
+            <input
+              type="password"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder="sk-…"
+              autoFocus
+              className="w-full h-10 px-3 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[13px] font-mono focus:outline-none focus:border-[var(--accent)]"
+              onKeyDown={(e) => { if (e.key === "Enter") handleConnect(); }}
+            />
+            <div className="mt-5 flex items-center justify-end gap-2">
+              <button
+                onClick={() => setConnectingVendor(null)}
+                className="h-9 px-3 rounded-md text-[12px] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConnect}
+                disabled={busy === connectingVendor.id}
+                className="h-9 px-4 rounded-md text-[12px] bg-[var(--accent)] text-[var(--bg-base)] font-medium hover:opacity-90 disabled:opacity-50 inline-flex items-center gap-2"
+              >
+                {busy === connectingVendor.id && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                Connect
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
