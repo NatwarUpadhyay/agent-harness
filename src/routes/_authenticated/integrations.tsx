@@ -295,12 +295,48 @@ function IntegrationsPage() {
               </div>
 
               <div className="mt-auto flex items-center justify-between gap-2 pt-3 border-t border-[var(--border-subtle)]">
-                <span className={`text-[11px] font-mono-tabular ${ok ? "text-[var(--success)]" : "text-[var(--warning)]"}`}>
-                  {ok ? "Compatible" : `${missing.length} gap${missing.length === 1 ? "" : "s"}`}
-                </span>
-                <button className="h-8 px-3 rounded-md text-[12px] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)]">
-                  {v.status === "active" ? "Manage" : "Connect"}
-                </button>
+                {(() => {
+                  const conn = byVendor.get(v.id);
+                  if (!conn) {
+                    return (
+                      <>
+                        <span className={`text-[11px] font-mono-tabular ${ok ? "text-[var(--success)]" : "text-[var(--warning)]"}`}>
+                          {ok ? "Compatible" : `${missing.length} gap${missing.length === 1 ? "" : "s"}`}
+                        </span>
+                        <button
+                          onClick={() => { setConnectingVendor(v); setApiKey(""); }}
+                          className="h-8 px-3 rounded-md text-[12px] bg-[var(--accent)] text-[var(--bg-base)] font-medium hover:opacity-90"
+                        >
+                          Connect
+                        </button>
+                      </>
+                    );
+                  }
+                  return (
+                    <>
+                      <span className="inline-flex items-center gap-1.5 text-[11px] font-mono-tabular text-[var(--text-secondary)]">
+                        <KeyRound className="h-3 w-3 text-[var(--accent)]" />
+                        ••••{conn.key_last4 ?? "????"}
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => handleTest(conn)}
+                          disabled={busy === conn.id}
+                          className="h-8 px-2.5 rounded-md text-[12px] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)] disabled:opacity-50"
+                        >
+                          {busy === conn.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Test"}
+                        </button>
+                        <button
+                          onClick={() => handleDisconnect(conn, v.name)}
+                          disabled={busy === conn.id}
+                          className="h-8 px-2.5 rounded-md text-[12px] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--danger)] hover:border-[var(--danger)]/40 disabled:opacity-50"
+                        >
+                          Disconnect
+                        </button>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             </div>
           );
