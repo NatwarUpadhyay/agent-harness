@@ -262,7 +262,11 @@ function IntegrationsPage() {
                     <div className="text-[11px] text-[var(--text-muted)] font-mono-tabular">{v.category} · {v.version}</div>
                   </div>
                 </div>
-                <StatusBadge status={v.status} />
+                {byVendor.has(v.id) ? (
+                  <StatusBadge status={byVendor.get(v.id)!.status === "error" ? "error" : "active"} />
+                ) : (
+                  <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] border border-[var(--border-subtle)] rounded px-1.5 py-0.5">Not connected</span>
+                )}
               </div>
 
               <div className="grid grid-cols-3 gap-2 mb-3 text-[11px] font-mono-tabular text-[var(--text-muted)]">
