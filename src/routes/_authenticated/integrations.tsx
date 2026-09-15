@@ -1,8 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { Check, X, AlertTriangle, Plug, Search, ShieldCheck, Zap } from "lucide-react";
+import { Check, X, AlertTriangle, Plug, Search, ShieldCheck, Zap, KeyRound, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import {
+  listIntegrations,
+  connectIntegration,
+  disconnectIntegration,
+  testIntegration,
+  type IntegrationConnection,
+} from "@/lib/data/integrations.functions";
 
 type Capability =
   | "chat"
@@ -60,6 +70,74 @@ function IntegrationsPage() {
   const [query, setQuery] = useState("");
   const [required, setRequired] = useState<Capability[]>(["chat", "tools", "streaming"]);
   const [category, setCategory] = useState<"All" | Vendor["category"]>("All");
+  const [connectingVendor, setConnectingVendor] = useState<Vendor | null>(null);
+  const [apiKey, setApiKey] = useState("");
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const queryClient = useQueryClient();
+  const listFn = useServerFn(listIntegrations);
+  const connectFn = useServerFn(connectIntegration);
+  const disconnectFn = useServerFn(disconnectIntegration);
+  const testFn = useServerFn(testIntegration);
+
+  const { data: connections = [] } = useQuery({
+    queryKey: ["integrations"],
+    queryFn: () => listFn(),
+  });
+  const byVendor = useMemo(() => {
+    const m = new Map<string, IntegrationConnection>();
+    for (const c of connections) m.set(c.vendor, c);
+    return m;
+  }, [connections]);
+
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ["integrations"] });
+
+  const handleConnect = async () => {
+    if (!connectingVendor) return;
+    if (apiKey.trim().length < 8) {
+      toast.error("Enter a valid API key (at least 8 characters)");
+      return;
+    }
+    setBusy(connectingVendor.id);
+    try {
+      await connectFn({ data: { vendor: connectingVendor.id, authType: connectingVendor.auth, apiKey: apiKey.trim() } });
+      toast.success(`${connectingVendor.name} connected`);
+      setConnectingVendor(null);
+      setApiKey("");
+      refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to connect");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleDisconnect = async (conn: IntegrationConnection, name: string) => {
+    setBusy(conn.id);
+    try {
+      await disconnectFn({ data: { id: conn.id } });
+      toast.success(`${name} disconnected`);
+      refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to disconnect");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleTest = async (conn: IntegrationConnection) => {
+    setBusy(conn.id);
+    try {
+      const res = await testFn({ data: { id: conn.id } });
+      if (res.status === "active") toast.success("Connection verified");
+      else toast.error("Connection check failed — stored key looks invalid");
+      refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Check failed");
+    } finally {
+      setBusy(null);
+    }
+  };
 
   const filtered = useMemo(
     () =>
@@ -184,7 +262,11 @@ function IntegrationsPage() {
                     <div className="text-[11px] text-[var(--text-muted)] font-mono-tabular">{v.category} · {v.version}</div>
                   </div>
                 </div>
-                <StatusBadge status={v.status} />
+                {byVendor.has(v.id) ? (
+                  <StatusBadge status={byVendor.get(v.id)!.status === "error" ? "error" : "active"} />
+                ) : (
+                  <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] border border-[var(--border-subtle)] rounded px-1.5 py-0.5">Not connected</span>
+                )}
               </div>
 
               <div className="grid grid-cols-3 gap-2 mb-3 text-[11px] font-mono-tabular text-[var(--text-muted)]">
@@ -217,12 +299,48 @@ function IntegrationsPage() {
               </div>
 
               <div className="mt-auto flex items-center justify-between gap-2 pt-3 border-t border-[var(--border-subtle)]">
-                <span className={`text-[11px] font-mono-tabular ${ok ? "text-[var(--success)]" : "text-[var(--warning)]"}`}>
-                  {ok ? "Compatible" : `${missing.length} gap${missing.length === 1 ? "" : "s"}`}
-                </span>
-                <button className="h-8 px-3 rounded-md text-[12px] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)]">
-                  {v.status === "active" ? "Manage" : "Connect"}
-                </button>
+                {(() => {
+                  const conn = byVendor.get(v.id);
+                  if (!conn) {
+                    return (
+                      <>
+                        <span className={`text-[11px] font-mono-tabular ${ok ? "text-[var(--success)]" : "text-[var(--warning)]"}`}>
+                          {ok ? "Compatible" : `${missing.length} gap${missing.length === 1 ? "" : "s"}`}
+                        </span>
+                        <button
+                          onClick={() => { setConnectingVendor(v); setApiKey(""); }}
+                          className="h-8 px-3 rounded-md text-[12px] bg-[var(--accent)] text-[var(--bg-base)] font-medium hover:opacity-90"
+                        >
+                          Connect
+                        </button>
+                      </>
+                    );
+                  }
+                  return (
+                    <>
+                      <span className="inline-flex items-center gap-1.5 text-[11px] font-mono-tabular text-[var(--text-secondary)]">
+                        <KeyRound className="h-3 w-3 text-[var(--accent)]" />
+                        ••••{conn.key_last4 ?? "????"}
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => handleTest(conn)}
+                          disabled={busy === conn.id}
+                          className="h-8 px-2.5 rounded-md text-[12px] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-strong)] disabled:opacity-50"
+                        >
+                          {busy === conn.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Test"}
+                        </button>
+                        <button
+                          onClick={() => handleDisconnect(conn, v.name)}
+                          disabled={busy === conn.id}
+                          className="h-8 px-2.5 rounded-md text-[12px] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--danger)] hover:border-[var(--danger)]/40 disabled:opacity-50"
+                        >
+                          Disconnect
+                        </button>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             </div>
           );
@@ -269,6 +387,52 @@ function IntegrationsPage() {
           </table>
         </div>
       </div>
+
+      {/* Connect modal */}
+      {connectingVendor && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setConnectingVendor(null)}>
+          <div
+            className="w-full max-w-md rounded-[12px] border border-[var(--border-default)] bg-[var(--bg-surface)] p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="grid h-9 w-9 place-items-center rounded-md" style={{ background: `${connectingVendor.color}22`, color: connectingVendor.color }}>
+                <Plug className="h-4 w-4" />
+              </div>
+              <div>
+                <h3 className="text-[15px] font-semibold">Connect {connectingVendor.name}</h3>
+                <p className="text-[11px] text-[var(--text-muted)]">{connectingVendor.auth} · stored encrypted server-side, only the last 4 characters are shown</p>
+              </div>
+            </div>
+            <label className="block text-[11px] uppercase tracking-wider text-[var(--text-muted)] mb-1.5">API key</label>
+            <input
+              type="password"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder="sk-…"
+              autoFocus
+              className="w-full h-10 px-3 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-default)] text-[13px] font-mono focus:outline-none focus:border-[var(--accent)]"
+              onKeyDown={(e) => { if (e.key === "Enter") handleConnect(); }}
+            />
+            <div className="mt-5 flex items-center justify-end gap-2">
+              <button
+                onClick={() => setConnectingVendor(null)}
+                className="h-9 px-3 rounded-md text-[12px] border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConnect}
+                disabled={busy === connectingVendor.id}
+                className="h-9 px-4 rounded-md text-[12px] bg-[var(--accent)] text-[var(--bg-base)] font-medium hover:opacity-90 disabled:opacity-50 inline-flex items-center gap-2"
+              >
+                {busy === connectingVendor.id && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                Connect
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

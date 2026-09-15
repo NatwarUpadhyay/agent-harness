@@ -259,6 +259,51 @@ export type Database = {
         }
         Relationships: []
       }
+      integrations: {
+        Row: {
+          api_key: string | null
+          auth_type: string
+          created_at: string
+          id: string
+          key_last4: string | null
+          label: string | null
+          last_checked_at: string | null
+          owner_id: string
+          status: string
+          updated_at: string
+          user_id: string
+          vendor: string
+        }
+        Insert: {
+          api_key?: string | null
+          auth_type?: string
+          created_at?: string
+          id?: string
+          key_last4?: string | null
+          label?: string | null
+          last_checked_at?: string | null
+          owner_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          vendor: string
+        }
+        Update: {
+          api_key?: string | null
+          auth_type?: string
+          created_at?: string
+          id?: string
+          key_last4?: string | null
+          label?: string | null
+          last_checked_at?: string | null
+          owner_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          vendor?: string
+        }
+        Relationships: []
+      }
       org_settings: {
         Row: {
           config: Json
