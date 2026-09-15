@@ -70,6 +70,74 @@ function IntegrationsPage() {
   const [query, setQuery] = useState("");
   const [required, setRequired] = useState<Capability[]>(["chat", "tools", "streaming"]);
   const [category, setCategory] = useState<"All" | Vendor["category"]>("All");
+  const [connectingVendor, setConnectingVendor] = useState<Vendor | null>(null);
+  const [apiKey, setApiKey] = useState("");
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const queryClient = useQueryClient();
+  const listFn = useServerFn(listIntegrations);
+  const connectFn = useServerFn(connectIntegration);
+  const disconnectFn = useServerFn(disconnectIntegration);
+  const testFn = useServerFn(testIntegration);
+
+  const { data: connections = [] } = useQuery({
+    queryKey: ["integrations"],
+    queryFn: () => listFn(),
+  });
+  const byVendor = useMemo(() => {
+    const m = new Map<string, IntegrationConnection>();
+    for (const c of connections) m.set(c.vendor, c);
+    return m;
+  }, [connections]);
+
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ["integrations"] });
+
+  const handleConnect = async () => {
+    if (!connectingVendor) return;
+    if (apiKey.trim().length < 8) {
+      toast.error("Enter a valid API key (at least 8 characters)");
+      return;
+    }
+    setBusy(connectingVendor.id);
+    try {
+      await connectFn({ data: { vendor: connectingVendor.id, authType: connectingVendor.auth, apiKey: apiKey.trim() } });
+      toast.success(`${connectingVendor.name} connected`);
+      setConnectingVendor(null);
+      setApiKey("");
+      refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to connect");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleDisconnect = async (conn: IntegrationConnection, name: string) => {
+    setBusy(conn.id);
+    try {
+      await disconnectFn({ data: { id: conn.id } });
+      toast.success(`${name} disconnected`);
+      refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to disconnect");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleTest = async (conn: IntegrationConnection) => {
+    setBusy(conn.id);
+    try {
+      const res = await testFn({ data: { id: conn.id } });
+      if (res.status === "active") toast.success("Connection verified");
+      else toast.error("Connection check failed — stored key looks invalid");
+      refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Check failed");
+    } finally {
+      setBusy(null);
+    }
+  };
 
   const filtered = useMemo(
     () =>
