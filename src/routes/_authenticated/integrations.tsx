@@ -1,8 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { Check, X, AlertTriangle, Plug, Search, ShieldCheck, Zap } from "lucide-react";
+import { Check, X, AlertTriangle, Plug, Search, ShieldCheck, Zap, KeyRound, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import {
+  listIntegrations,
+  connectIntegration,
+  disconnectIntegration,
+  testIntegration,
+  type IntegrationConnection,
+} from "@/lib/data/integrations.functions";
 
 type Capability =
   | "chat"
