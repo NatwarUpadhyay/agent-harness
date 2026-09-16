@@ -47,7 +47,7 @@ export const listIntegrations = createServerFn({ method: "GET" })
     return (data ?? []).map((r) => mask(r as Record<string, unknown>));
   });
 
-/** Connect a vendor by storing its API key server-side. Only the key's last 4 characters are ever returned. */
+/** Connect a vendor. The raw key is stored in an owner-only vault table, never in the shared row. */
 export const connectIntegration = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => connectInput.parse(data))
@@ -63,7 +63,6 @@ export const connectIntegration = createServerFn({ method: "POST" })
           vendor: data.vendor,
           label: data.label ?? null,
           auth_type: data.authType,
-          api_key: data.apiKey,
           key_last4: keyLast4,
           status: "active",
           last_checked_at: new Date().toISOString(),
@@ -74,10 +73,22 @@ export const connectIntegration = createServerFn({ method: "POST" })
       .select("id, vendor, label, auth_type, key_last4, status, last_checked_at, created_at")
       .single();
     if (error) throw new Error(`Failed to connect integration: ${error.message}`);
+
+    const { error: secretError } = await supabase.from("integration_secrets").upsert(
+      {
+        integration_id: (row as { id: string }).id,
+        owner_id: userId,
+        api_key: data.apiKey,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "integration_id" },
+    );
+    if (secretError) throw new Error(`Failed to store credential: ${secretError.message}`);
+
     return mask(row as Record<string, unknown>);
   });
 
-/** Disconnect (delete) a vendor connection. */
+/** Disconnect (delete) a vendor connection. The vaulted key is removed with it. */
 export const disconnectIntegration = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => idInput.parse(data))
@@ -87,19 +98,22 @@ export const disconnectIntegration = createServerFn({ method: "POST" })
     return { id: data.id };
   });
 
-/** Re-verify a stored connection — checks a key exists and refreshes its status/timestamp. */
+/** Re-verify a stored connection. Only the workspace owner can read the vaulted key. */
 export const testIntegration = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => idInput.parse(data))
   .handler(async ({ context, data }) => {
     const { supabase } = context;
-    const { data: row, error: readError } = await supabase
-      .from("integrations")
-      .select("id, api_key")
-      .eq("id", data.id)
-      .single();
-    if (readError) throw new Error(`Failed to load integration: ${readError.message}`);
-    const ok = typeof row.api_key === "string" && row.api_key.length >= 8;
+    const { data: secret, error: readError } = await supabase
+      .from("integration_secrets")
+      .select("api_key")
+      .eq("integration_id", data.id)
+      .maybeSingle();
+    if (readError) throw new Error(`Failed to load credential: ${readError.message}`);
+    if (!secret) {
+      throw new Error("Only the workspace owner can verify this connection");
+    }
+    const ok = typeof secret.api_key === "string" && secret.api_key.length >= 8;
     const status = ok ? "active" : "error";
     const { error } = await supabase
       .from("integrations")
@@ -108,3 +122,4 @@ export const testIntegration = createServerFn({ method: "POST" })
     if (error) throw new Error(`Failed to update integration: ${error.message}`);
     return { id: data.id, status };
   });
+
