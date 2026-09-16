@@ -259,9 +259,40 @@ export type Database = {
         }
         Relationships: []
       }
+      integration_secrets: {
+        Row: {
+          api_key: string
+          created_at: string
+          integration_id: string
+          owner_id: string
+          updated_at: string
+        }
+        Insert: {
+          api_key: string
+          created_at?: string
+          integration_id: string
+          owner_id: string
+          updated_at?: string
+        }
+        Update: {
+          api_key?: string
+          created_at?: string
+          integration_id?: string
+          owner_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_secrets_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: true
+            referencedRelation: "integrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       integrations: {
         Row: {
-          api_key: string | null
           auth_type: string
           created_at: string
           id: string
@@ -275,7 +306,6 @@ export type Database = {
           vendor: string
         }
         Insert: {
-          api_key?: string | null
           auth_type?: string
           created_at?: string
           id?: string
@@ -289,7 +319,6 @@ export type Database = {
           vendor: string
         }
         Update: {
-          api_key?: string | null
           auth_type?: string
           created_at?: string
           id?: string
