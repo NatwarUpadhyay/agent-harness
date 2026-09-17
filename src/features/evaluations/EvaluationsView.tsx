@@ -11,15 +11,30 @@ const rubricColor: Record<string, string> = {
   performance: "text-[var(--warning)]",
 };
 
-export function EvaluationsView() {
+export type AgentOption = { id: string; name: string };
+
+export function EvaluationsView({
+  runs,
+  agentOptions,
+  onRun,
+  running,
+}: {
+  runs?: EvalRun[];
+  agentOptions?: AgentOption[];
+  onRun?: (input: { agentId: string; agentName: string; datasetId: string }) => void | Promise<unknown>;
+  running?: boolean;
+} = {}) {
+  const allRuns = runs ?? evalRuns;
   const [datasetId, setDatasetId] = useState(datasets[0].id);
   const [selected, setSelected] = useState<string[]>([]);
   const [compareOpen, setCompareOpen] = useState(false);
   const [detailRun, setDetailRun] = useState<EvalRun | null>(null);
+  const [runOpen, setRunOpen] = useState(false);
+  const [runAgentId, setRunAgentId] = useState("");
 
   const filtered = useMemo(
-    () => evalRuns.filter((r) => r.datasetId === datasetId),
-    [datasetId],
+    () => allRuns.filter((r) => r.datasetId === datasetId),
+    [allRuns, datasetId],
   );
 
   const toggle = (id: string) =>
