@@ -52,8 +52,16 @@ export function EvaluationsView({
   }, [filtered]);
 
   const compareRuns = selected
-    .map((id) => evalRuns.find((r) => r.id === id))
+    .map((id) => allRuns.find((r) => r.id === id))
     .filter(Boolean) as EvalRun[];
+
+  const canRun = Boolean(onRun) && (agentOptions?.length ?? 0) > 0;
+  const startRun = async () => {
+    const agent = agentOptions?.find((a) => a.id === runAgentId) ?? agentOptions?.[0];
+    if (!agent || !onRun) return;
+    setRunOpen(false);
+    await onRun({ agentId: agent.id, agentName: agent.name, datasetId });
+  };
 
   return (
     <>
@@ -70,8 +78,17 @@ export function EvaluationsView({
               <GitCompareArrows className="h-3.5 w-3.5" />
               Compare {selected.length === 2 ? "(2)" : `(${selected.length}/2)`}
             </button>
-            <button className="inline-flex items-center gap-1.5 h-9 px-3 rounded-md bg-[var(--accent)] text-[var(--bg-base)] text-[13px] font-medium hover:bg-[var(--accent-hover)]">
-              <Play className="h-3.5 w-3.5" /> New run
+            <button
+              onClick={() => {
+                if (!canRun) return;
+                setRunAgentId(agentOptions?.[0]?.id ?? "");
+                setRunOpen(true);
+              }}
+              disabled={!canRun || running}
+              title={canRun ? "Run an agent against this dataset" : "Add an agent first"}
+              className="inline-flex items-center gap-1.5 h-9 px-3 rounded-md bg-[var(--accent)] text-[var(--bg-base)] text-[13px] font-medium hover:bg-[var(--accent-hover)] disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <Play className="h-3.5 w-3.5" /> {running ? "Running…" : "New run"}
             </button>
           </div>
         }
