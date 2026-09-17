@@ -11,15 +11,30 @@ const rubricColor: Record<string, string> = {
   performance: "text-[var(--warning)]",
 };
 
-export function EvaluationsView() {
+export type AgentOption = { id: string; name: string };
+
+export function EvaluationsView({
+  runs,
+  agentOptions,
+  onRun,
+  running,
+}: {
+  runs?: EvalRun[];
+  agentOptions?: AgentOption[];
+  onRun?: (input: { agentId: string; agentName: string; datasetId: string }) => void | Promise<unknown>;
+  running?: boolean;
+} = {}) {
+  const allRuns = runs ?? evalRuns;
   const [datasetId, setDatasetId] = useState(datasets[0].id);
   const [selected, setSelected] = useState<string[]>([]);
   const [compareOpen, setCompareOpen] = useState(false);
   const [detailRun, setDetailRun] = useState<EvalRun | null>(null);
+  const [runOpen, setRunOpen] = useState(false);
+  const [runAgentId, setRunAgentId] = useState("");
 
   const filtered = useMemo(
-    () => evalRuns.filter((r) => r.datasetId === datasetId),
-    [datasetId],
+    () => allRuns.filter((r) => r.datasetId === datasetId),
+    [allRuns, datasetId],
   );
 
   const toggle = (id: string) =>
@@ -37,8 +52,16 @@ export function EvaluationsView() {
   }, [filtered]);
 
   const compareRuns = selected
-    .map((id) => evalRuns.find((r) => r.id === id))
+    .map((id) => allRuns.find((r) => r.id === id))
     .filter(Boolean) as EvalRun[];
+
+  const canRun = Boolean(onRun) && (agentOptions?.length ?? 0) > 0;
+  const startRun = async () => {
+    const agent = agentOptions?.find((a) => a.id === runAgentId) ?? agentOptions?.[0];
+    if (!agent || !onRun) return;
+    setRunOpen(false);
+    await onRun({ agentId: agent.id, agentName: agent.name, datasetId });
+  };
 
   return (
     <>
@@ -55,8 +78,17 @@ export function EvaluationsView() {
               <GitCompareArrows className="h-3.5 w-3.5" />
               Compare {selected.length === 2 ? "(2)" : `(${selected.length}/2)`}
             </button>
-            <button className="inline-flex items-center gap-1.5 h-9 px-3 rounded-md bg-[var(--accent)] text-[var(--bg-base)] text-[13px] font-medium hover:bg-[var(--accent-hover)]">
-              <Play className="h-3.5 w-3.5" /> New run
+            <button
+              onClick={() => {
+                if (!canRun) return;
+                setRunAgentId(agentOptions?.[0]?.id ?? "");
+                setRunOpen(true);
+              }}
+              disabled={!canRun || running}
+              title={canRun ? "Run an agent against this dataset" : "Add an agent first"}
+              className="inline-flex items-center gap-1.5 h-9 px-3 rounded-md bg-[var(--accent)] text-[var(--bg-base)] text-[13px] font-medium hover:bg-[var(--accent-hover)] disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <Play className="h-3.5 w-3.5" /> {running ? "Running…" : "New run"}
             </button>
           </div>
         }
@@ -163,6 +195,13 @@ export function EvaluationsView() {
                   </tr>
                 );
               })}
+              {filtered.length === 0 && (
+                <tr className="border-t border-[var(--border-subtle)]">
+                  <td colSpan={9} className="px-4 py-10 text-center text-[12px] text-[var(--text-muted)]">
+                    No runs on this dataset yet. {canRun ? 'Start one with "New run".' : "Add an agent to start evaluating."}
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -210,6 +249,48 @@ export function EvaluationsView() {
         <Drawer onClose={() => setCompareOpen(false)} title="Compare runs" wide>
           <RunCompare a={compareRuns[0]} b={compareRuns[1]} />
         </Drawer>
+      )}
+
+      {/* New run dialog */}
+      {runOpen && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4" onClick={() => setRunOpen(false)}>
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm rounded-[10px] border border-[var(--border-strong)] bg-[var(--bg-surface)] p-5"
+          >
+            <h2 className="text-[14px] font-medium">New evaluation run</h2>
+            <p className="mt-1 text-[12px] text-[var(--text-muted)]">
+              Scored against {datasets.find((d) => d.id === datasetId)?.name} using all {rubrics.length} rubrics.
+            </p>
+            <label className="mt-4 block text-[11px] uppercase tracking-wider text-[var(--text-muted)]">Agent</label>
+            <select
+              value={runAgentId}
+              onChange={(e) => setRunAgentId(e.target.value)}
+              className="mt-1.5 h-9 w-full rounded-md border border-[var(--border-default)] bg-[var(--bg-elevated)] px-2 text-[13px]"
+            >
+              {(agentOptions ?? []).map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}
+                </option>
+              ))}
+            </select>
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                onClick={() => setRunOpen(false)}
+                className="h-9 px-3 rounded-md border border-[var(--border-default)] text-[13px] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={startRun}
+                disabled={running}
+                className="h-9 px-3 rounded-md bg-[var(--accent)] text-[var(--bg-base)] text-[13px] font-medium hover:bg-[var(--accent-hover)] disabled:opacity-40"
+              >
+                Run evaluation
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );
