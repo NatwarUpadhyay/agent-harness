@@ -220,6 +220,75 @@ export type Database = {
         }
         Relationships: []
       }
+      eval_runs: {
+        Row: {
+          agent_id: string
+          agent_name: string
+          avg_latency_ms: number
+          cases: number
+          cost_usd: number
+          created_at: string
+          dataset_id: string
+          dataset_name: string
+          duration_sec: number
+          failed: number
+          id: string
+          name: string
+          owner_id: string
+          pass_rate: number
+          passed: number
+          per_rubric: Json
+          score: number
+          started_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          agent_id: string
+          agent_name: string
+          avg_latency_ms?: number
+          cases?: number
+          cost_usd?: number
+          created_at?: string
+          dataset_id: string
+          dataset_name: string
+          duration_sec?: number
+          failed?: number
+          id?: string
+          name: string
+          owner_id: string
+          pass_rate?: number
+          passed?: number
+          per_rubric?: Json
+          score?: number
+          started_at?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          agent_id?: string
+          agent_name?: string
+          avg_latency_ms?: number
+          cases?: number
+          cost_usd?: number
+          created_at?: string
+          dataset_id?: string
+          dataset_name?: string
+          duration_sec?: number
+          failed?: number
+          id?: string
+          name?: string
+          owner_id?: string
+          pass_rate?: number
+          passed?: number
+          per_rubric?: Json
+          score?: number
+          started_at?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       experiments: {
         Row: {
           avg_latency: number
