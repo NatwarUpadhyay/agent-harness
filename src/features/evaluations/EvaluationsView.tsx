@@ -4,6 +4,11 @@ import { PageHeader } from "@/components/ui/page-header";
 import { rubrics, datasets, evalRuns, scoreTone, delta, type EvalRun } from "@/lib/data/evals";
 import { agents, relativeTime } from "@/lib/data/synthetic";
 
+/** Display name for a run: prefer the stored name, fall back to the synthetic demo roster. */
+function runAgentName(run: EvalRun): string | undefined {
+  return run.agentName ?? agents.find((a) => a.id === run.agentId)?.name;
+}
+
 const rubricColor: Record<string, string> = {
   safety: "text-[var(--danger)]",
   quality: "text-[var(--accent)]",
@@ -162,7 +167,7 @@ export function EvaluationsView({
             </thead>
             <tbody>
               {filtered.map((r) => {
-                const agent = agents.find((a) => a.id === r.agentId);
+                const agentName = runAgentName(r);
                 const checked = selected.includes(r.id);
                 return (
                   <tr
@@ -181,7 +186,7 @@ export function EvaluationsView({
                       />
                     </td>
                     <td className="px-3 py-2.5 font-medium">{r.name}</td>
-                    <td className="px-3 py-2.5 font-mono-tabular text-[12px] text-[var(--text-secondary)]">{agent?.name}</td>
+                    <td className="px-3 py-2.5 font-mono-tabular text-[12px] text-[var(--text-secondary)]">{agentName}</td>
                     <td className="px-3 py-2.5 text-right">
                       <span className={`inline-block font-mono-tabular text-[12px] px-1.5 py-0.5 rounded-sm ${scoreTone(r.score)}`}>
                         {r.score}
@@ -316,7 +321,7 @@ function Drawer({ children, onClose, title, wide }: { children: React.ReactNode;
 }
 
 function RunDetail({ run }: { run: EvalRun }) {
-  const agent = agents.find((a) => a.id === run.agentId);
+  const agentName = runAgentName(run);
   const dataset = datasets.find((d) => d.id === run.datasetId);
   return (
     <div className="space-y-5">
@@ -333,7 +338,7 @@ function RunDetail({ run }: { run: EvalRun }) {
         ))}
       </div>
       <div className="text-[12px] text-[var(--text-secondary)] space-y-1">
-        <div><span className="text-[var(--text-muted)]">Agent:</span> <span className="font-mono-tabular">{agent?.name}</span></div>
+        <div><span className="text-[var(--text-muted)]">Agent:</span> <span className="font-mono-tabular">{agentName}</span></div>
         <div><span className="text-[var(--text-muted)]">Dataset:</span> {dataset?.name} · <span className="font-mono-tabular">{dataset?.rowCount}</span> rows</div>
         <div><span className="text-[var(--text-muted)]">Cases:</span> <span className="font-mono-tabular">{run.passed} pass · {run.failed} fail</span></div>
       </div>
@@ -362,8 +367,8 @@ function RunDetail({ run }: { run: EvalRun }) {
 }
 
 function RunCompare({ a, b }: { a: EvalRun; b: EvalRun }) {
-  const agentA = agents.find((x) => x.id === a.agentId);
-  const agentB = agents.find((x) => x.id === b.agentId);
+  const agentNameA = runAgentName(a);
+  const agentNameB = runAgentName(b);
   const row = (label: string, av: number, bv: number, suffix = "") => {
     const d = delta(bv, av);
     const tone = d.value > 0 ? "text-[var(--success)]" : d.value < 0 ? "text-[var(--danger)]" : "text-[var(--text-muted)]";
@@ -389,7 +394,7 @@ function RunCompare({ a, b }: { a: EvalRun; b: EvalRun }) {
             <div className="text-[10px] uppercase tracking-wider text-[var(--text-muted)]">Run {String.fromCharCode(65 + i)}</div>
             <div className="text-[13px] font-medium mt-0.5">{r.name}</div>
             <div className="text-[11px] text-[var(--text-muted)] font-mono-tabular mt-1">
-              {(i === 0 ? agentA : agentB)?.name} · {relativeTime(r.startedAt)}
+              {(i === 0 ? agentNameA : agentNameB)} · {relativeTime(r.startedAt)}
             </div>
           </div>
         ))}

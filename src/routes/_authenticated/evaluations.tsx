@@ -13,6 +13,7 @@ function toEvalRun(row: StoredEvalRun): EvalRun {
     id: row.id,
     name: row.name,
     agentId: row.agent_id,
+    agentName: row.agent_name,
     datasetId: row.dataset_id,
     rubricIds: rubrics.map((r) => r.id),
     score: row.score,
