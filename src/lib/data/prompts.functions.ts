@@ -72,13 +72,17 @@ export const createWorkspacePrompt = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     const { supabase, userId } = context;
 
-    const { data: existing, error: findError } = await supabase
+    // Exact (case-insensitive) name match — never a LIKE pattern, so names with
+    // underscores or percent signs cannot match the wrong prompt.
+    const { data: owned, error: findError } = await supabase
       .from("prompts")
-      .select("id, versions")
-      .eq("owner_id", userId)
-      .ilike("name", data.name)
-      .maybeSingle();
+      .select("id, name, versions")
+      .eq("owner_id", userId);
     if (findError) throw new Error(`Failed to look up prompt: ${findError.message}`);
+    const target = data.name.trim().toLowerCase();
+    const existing = (owned ?? []).find(
+      (p) => typeof p.name === "string" && p.name.trim().toLowerCase() === target,
+    );
 
     if (existing) {
       const versions = parseVersions(existing.versions);

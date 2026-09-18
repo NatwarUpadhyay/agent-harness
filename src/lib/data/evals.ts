@@ -21,6 +21,7 @@ export interface EvalRun {
   id: string;
   name: string;
   agentId: string;
+  agentName?: string;
   datasetId: string;
   rubricIds: string[];
   score: number;      // 0..100
