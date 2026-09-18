@@ -88,12 +88,23 @@ export const connectIntegration = createServerFn({ method: "POST" })
     return mask(row as Record<string, unknown>);
   });
 
-/** Disconnect (delete) a vendor connection. The vaulted key is removed with it. */
+/** Disconnect (delete) a vendor connection. The vaulted key is removed with it. Owner only. */
 export const disconnectIntegration = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => idInput.parse(data))
   .handler(async ({ context, data }) => {
-    const { error } = await context.supabase.from("integrations").delete().eq("id", data.id);
+    const { supabase, userId } = context;
+    const { data: row, error: readError } = await supabase
+      .from("integrations")
+      .select("owner_id")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (readError) throw new Error(`Failed to load integration: ${readError.message}`);
+    if (!row) throw new Error("Integration not found");
+    if (row.owner_id !== userId) {
+      throw new Error("Only the workspace owner can disconnect this integration");
+    }
+    const { error } = await supabase.from("integrations").delete().eq("id", data.id);
     if (error) throw new Error(`Failed to disconnect: ${error.message}`);
     return { id: data.id };
   });
@@ -103,7 +114,17 @@ export const testIntegration = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => idInput.parse(data))
   .handler(async ({ context, data }) => {
-    const { supabase } = context;
+    const { supabase, userId } = context;
+    const { data: ownerRow, error: ownerError } = await supabase
+      .from("integrations")
+      .select("owner_id")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (ownerError) throw new Error(`Failed to load integration: ${ownerError.message}`);
+    if (!ownerRow) throw new Error("Integration not found");
+    if (ownerRow.owner_id !== userId) {
+      throw new Error("Only the workspace owner can verify this connection");
+    }
     const { data: secret, error: readError } = await supabase
       .from("integration_secrets")
       .select("api_key")
