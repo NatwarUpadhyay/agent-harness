@@ -220,6 +220,51 @@ export type Database = {
         }
         Relationships: []
       }
+      datasets: {
+        Row: {
+          columns: Json
+          created_at: string
+          id: string
+          kind: string
+          name: string
+          owner_id: string
+          preview: Json
+          row_count: number
+          size_bytes: number
+          source: string
+          truncated: boolean
+          user_id: string
+        }
+        Insert: {
+          columns?: Json
+          created_at?: string
+          id?: string
+          kind: string
+          name: string
+          owner_id: string
+          preview?: Json
+          row_count?: number
+          size_bytes?: number
+          source?: string
+          truncated?: boolean
+          user_id: string
+        }
+        Update: {
+          columns?: Json
+          created_at?: string
+          id?: string
+          kind?: string
+          name?: string
+          owner_id?: string
+          preview?: Json
+          row_count?: number
+          size_bytes?: number
+          source?: string
+          truncated?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       eval_runs: {
         Row: {
           agent_id: string
