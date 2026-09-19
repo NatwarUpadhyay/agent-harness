@@ -71,18 +71,17 @@ function DatasetsView() {
   }), [datasets]);
 
   const handleFiles = async (files: FileList | File[]) => {
-    setBusy(true);
     let ok = 0;
     for (const file of Array.from(files)) {
       try {
-        const rec = await upload(file);
+        const parsed = await parseFile(file);
+        await uploadMutation.mutateAsync(parsed);
         ok++;
-        toast.success(`Uploaded ${rec.name}`, { description: `${rec.rows.toLocaleString()} rows · ${formatBytes(rec.sizeBytes)}` });
+        toast.success(`Uploaded ${parsed.name}`, { description: `${parsed.rows.toLocaleString()} rows · ${formatBytes(parsed.sizeBytes)}` });
       } catch (err) {
         toast.error(`Failed to parse ${file.name}`, { description: err instanceof Error ? err.message : "unknown error" });
       }
     }
-    setBusy(false);
     if (ok === 0 && files.length > 0) toast.error("No files could be added");
   };
 
@@ -91,9 +90,9 @@ function DatasetsView() {
     if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
   };
 
-  const onDelete = (d: DatasetRecord) => {
+  const onDelete = (d: StoredDataset) => {
     if (!confirm(`Delete "${d.name}"?`)) return;
-    remove(d.id);
+    deleteMutation.mutate(d.id);
     if (preview?.id === d.id) setPreview(null);
     toast.success(`Deleted ${d.name}`);
   };
