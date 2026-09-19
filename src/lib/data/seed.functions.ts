@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { agents as seedAgents, tools as seedTools, experiments as seedExperiments } from "./synthetic";
+import { SEED_DATASETS } from "./datasets-store";
 
 /**
  * Seeds the authenticated user's account with realistic demo data if empty.
@@ -56,4 +57,31 @@ export const seedDemoData = createServerFn({ method: "POST" })
     ]);
 
     return { seeded: true };
+  });
+
+/** Seeds the curated sample datasets once per workspace, independent of the agent/tool seed. */
+export const seedDatasets = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { count, error: countErr } = await supabase
+      .from("datasets")
+      .select("id", { count: "exact", head: true })
+      .eq("owner_id", userId);
+    if (countErr || (count ?? 0) > 0) return { seeded: false };
+
+    const rows = SEED_DATASETS.map((d) => ({
+      owner_id: userId,
+      user_id: userId,
+      name: d.name,
+      kind: d.kind,
+      row_count: d.rows,
+      columns: d.columns,
+      size_bytes: d.sizeBytes,
+      preview: d.preview,
+      truncated: d.truncated,
+      source: "seed",
+    }));
+    const { error } = await supabase.from("datasets").insert(rows);
+    return { seeded: !error };
   });

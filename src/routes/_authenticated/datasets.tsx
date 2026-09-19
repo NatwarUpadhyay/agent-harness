@@ -1,16 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, FileSpreadsheet, FileText, FileJson, Trash2, Eye, X, Search, Database } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { MetricCard } from "@/components/ui/metric-card";
-import { useDatasets, formatBytes, type DatasetRecord, type DatasetKind } from "@/lib/data/datasets-store";
+import { parseFile, formatBytes, type DatasetKind } from "@/lib/data/datasets-store";
+import { listDatasets, saveDataset, deleteDataset, type StoredDataset } from "@/lib/data/datasets.functions";
 
-const kindIcon = (k: DatasetKind) =>
+const kindIcon = (k: string) =>
   k === "jsonl" || k === "json" ? FileJson : k === "markdown" ? FileText : FileSpreadsheet;
 
-const kindColor: Record<DatasetKind, string> = {
+const kindColor: Record<string, string> = {
   csv: "var(--accent)", jsonl: "var(--violet)", json: "var(--violet)",
   markdown: "var(--teal)", parquet: "var(--amber)",
 };
@@ -24,13 +27,34 @@ function relTime(ts: number): string {
 }
 
 function DatasetsView() {
-  const { datasets, upload, remove } = useDatasets();
+  const queryClient = useQueryClient();
+  const fetchDatasets = useServerFn(listDatasets);
+  const persistDataset = useServerFn(saveDataset);
+  const removeDataset = useServerFn(deleteDataset);
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [preview, setPreview] = useState<DatasetRecord | null>(null);
+  const [preview, setPreview] = useState<StoredDataset | null>(null);
   const [query, setQuery] = useState("");
   const [kindFilter, setKindFilter] = useState<DatasetKind | "all">("all");
+
+  const { data: rows } = useQuery({
+    queryKey: ["datasets"],
+    queryFn: () => fetchDatasets(),
+  });
+  const datasets = useMemo(() => rows ?? [], [rows]);
+
+  const uploadMutation = useMutation({
+    mutationFn: (input: { name: string; kind: string; rows: number; columns: string[]; sizeBytes: number; preview: Record<string, string>[]; truncated: boolean }) =>
+      persistDataset({ data: input }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["datasets"] }),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => removeDataset({ data: { id } }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["datasets"] }),
+    onError: (error: Error) => toast.error(error.message),
+  });
+  const busy = uploadMutation.isPending;
 
   const filtered = useMemo(() => {
     return datasets.filter((d) =>
@@ -47,18 +71,17 @@ function DatasetsView() {
   }), [datasets]);
 
   const handleFiles = async (files: FileList | File[]) => {
-    setBusy(true);
     let ok = 0;
     for (const file of Array.from(files)) {
       try {
-        const rec = await upload(file);
+        const parsed = await parseFile(file);
+        await uploadMutation.mutateAsync(parsed);
         ok++;
-        toast.success(`Uploaded ${rec.name}`, { description: `${rec.rows.toLocaleString()} rows · ${formatBytes(rec.sizeBytes)}` });
+        toast.success(`Uploaded ${parsed.name}`, { description: `${parsed.rows.toLocaleString()} rows · ${formatBytes(parsed.sizeBytes)}` });
       } catch (err) {
         toast.error(`Failed to parse ${file.name}`, { description: err instanceof Error ? err.message : "unknown error" });
       }
     }
-    setBusy(false);
     if (ok === 0 && files.length > 0) toast.error("No files could be added");
   };
 
@@ -67,9 +90,9 @@ function DatasetsView() {
     if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
   };
 
-  const onDelete = (d: DatasetRecord) => {
+  const onDelete = (d: StoredDataset) => {
     if (!confirm(`Delete "${d.name}"?`)) return;
-    remove(d.id);
+    deleteMutation.mutate(d.id);
     if (preview?.id === d.id) setPreview(null);
     toast.success(`Deleted ${d.name}`);
   };
