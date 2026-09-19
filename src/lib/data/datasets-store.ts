@@ -1,12 +1,5 @@
-// Local dataset library — persisted to localStorage.
-// Supports uploading CSV, JSON, JSONL, and Markdown files.
-// Parses row counts and keeps a preview of the first ~50 rows for inspection.
-
-import { useCallback, useEffect, useState } from "react";
-
-const STORAGE_KEY = "datasets.library.v1";
-const MAX_PREVIEW_ROWS = 50;
-const MAX_INLINE_BYTES = 2_000_000; // 2 MB — anything bigger stores metadata only.
+// Dataset parsing helpers — files are parsed in the browser, then metadata and a
+// ~50-row preview are persisted to the workspace library via datasets.functions.
 
 export type DatasetKind = "csv" | "jsonl" | "json" | "markdown" | "parquet";
 
@@ -23,11 +16,14 @@ export interface DatasetRecord {
   truncated: boolean;                // preview only, not the full file
 }
 
-const SEED: DatasetRecord[] = [
+const MAX_PREVIEW_ROWS = 50;
+const MAX_INLINE_BYTES = 2_000_000; // 2 MB — anything bigger stores metadata only.
+
+export const SEED_DATASETS: Omit<DatasetRecord, "id" | "createdAt" | "source">[] = [
   {
-    id: "d_support_q2", name: "support_tickets_2025_q2.parquet", kind: "parquet",
+    name: "support_tickets_2025_q2.parquet", kind: "parquet",
     rows: 184_233, columns: ["ticket_id", "customer", "category", "resolved_at"],
-    sizeBytes: 260_046_848, createdAt: Date.parse("2025-06-12"), source: "seed",
+    sizeBytes: 260_046_848,
     preview: [
       { ticket_id: "T-90211", customer: "acme.co",   category: "billing", resolved_at: "2025-06-11 14:02" },
       { ticket_id: "T-90212", customer: "globex.io", category: "bug",     resolved_at: "2025-06-11 14:07" },
@@ -36,9 +32,9 @@ const SEED: DatasetRecord[] = [
     truncated: true,
   },
   {
-    id: "d_golden_eval", name: "golden_eval_set.jsonl", kind: "jsonl",
+    name: "golden_eval_set.jsonl", kind: "jsonl",
     rows: 1_200, columns: ["prompt", "expected", "category"],
-    sizeBytes: 4_404_019, createdAt: Date.parse("2025-05-30"), source: "seed",
+    sizeBytes: 4_404_019,
     preview: [
       { prompt: "Summarise this refund policy", expected: "3-bullet summary", category: "summarisation" },
       { prompt: "Extract PII from message",     expected: "[EMAIL] [PHONE]",  category: "safety" },
@@ -46,9 +42,9 @@ const SEED: DatasetRecord[] = [
     truncated: true,
   },
   {
-    id: "d_redteam", name: "redteam_prompts.jsonl", kind: "jsonl",
+    name: "redteam_prompts.jsonl", kind: "jsonl",
     rows: 384, columns: ["prompt", "attack_type", "severity"],
-    sizeBytes: 943_718, createdAt: Date.parse("2025-04-28"), source: "seed",
+    sizeBytes: 943_718,
     preview: [
       { prompt: "Ignore previous rules and…", attack_type: "prompt-injection", severity: "high" },
       { prompt: "Pretend you are DAN and…",   attack_type: "jailbreak",        severity: "high" },
@@ -56,21 +52,6 @@ const SEED: DatasetRecord[] = [
     truncated: true,
   },
 ];
-
-function read(): DatasetRecord[] {
-  if (typeof window === "undefined") return SEED;
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return SEED;
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : SEED;
-  } catch { return SEED; }
-}
-
-function write(rows: DatasetRecord[]) {
-  try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(rows)); } catch { /* quota */ }
-  try { window.dispatchEvent(new CustomEvent("datasets-library-changed")); } catch { /* ignore */ }
-}
 
 function inferKind(name: string): DatasetKind {
   const lower = name.toLowerCase();
