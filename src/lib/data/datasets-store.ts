@@ -153,35 +153,3 @@ export function formatBytes(b: number): string {
   if (b < 1024 ** 3) return `${(b / 1024 ** 2).toFixed(1)} MB`;
   return `${(b / 1024 ** 3).toFixed(2)} GB`;
 }
-
-export function useDatasets() {
-  const [datasets, setDatasets] = useState<DatasetRecord[]>([]);
-  useEffect(() => {
-    setDatasets(read());
-    const onChange = () => setDatasets(read());
-    window.addEventListener("datasets-library-changed", onChange);
-    window.addEventListener("storage", onChange);
-    return () => {
-      window.removeEventListener("datasets-library-changed", onChange);
-      window.removeEventListener("storage", onChange);
-    };
-  }, []);
-
-  const upload = useCallback(async (file: File): Promise<DatasetRecord> => {
-    const parsed = await parseFile(file);
-    const rec: DatasetRecord = {
-      ...parsed,
-      id: `d_${Date.now().toString(36)}`,
-      createdAt: Date.now(),
-      source: "upload",
-    };
-    write([rec, ...read()]);
-    return rec;
-  }, []);
-
-  const remove = useCallback((id: string) => {
-    write(read().filter((r) => r.id !== id));
-  }, []);
-
-  return { datasets, upload, remove };
-}
