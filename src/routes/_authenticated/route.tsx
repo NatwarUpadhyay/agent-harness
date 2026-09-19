@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { seedDemoData } from "@/lib/data/seed.functions";
+import { seedDemoData, seedDatasets } from "@/lib/data/seed.functions";
 import { acceptPendingInvitations } from "@/lib/data/team.functions";
 import { ensureOwnerRole } from "@/lib/data/rbac.functions";
 import { AppShell } from "@/components/layout/AppShell";
@@ -33,8 +33,9 @@ export const Route = createFileRoute("/_authenticated")({
         search: { redirect: location.href },
       });
     }
-    // Fire-and-forget seed (idempotent). Doesn't block navigation.
+    // Fire-and-forget seeds (idempotent). Don't block navigation.
     seedDemoData().catch(() => {});
+    seedDatasets().catch(() => {});
     // Ensure the authenticated user has an owner governance role for their workspace.
     ensureOwnerRole().catch(() => {});
     // Auto-accept any pending team invitations for this user.

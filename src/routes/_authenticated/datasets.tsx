@@ -10,7 +10,7 @@ import { MetricCard } from "@/components/ui/metric-card";
 import { parseFile, formatBytes, type DatasetKind } from "@/lib/data/datasets-store";
 import { listDatasets, saveDataset, deleteDataset, type StoredDataset } from "@/lib/data/datasets.functions";
 
-const kindIcon = (k: DatasetKind) =>
+const kindIcon = (k: string) =>
   k === "jsonl" || k === "json" ? FileJson : k === "markdown" ? FileText : FileSpreadsheet;
 
 const kindColor: Record<string, string> = {
