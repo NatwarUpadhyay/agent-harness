@@ -51,7 +51,12 @@ function DatasetsView() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => removeDataset({ data: { id } }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["datasets"] }),
+    onSuccess: (_result, id) => {
+      queryClient.invalidateQueries({ queryKey: ["datasets"] });
+      if (preview?.id === id) setPreview(null);
+      const name = datasets.find((d) => d.id === id)?.name;
+      toast.success(name ? `Deleted ${name}` : "Dataset deleted");
+    },
     onError: (error: Error) => toast.error(error.message),
   });
   const busy = uploadMutation.isPending;
