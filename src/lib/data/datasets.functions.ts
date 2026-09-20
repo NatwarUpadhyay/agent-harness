@@ -102,7 +102,17 @@ export const deleteDataset = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => idInput.parse(data))
   .handler(async ({ context, data }) => {
-    const { error } = await context.supabase.from("datasets").delete().eq("id", data.id);
+    // .delete() returns no error when the row-level policy blocks it — the row
+    // just isn't deleted. Ask PostgREST to return the deleted rows so a blocked
+    // delete surfaces as a real error instead of a fake success.
+    const { data: deleted, error } = await context.supabase
+      .from("datasets")
+      .delete()
+      .eq("id", data.id)
+      .select("id");
     if (error) throw new Error(`Failed to delete dataset: ${error.message}`);
+    if (!deleted || deleted.length === 0) {
+      throw new Error("Only the workspace owner can delete datasets");
+    }
     return { id: data.id };
   });

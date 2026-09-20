@@ -3,7 +3,7 @@ import { useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, FileSpreadsheet, FileText, FileJson, Trash2, Eye, X, Search, Database } from "lucide-react";
+import { Upload, FileSpreadsheet, FileText, FileJson, Trash2, Eye, X, Search, Database, Download } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { MetricCard } from "@/components/ui/metric-card";
@@ -24,6 +24,21 @@ function relTime(ts: number): string {
   if (s < 3600) return `${Math.floor(s / 60)}m ago`;
   if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
   return new Date(ts).toISOString().slice(0, 10);
+}
+
+function exportPreviewCsv(d: StoredDataset) {
+  if (d.preview.length === 0) return;
+  const escape = (v: string) => (/[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
+  const header = d.columns.map(escape).join(",");
+  const body = d.preview.map((row) => d.columns.map((c) => escape(row[c] ?? "")).join(","));
+  const blob = new Blob([[header, ...body].join("\n")], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${d.name.replace(/\.[^.]+$/, "")}-preview.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast.success(`Exported ${d.preview.length} preview rows`);
 }
 
 function DatasetsView() {
@@ -51,7 +66,12 @@ function DatasetsView() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => removeDataset({ data: { id } }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["datasets"] }),
+    onSuccess: (_result, id) => {
+      queryClient.invalidateQueries({ queryKey: ["datasets"] });
+      if (preview?.id === id) setPreview(null);
+      const name = datasets.find((d) => d.id === id)?.name;
+      toast.success(name ? `Deleted ${name}` : "Dataset deleted");
+    },
     onError: (error: Error) => toast.error(error.message),
   });
   const busy = uploadMutation.isPending;
@@ -93,8 +113,6 @@ function DatasetsView() {
   const onDelete = (d: StoredDataset) => {
     if (!confirm(`Delete "${d.name}"?`)) return;
     deleteMutation.mutate(d.id);
-    if (preview?.id === d.id) setPreview(null);
-    toast.success(`Deleted ${d.name}`);
   };
 
   const kinds: (DatasetKind | "all")[] = ["all", "csv", "jsonl", "json", "markdown", "parquet"];
@@ -236,9 +254,19 @@ function DatasetsView() {
                     {preview.truncated && preview.preview.length > 0 && ` · preview of first ${preview.preview.length}`}
                   </div>
                 </div>
-                <button onClick={() => setPreview(null)} className="p-1.5 rounded hover:bg-[var(--bg-elevated)]">
-                  <X className="h-4 w-4" />
-                </button>
+                <div className="flex items-center gap-1 shrink-0">
+                  {preview.preview.length > 0 && (
+                    <button
+                      onClick={() => exportPreviewCsv(preview)}
+                      className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
+                    >
+                      <Download className="h-3.5 w-3.5" /> Export CSV
+                    </button>
+                  )}
+                  <button onClick={() => setPreview(null)} className="p-1.5 rounded hover:bg-[var(--bg-elevated)]">
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
               <div className="flex-1 overflow-auto p-4">
                 {preview.preview.length === 0 ? (
