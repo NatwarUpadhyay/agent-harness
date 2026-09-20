@@ -98,8 +98,6 @@ function DatasetsView() {
   const onDelete = (d: StoredDataset) => {
     if (!confirm(`Delete "${d.name}"?`)) return;
     deleteMutation.mutate(d.id);
-    if (preview?.id === d.id) setPreview(null);
-    toast.success(`Deleted ${d.name}`);
   };
 
   const kinds: (DatasetKind | "all")[] = ["all", "csv", "jsonl", "json", "markdown", "parquet"];
