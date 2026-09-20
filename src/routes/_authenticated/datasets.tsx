@@ -3,7 +3,7 @@ import { useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, FileSpreadsheet, FileText, FileJson, Trash2, Eye, X, Search, Database } from "lucide-react";
+import { Upload, FileSpreadsheet, FileText, FileJson, Trash2, Eye, X, Search, Database, Download } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { MetricCard } from "@/components/ui/metric-card";
@@ -24,6 +24,21 @@ function relTime(ts: number): string {
   if (s < 3600) return `${Math.floor(s / 60)}m ago`;
   if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
   return new Date(ts).toISOString().slice(0, 10);
+}
+
+function exportPreviewCsv(d: StoredDataset) {
+  if (d.preview.length === 0) return;
+  const escape = (v: string) => (/[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
+  const header = d.columns.map(escape).join(",");
+  const body = d.preview.map((row) => d.columns.map((c) => escape(row[c] ?? "")).join(","));
+  const blob = new Blob([[header, ...body].join("\n")], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${d.name.replace(/\.[^.]+$/, "")}-preview.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast.success(`Exported ${d.preview.length} preview rows`);
 }
 
 function DatasetsView() {
