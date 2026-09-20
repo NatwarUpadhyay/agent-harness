@@ -254,9 +254,19 @@ function DatasetsView() {
                     {preview.truncated && preview.preview.length > 0 && ` · preview of first ${preview.preview.length}`}
                   </div>
                 </div>
-                <button onClick={() => setPreview(null)} className="p-1.5 rounded hover:bg-[var(--bg-elevated)]">
-                  <X className="h-4 w-4" />
-                </button>
+                <div className="flex items-center gap-1 shrink-0">
+                  {preview.preview.length > 0 && (
+                    <button
+                      onClick={() => exportPreviewCsv(preview)}
+                      className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
+                    >
+                      <Download className="h-3.5 w-3.5" /> Export CSV
+                    </button>
+                  )}
+                  <button onClick={() => setPreview(null)} className="p-1.5 rounded hover:bg-[var(--bg-elevated)]">
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
               <div className="flex-1 overflow-auto p-4">
                 {preview.preview.length === 0 ? (
