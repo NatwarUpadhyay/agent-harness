@@ -28,6 +28,8 @@ const saveInput = z.object({
 
 const idInput = z.object({ id: z.string().uuid() });
 
+const renameInput = z.object({ id: z.string().uuid(), name: z.string().min(1).max(300) });
+
 type SupabaseCtx = { supabase: { from: (t: string) => any } };
 
 async function resolveOwnerId(supabase: SupabaseCtx["supabase"], userId: string): Promise<string> {
