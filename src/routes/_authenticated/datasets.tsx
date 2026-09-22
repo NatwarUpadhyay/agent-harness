@@ -257,6 +257,10 @@ function DatasetsView() {
                   className="p-1.5 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]">
                   <Eye className="h-3.5 w-3.5" />
                 </button>
+                <button onClick={() => onRename(d)} aria-label="Rename"
+                  className="p-1.5 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]">
+                  <Pencil className="h-3.5 w-3.5" />
+                </button>
                 <button onClick={() => onDelete(d)} aria-label="Delete"
                   className="p-1.5 rounded text-[var(--text-muted)] hover:text-red-400 hover:bg-red-500/10">
                   <Trash2 className="h-3.5 w-3.5" />
