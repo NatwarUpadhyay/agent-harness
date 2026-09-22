@@ -28,6 +28,8 @@ const saveInput = z.object({
 
 const idInput = z.object({ id: z.string().uuid() });
 
+const renameInput = z.object({ id: z.string().uuid(), name: z.string().min(1).max(300) });
+
 type SupabaseCtx = { supabase: { from: (t: string) => any } };
 
 async function resolveOwnerId(supabase: SupabaseCtx["supabase"], userId: string): Promise<string> {
@@ -115,4 +117,22 @@ export const deleteDataset = createServerFn({ method: "POST" })
       throw new Error("Only the workspace owner can delete datasets");
     }
     return { id: data.id };
+  });
+
+/** Rename a dataset (workspace owner only, enforced by row-level policy). */
+export const renameDataset = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => renameInput.parse(data))
+  .handler(async ({ context, data }) => {
+    const name = data.name.trim();
+    if (name.length === 0) throw new Error("Name cannot be empty");
+    const { data: updated, error } = await context.supabase
+      .from("datasets")
+      .update({ name })
+      .eq("id", data.id)
+      .select("*");
+    if (error) throw new Error(`Failed to rename dataset: ${error.message}`);
+    const row = Array.isArray(updated) ? updated[0] : null;
+    if (!row) throw new Error("Only the workspace owner can rename datasets");
+    return normalize(row as Record<string, unknown>);
   });

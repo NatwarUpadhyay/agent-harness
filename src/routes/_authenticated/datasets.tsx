@@ -3,12 +3,27 @@ import { useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, FileSpreadsheet, FileText, FileJson, Trash2, Eye, X, Search, Database, Download } from "lucide-react";
+import { Upload, FileSpreadsheet, FileText, FileJson, Trash2, Eye, X, Search, Database, Download, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { MetricCard } from "@/components/ui/metric-card";
 import { parseFile, formatBytes, type DatasetKind } from "@/lib/data/datasets-store";
-import { listDatasets, saveDataset, deleteDataset, type StoredDataset } from "@/lib/data/datasets.functions";
+import { listDatasets, saveDataset, deleteDataset, renameDataset, type StoredDataset } from "@/lib/data/datasets.functions";
+
+type ColumnProfile = { column: string; filled: number; unique: number; sample: string };
+
+function profileColumns(d: StoredDataset): ColumnProfile[] {
+  return d.columns.map((c) => {
+    const values = d.preview.map((r) => (r[c] ?? "").trim());
+    const nonEmpty = values.filter((v) => v !== "");
+    return {
+      column: c,
+      filled: values.length === 0 ? 0 : Math.round((nonEmpty.length / values.length) * 100),
+      unique: new Set(nonEmpty).size,
+      sample: nonEmpty[0] ?? "—",
+    };
+  });
+}
 
 const kindIcon = (k: string) =>
   k === "jsonl" || k === "json" ? FileJson : k === "markdown" ? FileText : FileSpreadsheet;
@@ -46,6 +61,7 @@ function DatasetsView() {
   const fetchDatasets = useServerFn(listDatasets);
   const persistDataset = useServerFn(saveDataset);
   const removeDataset = useServerFn(deleteDataset);
+  const renameDatasetFn = useServerFn(renameDataset);
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const [preview, setPreview] = useState<StoredDataset | null>(null);
@@ -71,6 +87,16 @@ function DatasetsView() {
       if (preview?.id === id) setPreview(null);
       const name = datasets.find((d) => d.id === id)?.name;
       toast.success(name ? `Deleted ${name}` : "Dataset deleted");
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  const renameMutation = useMutation({
+    mutationFn: (input: { id: string; name: string }) => renameDatasetFn({ data: input }),
+    onSuccess: (updated) => {
+      queryClient.invalidateQueries({ queryKey: ["datasets"] });
+      setPreview((p) => (p && p.id === updated.id ? updated : p));
+      toast.success(`Renamed to ${updated.name}`);
     },
     onError: (error: Error) => toast.error(error.message),
   });
@@ -113,6 +139,14 @@ function DatasetsView() {
   const onDelete = (d: StoredDataset) => {
     if (!confirm(`Delete "${d.name}"?`)) return;
     deleteMutation.mutate(d.id);
+  };
+
+  const onRename = (d: StoredDataset) => {
+    const next = prompt("Rename dataset", d.name);
+    if (next === null) return;
+    const trimmed = next.trim();
+    if (trimmed === "" || trimmed === d.name) return;
+    renameMutation.mutate({ id: d.id, name: trimmed });
   };
 
   const kinds: (DatasetKind | "all")[] = ["all", "csv", "jsonl", "json", "markdown", "parquet"];
@@ -223,6 +257,10 @@ function DatasetsView() {
                   className="p-1.5 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]">
                   <Eye className="h-3.5 w-3.5" />
                 </button>
+                <button onClick={() => onRename(d)} aria-label="Rename"
+                  className="p-1.5 rounded text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]">
+                  <Pencil className="h-3.5 w-3.5" />
+                </button>
                 <button onClick={() => onDelete(d)} aria-label="Delete"
                   className="p-1.5 rounded text-[var(--text-muted)] hover:text-red-400 hover:bg-red-500/10">
                   <Trash2 className="h-3.5 w-3.5" />
@@ -296,6 +334,27 @@ function DatasetsView() {
                         ))}
                       </tbody>
                     </table>
+                  </div>
+                )}
+                {preview.preview.length > 0 && (
+                  <div className="mt-6">
+                    <SectionHeader title="Column profile" />
+                    <div className="rounded-md border border-[var(--border-subtle)] overflow-hidden">
+                      <div className="grid grid-cols-[1fr_90px_90px_1.2fr] gap-3 px-3 py-2 text-[10px] uppercase tracking-wider text-[var(--text-muted)] bg-[var(--bg-elevated)]/60">
+                        <span>Column</span><span className="text-right">Filled</span><span className="text-right">Unique</span><span>Sample</span>
+                      </div>
+                      {profileColumns(preview).map((p) => (
+                        <div key={p.column} className="grid grid-cols-[1fr_90px_90px_1.2fr] gap-3 px-3 py-2 border-t border-[var(--border-subtle)] text-[12px] font-mono-tabular">
+                          <span className="truncate" title={p.column}>{p.column}</span>
+                          <span className="text-right text-[var(--text-secondary)]">{p.filled}%</span>
+                          <span className="text-right text-[var(--text-secondary)]">{p.unique}</span>
+                          <span className="truncate text-[var(--text-muted)]" title={p.sample}>{p.sample}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-2 text-[10px] text-[var(--text-muted)]">
+                      Calculated from the {preview.preview.length} stored preview rows.
+                    </div>
                   </div>
                 )}
               </div>
