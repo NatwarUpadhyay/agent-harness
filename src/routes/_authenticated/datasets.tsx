@@ -141,6 +141,14 @@ function DatasetsView() {
     deleteMutation.mutate(d.id);
   };
 
+  const onRename = (d: StoredDataset) => {
+    const next = prompt("Rename dataset", d.name);
+    if (next === null) return;
+    const trimmed = next.trim();
+    if (trimmed === "" || trimmed === d.name) return;
+    renameMutation.mutate({ id: d.id, name: trimmed });
+  };
+
   const kinds: (DatasetKind | "all")[] = ["all", "csv", "jsonl", "json", "markdown", "parquet"];
 
   return (
