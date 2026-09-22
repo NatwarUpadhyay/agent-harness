@@ -61,6 +61,7 @@ function DatasetsView() {
   const fetchDatasets = useServerFn(listDatasets);
   const persistDataset = useServerFn(saveDataset);
   const removeDataset = useServerFn(deleteDataset);
+  const renameDatasetFn = useServerFn(renameDataset);
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const [preview, setPreview] = useState<StoredDataset | null>(null);
