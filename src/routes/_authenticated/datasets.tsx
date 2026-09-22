@@ -336,6 +336,27 @@ function DatasetsView() {
                     </table>
                   </div>
                 )}
+                {preview.preview.length > 0 && (
+                  <div className="mt-6">
+                    <SectionHeader title="Column profile" />
+                    <div className="rounded-md border border-[var(--border-subtle)] overflow-hidden">
+                      <div className="grid grid-cols-[1fr_90px_90px_1.2fr] gap-3 px-3 py-2 text-[10px] uppercase tracking-wider text-[var(--text-muted)] bg-[var(--bg-elevated)]/60">
+                        <span>Column</span><span className="text-right">Filled</span><span className="text-right">Unique</span><span>Sample</span>
+                      </div>
+                      {profileColumns(preview).map((p) => (
+                        <div key={p.column} className="grid grid-cols-[1fr_90px_90px_1.2fr] gap-3 px-3 py-2 border-t border-[var(--border-subtle)] text-[12px] font-mono-tabular">
+                          <span className="truncate" title={p.column}>{p.column}</span>
+                          <span className="text-right text-[var(--text-secondary)]">{p.filled}%</span>
+                          <span className="text-right text-[var(--text-secondary)]">{p.unique}</span>
+                          <span className="truncate text-[var(--text-muted)]" title={p.sample}>{p.sample}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-2 text-[10px] text-[var(--text-muted)]">
+                      Calculated from the {preview.preview.length} stored preview rows.
+                    </div>
+                  </div>
+                )}
               </div>
             </motion.div>
           </motion.div>
