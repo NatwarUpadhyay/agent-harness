@@ -3,12 +3,27 @@ import { useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, FileSpreadsheet, FileText, FileJson, Trash2, Eye, X, Search, Database, Download } from "lucide-react";
+import { Upload, FileSpreadsheet, FileText, FileJson, Trash2, Eye, X, Search, Database, Download, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { MetricCard } from "@/components/ui/metric-card";
 import { parseFile, formatBytes, type DatasetKind } from "@/lib/data/datasets-store";
-import { listDatasets, saveDataset, deleteDataset, type StoredDataset } from "@/lib/data/datasets.functions";
+import { listDatasets, saveDataset, deleteDataset, renameDataset, type StoredDataset } from "@/lib/data/datasets.functions";
+
+type ColumnProfile = { column: string; filled: number; unique: number; sample: string };
+
+function profileColumns(d: StoredDataset): ColumnProfile[] {
+  return d.columns.map((c) => {
+    const values = d.preview.map((r) => (r[c] ?? "").trim());
+    const nonEmpty = values.filter((v) => v !== "");
+    return {
+      column: c,
+      filled: values.length === 0 ? 0 : Math.round((nonEmpty.length / values.length) * 100),
+      unique: new Set(nonEmpty).size,
+      sample: nonEmpty[0] ?? "—",
+    };
+  });
+}
 
 const kindIcon = (k: string) =>
   k === "jsonl" || k === "json" ? FileJson : k === "markdown" ? FileText : FileSpreadsheet;
