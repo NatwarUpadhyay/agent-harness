@@ -90,6 +90,16 @@ function DatasetsView() {
     },
     onError: (error: Error) => toast.error(error.message),
   });
+
+  const renameMutation = useMutation({
+    mutationFn: (input: { id: string; name: string }) => renameDatasetFn({ data: input }),
+    onSuccess: (updated) => {
+      queryClient.invalidateQueries({ queryKey: ["datasets"] });
+      setPreview((p) => (p && p.id === updated.id ? updated : p));
+      toast.success(`Renamed to ${updated.name}`);
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
   const busy = uploadMutation.isPending;
 
   const filtered = useMemo(() => {
