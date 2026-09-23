@@ -67,6 +67,7 @@ function DatasetsView() {
   const [preview, setPreview] = useState<StoredDataset | null>(null);
   const [query, setQuery] = useState("");
   const [kindFilter, setKindFilter] = useState<DatasetKind | "all">("all");
+  const [sortBy, setSortBy] = useState<"newest" | "name" | "rows" | "size">("newest");
 
   const { data: rows } = useQuery({
     queryKey: ["datasets"],
@@ -103,11 +104,18 @@ function DatasetsView() {
   const busy = uploadMutation.isPending;
 
   const filtered = useMemo(() => {
-    return datasets.filter((d) =>
+    const q = query.trim().toLowerCase();
+    const list = datasets.filter((d) =>
       (kindFilter === "all" || d.kind === kindFilter) &&
-      (query.trim() === "" || d.name.toLowerCase().includes(query.toLowerCase()))
+      (q === "" || d.name.toLowerCase().includes(q))
     );
-  }, [datasets, kindFilter, query]);
+    const sorted = [...list];
+    if (sortBy === "name") sorted.sort((a, b) => a.name.localeCompare(b.name));
+    else if (sortBy === "rows") sorted.sort((a, b) => b.rows - a.rows);
+    else if (sortBy === "size") sorted.sort((a, b) => b.sizeBytes - a.sizeBytes);
+    else sorted.sort((a, b) => b.createdAt - a.createdAt);
+    return sorted;
+  }, [datasets, kindFilter, query, sortBy]);
 
   const totals = useMemo(() => ({
     files: datasets.length,
@@ -214,6 +222,17 @@ function DatasetsView() {
               }`}>{k}</button>
           ))}
         </div>
+        <select
+          aria-label="Sort datasets"
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+          className="h-8 px-2 rounded-md bg-[var(--bg-surface)] border border-[var(--border-default)] text-[12px] text-[var(--text-secondary)] outline-none focus:border-[var(--accent-border)]"
+        >
+          <option value="newest">Newest first</option>
+          <option value="name">Name A–Z</option>
+          <option value="rows">Most rows</option>
+          <option value="size">Largest size</option>
+        </select>
       </div>
 
       <div className="mt-4 rounded-[10px] border border-[var(--border-default)] bg-[var(--bg-surface)] overflow-hidden">
