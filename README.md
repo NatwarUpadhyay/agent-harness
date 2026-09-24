@@ -44,6 +44,8 @@ It is built for teams who want a shared visual language for AI systems before wr
 > **Phase 61 — Workspace-shared dataset library** — Datasets moved out of browser-only storage into a new RLS-backed `public.datasets` table scoped to the workspace: every member sees the same uploads, previews, and curated seed corpora (support tickets, golden eval set, red-team prompts), while only the workspace owner can delete entries. Files are still parsed locally in the browser — only metadata and a ~50-row preview are persisted — via new `listDatasets` / `saveDataset` / `deleteDataset` server functions, and the curated seeds are inserted once per workspace by the idempotent `seedDatasets` seed.
 >
 > **Phase 64 — Dataset library sorting** — The dataset library can now be sorted by newest, name, row count, or size, combined with the existing search and type filters.
+>
+> **Phase 65 — Copy dataset schema** — The dataset preview modal now has a "Copy columns" button that copies the dataset's column names to the clipboard in one click, so schemas can be pasted straight into prompts, eval rubrics, or docs.
 
 > **Phase 63 — Dataset curation: rename + column profile** — Workspace owners can rename any dataset inline from the library (new `renameDataset` server function plus an owner-only `UPDATE` policy on `public.datasets`; teammates get a clear "Only the workspace owner can rename datasets" error). The preview modal also gained a Column profile panel that reports fill rate, distinct-value count, and a sample value per column, computed from the stored preview rows.
 >
