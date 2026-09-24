@@ -3,7 +3,7 @@ import { useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, FileSpreadsheet, FileText, FileJson, Trash2, Eye, X, Search, Database, Download, Pencil } from "lucide-react";
+import { Upload, FileSpreadsheet, FileText, FileJson, Trash2, Eye, X, Search, Database, Download, Pencil, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { MetricCard } from "@/components/ui/metric-card";
@@ -313,12 +313,25 @@ function DatasetsView() {
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
                   {preview.preview.length > 0 && (
-                    <button
-                      onClick={() => exportPreviewCsv(preview)}
-                      className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
-                    >
-                      <Download className="h-3.5 w-3.5" /> Export CSV
-                    </button>
+                    <>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(preview.columns.join(", ")).then(
+                            () => toast.success(`Copied ${preview.columns.length} column names`),
+                            () => toast.error("Could not copy to clipboard"),
+                          );
+                        }}
+                        className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
+                      >
+                        <Copy className="h-3.5 w-3.5" /> Copy columns
+                      </button>
+                      <button
+                        onClick={() => exportPreviewCsv(preview)}
+                        className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
+                      >
+                        <Download className="h-3.5 w-3.5" /> Export CSV
+                      </button>
+                    </>
                   )}
                   <button onClick={() => setPreview(null)} className="p-1.5 rounded hover:bg-[var(--bg-elevated)]">
                     <X className="h-4 w-4" />
