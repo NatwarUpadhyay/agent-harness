@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { motion, AnimatePresence } from "framer-motion";
@@ -68,6 +68,11 @@ function DatasetsView() {
   const [query, setQuery] = useState("");
   const [kindFilter, setKindFilter] = useState<DatasetKind | "all">("all");
   const [sortBy, setSortBy] = useState<"newest" | "name" | "rows" | "size">("newest");
+  const [rowQuery, setRowQuery] = useState("");
+
+  useEffect(() => {
+    setRowQuery("");
+  }, [preview?.id]);
 
   const { data: rows } = useQuery({
     queryKey: ["datasets"],
@@ -107,7 +112,9 @@ function DatasetsView() {
     const q = query.trim().toLowerCase();
     const list = datasets.filter((d) =>
       (kindFilter === "all" || d.kind === kindFilter) &&
-      (q === "" || d.name.toLowerCase().includes(q))
+      (q === "" ||
+        d.name.toLowerCase().includes(q) ||
+        d.columns.some((c) => c.toLowerCase().includes(q)))
     );
     const sorted = [...list];
     if (sortBy === "name") sorted.sort((a, b) => a.name.localeCompare(b.name));
