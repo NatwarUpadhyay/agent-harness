@@ -351,30 +351,56 @@ function DatasetsView() {
                     {preview.kind === "parquet" ? "Parquet is stored as metadata only." : "No preview rows available."}
                   </div>
                 ) : (
-                  <SectionHeader title={`Preview · ${preview.columns.length} columns`} />
-                )}
-                {preview.preview.length > 0 && (
-                  <div className="overflow-x-auto rounded-md border border-[var(--border-subtle)]">
-                    <table className="w-full text-[12px] font-mono-tabular">
-                      <thead className="bg-[var(--bg-elevated)]/60 text-[var(--text-muted)] uppercase text-[10px] tracking-wider">
-                        <tr>
-                          {preview.columns.map((c) => (
-                            <th key={c} className="px-3 py-2 text-left font-normal whitespace-nowrap">{c}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {preview.preview.map((row, i) => (
-                          <tr key={i} className="border-t border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)]/40">
-                            {preview.columns.map((c) => (
-                              <td key={c} className="px-3 py-2 align-top text-[var(--text-secondary)] max-w-[280px] truncate" title={row[c]}>{row[c] || "—"}</td>
-                            ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <SectionHeader title={`Preview · ${preview.columns.length} columns`} />
+                    <div className="relative">
+                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--text-muted)]" />
+                      <input
+                        value={rowQuery}
+                        onChange={(e) => setRowQuery(e.target.value)}
+                        aria-label="Filter preview rows"
+                        placeholder="Filter rows…"
+                        className="h-8 w-[200px] rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] pl-8 pr-2.5 text-[12px] outline-none focus:border-[var(--accent)]"
+                      />
+                    </div>
                   </div>
                 )}
+                {preview.preview.length > 0 && (() => {
+                  const rq = rowQuery.trim().toLowerCase();
+                  const visibleRows = rq === ""
+                    ? preview.preview
+                    : preview.preview.filter((row) =>
+                        preview.columns.some((c) => (row[c] ?? "").toLowerCase().includes(rq)));
+                  return (
+                    <>
+                      <div className="overflow-x-auto rounded-md border border-[var(--border-subtle)]">
+                        <table className="w-full text-[12px] font-mono-tabular">
+                          <thead className="bg-[var(--bg-elevated)]/60 text-[var(--text-muted)] uppercase text-[10px] tracking-wider">
+                            <tr>
+                              {preview.columns.map((c) => (
+                                <th key={c} className="px-3 py-2 text-left font-normal whitespace-nowrap">{c}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {visibleRows.map((row, i) => (
+                              <tr key={i} className="border-t border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)]/40">
+                                {preview.columns.map((c) => (
+                                  <td key={c} className="px-3 py-2 align-top text-[var(--text-secondary)] max-w-[280px] truncate" title={row[c]}>{row[c] || "—"}</td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      {rq !== "" && (
+                        <div className="mt-2 text-[10px] text-[var(--text-muted)]">
+                          {visibleRows.length} of {preview.preview.length} preview rows match “{rowQuery.trim()}”.
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
                 {preview.preview.length > 0 && (
                   <div className="mt-6">
                     <SectionHeader title="Column profile" />
