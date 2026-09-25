@@ -45,6 +45,8 @@ It is built for teams who want a shared visual language for AI systems before wr
 >
 > **Phase 64 — Dataset library sorting** — The dataset library can now be sorted by newest, name, row count, or size, combined with the existing search and type filters.
 >
+> **Phase 66 — Search inside datasets** — The library search box now matches column names as well as dataset names, and the preview modal has a "Filter rows" box that narrows the stored preview rows across every column, with a match count.
+
 > **Phase 65 — Copy dataset schema** — The dataset preview modal now has a "Copy columns" button that copies the dataset's column names to the clipboard in one click, so schemas can be pasted straight into prompts, eval rubrics, or docs.
 
 > **Phase 63 — Dataset curation: rename + column profile** — Workspace owners can rename any dataset inline from the library (new `renameDataset` server function plus an owner-only `UPDATE` policy on `public.datasets`; teammates get a clear "Only the workspace owner can rename datasets" error). The preview modal also gained a Column profile panel that reports fill rate, distinct-value count, and a sample value per column, computed from the stored preview rows.
