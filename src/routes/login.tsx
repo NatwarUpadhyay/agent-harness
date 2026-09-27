@@ -11,9 +11,10 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/login")({
-  // The form's initial state comes from browser-stored org auth settings, so
-  // rendering it on the server produces a hydration mismatch (blank screen).
-  ssr: false,
+  // Browser-stored org auth settings are read in useEffect (post-mount), so the
+  // page is SSR-safe. Do NOT set ssr:false here — the server would render the
+  // Suspense fallback while the client renders the form, a guaranteed hydration
+  // mismatch that blanks the screen in production.
   validateSearch: searchSchema,
   head: () => ({
     meta: [

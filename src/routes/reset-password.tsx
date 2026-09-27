@@ -9,7 +9,9 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/reset-password")({
-  ssr: false,
+  // Recovery tokens are handled in useEffect (post-mount); keep SSR on so the
+  // server HTML matches the client's first render (ssr:false caused a hydration
+  // mismatch / blank screen in production).
   validateSearch: searchSchema,
   head: () => ({ meta: [{ title: "Reset password — Harness" }] }),
   component: ResetPasswordPage,
