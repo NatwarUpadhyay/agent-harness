@@ -56,6 +56,26 @@ function exportPreviewCsv(d: StoredDataset) {
   toast.success(`Exported ${d.preview.length} preview rows`);
 }
 
+function exportPreviewJson(d: StoredDataset) {
+  if (d.preview.length === 0) return;
+  const payload = {
+    name: d.name,
+    kind: d.kind,
+    rows: d.rows,
+    columns: d.columns,
+    truncated: d.truncated,
+    data: d.preview,
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${d.name.replace(/\.[^.]+$/, "")}-preview.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast.success(`Exported ${d.preview.length} preview rows as JSON`);
+}
+
 function DatasetsView() {
   const queryClient = useQueryClient();
   const fetchDatasets = useServerFn(listDatasets);
@@ -337,6 +357,12 @@ function DatasetsView() {
                         className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
                       >
                         <Download className="h-3.5 w-3.5" /> Export CSV
+                      </button>
+                      <button
+                        onClick={() => exportPreviewJson(preview)}
+                        className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
+                      >
+                        <FileJson className="h-3.5 w-3.5" /> Export JSON
                       </button>
                     </>
                   )}
