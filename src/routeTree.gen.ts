@@ -13,7 +13,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
-import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as ShareIdRouteImport } from './routes/share/$id'
 import { Route as CheckoutSuccessRouteImport } from './routes/checkout/success'
 import { Route as AuthenticatedUsageRouteImport } from './routes/_authenticated/usage'
@@ -80,10 +80,10 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
+const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AuthenticatedRouteRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ShareIdRoute = ShareIdRouteImport.update({
   id: '/share/$id',
@@ -326,7 +326,7 @@ const ApiPublicScimV2UsersIdRoute = ApiPublicScimV2UsersIdRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AuthenticatedIndexRoute
+  '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -378,6 +378,7 @@ export interface FileRoutesByFullPath {
   '/api/public/scim/v2/Users/$id': typeof ApiPublicScimV2UsersIdRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -422,7 +423,6 @@ export interface FileRoutesByTo {
   '/usage': typeof AuthenticatedUsageRoute
   '/checkout/success': typeof CheckoutSuccessRoute
   '/share/$id': typeof ShareIdRoute
-  '/': typeof AuthenticatedIndexRoute
   '/api/public/scheduler/tick': typeof ApiPublicSchedulerTickRoute
   '/api/public/scim/v2': typeof ApiPublicScimV2RouteWithChildren
   '/api/public/triggers/$token': typeof ApiPublicTriggersTokenRoute
@@ -431,6 +431,7 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
@@ -476,7 +477,6 @@ export interface FileRoutesById {
   '/_authenticated/usage': typeof AuthenticatedUsageRoute
   '/checkout/success': typeof CheckoutSuccessRoute
   '/share/$id': typeof ShareIdRoute
-  '/_authenticated/': typeof AuthenticatedIndexRoute
   '/api/public/scheduler/tick': typeof ApiPublicSchedulerTickRoute
   '/api/public/scim/v2': typeof ApiPublicScimV2RouteWithChildren
   '/api/public/triggers/$token': typeof ApiPublicTriggersTokenRoute
@@ -538,6 +538,7 @@ export interface FileRouteTypes {
     | '/api/public/scim/v2/Users/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/login'
     | '/pricing'
     | '/reset-password'
@@ -582,7 +583,6 @@ export interface FileRouteTypes {
     | '/usage'
     | '/checkout/success'
     | '/share/$id'
-    | '/'
     | '/api/public/scheduler/tick'
     | '/api/public/scim/v2'
     | '/api/public/triggers/$token'
@@ -590,6 +590,7 @@ export interface FileRouteTypes {
     | '/api/public/scim/v2/Users/$id'
   id:
     | '__root__'
+    | '/'
     | '/_authenticated'
     | '/login'
     | '/pricing'
@@ -635,7 +636,6 @@ export interface FileRouteTypes {
     | '/_authenticated/usage'
     | '/checkout/success'
     | '/share/$id'
-    | '/_authenticated/'
     | '/api/public/scheduler/tick'
     | '/api/public/scim/v2'
     | '/api/public/triggers/$token'
@@ -644,6 +644,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   LoginRoute: typeof LoginRoute
   PricingRoute: typeof PricingRoute
@@ -685,12 +686,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/': {
-      id: '/_authenticated/'
+    '/': {
+      id: '/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/share/$id': {
       id: '/share/$id'
@@ -1057,7 +1058,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedToolsRoute: typeof AuthenticatedToolsRoute
   AuthenticatedTopologyRoute: typeof AuthenticatedTopologyRoute
   AuthenticatedUsageRoute: typeof AuthenticatedUsageRoute
-  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -1100,7 +1100,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedToolsRoute: AuthenticatedToolsRoute,
   AuthenticatedTopologyRoute: AuthenticatedTopologyRoute,
   AuthenticatedUsageRoute: AuthenticatedUsageRoute,
-  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -1130,6 +1129,7 @@ const ApiPublicScimV2RouteWithChildren = ApiPublicScimV2Route._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   LoginRoute: LoginRoute,
   PricingRoute: PricingRoute,
