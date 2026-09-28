@@ -45,6 +45,8 @@ It is built for teams who want a shared visual language for AI systems before wr
 >
 > **Phase 64 — Dataset library sorting** — The dataset library can now be sorted by newest, name, row count, or size, combined with the existing search and type filters.
 >
+> **Phase 68 — Filter-aware exports** — "Export CSV" and "Export JSON" in the dataset preview now download only the rows matching the "Filter rows" box, with a clear message when nothing matches.
+
 > **Phase 67 — Export preview as JSON** — The dataset preview modal now offers an "Export JSON" download next to "Export CSV", bundling the dataset's name, kind, columns, row count, and stored preview rows into a single pretty-printed JSON file.
 
 > **Phase 66 — Search inside datasets** — The library search box now matches column names as well as dataset names, and the preview modal has a "Filter rows" box that narrows the stored preview rows across every column, with a match count.
