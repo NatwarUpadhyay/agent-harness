@@ -41,8 +41,20 @@ function relTime(ts: number): string {
   return new Date(ts).toISOString().slice(0, 10);
 }
 
+function withFilteredRows(d: StoredDataset, query: string): StoredDataset {
+  const q = query.trim().toLowerCase();
+  if (q === "") return d;
+  return {
+    ...d,
+    preview: d.preview.filter((row) => d.columns.some((c) => (row[c] ?? "").toLowerCase().includes(q))),
+  };
+}
+
 function exportPreviewCsv(d: StoredDataset) {
-  if (d.preview.length === 0) return;
+  if (d.preview.length === 0) {
+    toast.error("No rows match the current filter");
+    return;
+  }
   const escape = (v: string) => (/[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
   const header = d.columns.map(escape).join(",");
   const body = d.preview.map((row) => d.columns.map((c) => escape(row[c] ?? "")).join(","));
@@ -57,7 +69,10 @@ function exportPreviewCsv(d: StoredDataset) {
 }
 
 function exportPreviewJson(d: StoredDataset) {
-  if (d.preview.length === 0) return;
+  if (d.preview.length === 0) {
+    toast.error("No rows match the current filter");
+    return;
+  }
   const payload = {
     name: d.name,
     kind: d.kind,
@@ -353,13 +368,13 @@ function DatasetsView() {
                         <Copy className="h-3.5 w-3.5" /> Copy columns
                       </button>
                       <button
-                        onClick={() => exportPreviewCsv(preview)}
+                        onClick={() => exportPreviewCsv(withFilteredRows(preview, rowQuery))}
                         className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
                       >
                         <Download className="h-3.5 w-3.5" /> Export CSV
                       </button>
                       <button
-                        onClick={() => exportPreviewJson(preview)}
+                        onClick={() => exportPreviewJson(withFilteredRows(preview, rowQuery))}
                         className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
                       >
                         <FileJson className="h-3.5 w-3.5" /> Export JSON
