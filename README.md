@@ -45,6 +45,8 @@ It is built for teams who want a shared visual language for AI systems before wr
 >
 > **Phase 64 — Dataset library sorting** — The dataset library can now be sorted by newest, name, row count, or size, combined with the existing search and type filters.
 >
+> **Phase 69 — Copy rows to clipboard** — The dataset preview modal now has a "Copy rows" button that copies the filtered preview rows to the clipboard as pretty-printed JSON, so rows can be pasted straight into prompts, evals, or docs without downloading a file.
+
 > **Phase 68 — Filter-aware exports** — "Export CSV" and "Export JSON" in the dataset preview now download only the rows matching the "Filter rows" box, with a clear message when nothing matches.
 
 > **Phase 67 — Export preview as JSON** — The dataset preview modal now offers an "Export JSON" download next to "Export CSV", bundling the dataset's name, kind, columns, row count, and stored preview rows into a single pretty-printed JSON file.
