@@ -368,6 +368,22 @@ function DatasetsView() {
                         <Copy className="h-3.5 w-3.5" /> Copy columns
                       </button>
                       <button
+                        onClick={() => {
+                          const filtered = withFilteredRows(preview, rowQuery);
+                          if (filtered.preview.length === 0) {
+                            toast.error("No rows match the current filter");
+                            return;
+                          }
+                          navigator.clipboard.writeText(JSON.stringify(filtered.preview, null, 2)).then(
+                            () => toast.success(`Copied ${filtered.preview.length} preview rows as JSON`),
+                            () => toast.error("Could not copy to clipboard"),
+                          );
+                        }}
+                        className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
+                      >
+                        <Copy className="h-3.5 w-3.5" /> Copy rows
+                      </button>
+                      <button
                         onClick={() => exportPreviewCsv(withFilteredRows(preview, rowQuery))}
                         className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
                       >
