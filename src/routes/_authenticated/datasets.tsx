@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, FileSpreadsheet, FileText, FileJson, Trash2, Eye, X, Search, Database, Download, Pencil, Copy } from "lucide-react";
+import { Upload, FileSpreadsheet, FileText, FileJson, Trash2, Eye, X, Search, Database, Download, Pencil, Copy, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { MetricCard } from "@/components/ui/metric-card";
@@ -428,10 +428,31 @@ function DatasetsView() {
                 )}
                 {preview.preview.length > 0 && (() => {
                   const rq = rowQuery.trim().toLowerCase();
-                  const visibleRows = rq === ""
+                  const filteredRows = rq === ""
                     ? preview.preview
                     : preview.preview.filter((row) =>
                         preview.columns.some((c) => (row[c] ?? "").toLowerCase().includes(rq)));
+                  const visibleRows = sortCol === null
+                    ? filteredRows
+                    : [...filteredRows].sort((a, b) => {
+                        const av = a[sortCol] ?? "";
+                        const bv = b[sortCol] ?? "";
+                        const an = Number(av);
+                        const bn = Number(bv);
+                        const cmp = av !== "" && bv !== "" && !Number.isNaN(an) && !Number.isNaN(bn)
+                          ? an - bn
+                          : av.localeCompare(bv);
+                        return sortDir === "asc" ? cmp : -cmp;
+                      });
+                  const toggleSort = (col: string) => {
+                    if (sortCol === col) {
+                      if (sortDir === "asc") setSortDir("desc");
+                      else { setSortCol(null); setSortDir("asc"); }
+                    } else {
+                      setSortCol(col);
+                      setSortDir("asc");
+                    }
+                  };
                   return (
                     <>
                       <div className="overflow-x-auto rounded-md border border-[var(--border-subtle)]">
@@ -439,7 +460,19 @@ function DatasetsView() {
                           <thead className="bg-[var(--bg-elevated)]/60 text-[var(--text-muted)] uppercase text-[10px] tracking-wider">
                             <tr>
                               {preview.columns.map((c) => (
-                                <th key={c} className="px-3 py-2 text-left font-normal whitespace-nowrap">{c}</th>
+                                <th key={c} className="px-3 py-2 text-left font-normal whitespace-nowrap">
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleSort(c)}
+                                    aria-label={`Sort by ${c}`}
+                                    className="inline-flex items-center gap-1 hover:text-[var(--text-secondary)]"
+                                  >
+                                    {c}
+                                    {sortCol === c
+                                      ? (sortDir === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)
+                                      : <ArrowUpDown className="h-3 w-3 opacity-40" />}
+                                  </button>
+                                </th>
                               ))}
                             </tr>
                           </thead>
