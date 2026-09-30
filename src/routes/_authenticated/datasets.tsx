@@ -104,9 +104,13 @@ function DatasetsView() {
   const [kindFilter, setKindFilter] = useState<DatasetKind | "all">("all");
   const [sortBy, setSortBy] = useState<"newest" | "name" | "rows" | "size">("newest");
   const [rowQuery, setRowQuery] = useState("");
+  const [sortCol, setSortCol] = useState<string | null>(null);
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
   useEffect(() => {
     setRowQuery("");
+    setSortCol(null);
+    setSortDir("asc");
   }, [preview?.id]);
 
   const { data: rows } = useQuery({
