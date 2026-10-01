@@ -107,6 +107,21 @@ function DatasetsView() {
   const [sortCol, setSortCol] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
+  const viewRows = (d: StoredDataset): StoredDataset => {
+    const f = withFilteredRows(d, rowQuery);
+    if (sortCol === null) return f;
+    const col = sortCol;
+    const sorted = [...f.preview].sort((a, b) => {
+      const av = a[col] ?? "";
+      const bv = b[col] ?? "";
+      const an = Number(av);
+      const bn = Number(bv);
+      const cmp = av !== "" && bv !== "" && !Number.isNaN(an) && !Number.isNaN(bn) ? an - bn : av.localeCompare(bv);
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+    return { ...f, preview: sorted };
+  };
+
   useEffect(() => {
     setRowQuery("");
     setSortCol(null);
@@ -373,7 +388,7 @@ function DatasetsView() {
                       </button>
                       <button
                         onClick={() => {
-                          const filtered = withFilteredRows(preview, rowQuery);
+                          const filtered = viewRows(preview);
                           if (filtered.preview.length === 0) {
                             toast.error("No rows match the current filter");
                             return;
@@ -388,13 +403,13 @@ function DatasetsView() {
                         <Copy className="h-3.5 w-3.5" /> Copy rows
                       </button>
                       <button
-                        onClick={() => exportPreviewCsv(withFilteredRows(preview, rowQuery))}
+                        onClick={() => exportPreviewCsv(viewRows(preview))}
                         className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
                       >
                         <Download className="h-3.5 w-3.5" /> Export CSV
                       </button>
                       <button
-                        onClick={() => exportPreviewJson(withFilteredRows(preview, rowQuery))}
+                        onClick={() => exportPreviewJson(viewRows(preview))}
                         className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
                       >
                         <FileJson className="h-3.5 w-3.5" /> Export JSON
