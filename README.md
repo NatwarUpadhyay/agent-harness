@@ -45,6 +45,8 @@ It is built for teams who want a shared visual language for AI systems before wr
 >
 > **Phase 64 — Dataset library sorting** — The dataset library can now be sorted by newest, name, row count, or size, combined with the existing search and type filters.
 >
+> **Phase 72 — Reset view** — the dataset preview shows a "Reset view" button whenever a row filter or column sort is active, clearing both in one click.
+
 > **Phase 71 — Exports follow sort order** — Copy rows, Export CSV and Export JSON in the dataset preview now keep the column sort you picked, along with the row filter.
 
 > **Phase 70 — Sortable preview columns** — Column headers in the dataset preview modal are now clickable: click to sort ascending, again for descending, and a third time to clear. Numeric columns sort numerically; sorting combines with the row filter.
