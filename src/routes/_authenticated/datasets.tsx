@@ -439,6 +439,14 @@ function DatasetsView() {
                         className="h-8 w-[200px] rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] pl-8 pr-2.5 text-[12px] outline-none focus:border-[var(--accent)]"
                       />
                     </div>
+                    {(rowQuery !== "" || sortCol !== null) && (
+                      <button
+                        onClick={() => { setRowQuery(""); setSortCol(null); setSortDir("asc"); }}
+                        className="h-8 px-2.5 rounded-md border border-[var(--border-subtle)] text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                      >
+                        Reset view
+                      </button>
+                    )}
                   </div>
                 )}
                 {preview.preview.length > 0 && (() => {
