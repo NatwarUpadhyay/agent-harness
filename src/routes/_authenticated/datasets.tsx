@@ -482,6 +482,7 @@ function DatasetsView() {
                         <table className="w-full text-[12px] font-mono-tabular">
                           <thead className="bg-[var(--bg-elevated)]/60 text-[var(--text-muted)] uppercase text-[10px] tracking-wider">
                             <tr>
+                              <th className="px-3 py-2 text-left font-normal w-10">#</th>
                               {preview.columns.map((c) => (
                                 <th key={c} className="px-3 py-2 text-left font-normal whitespace-nowrap">
                                   <button
@@ -502,6 +503,7 @@ function DatasetsView() {
                           <tbody>
                             {visibleRows.map((row, i) => (
                               <tr key={i} className="border-t border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)]/40">
+                                <td className="px-3 py-2 align-top text-[var(--text-muted)]">{i + 1}</td>
                                 {preview.columns.map((c) => (
                                   <td key={c} className="px-3 py-2 align-top text-[var(--text-secondary)] max-w-[280px] truncate" title={row[c]}>{row[c] || "—"}</td>
                                 ))}
