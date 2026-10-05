@@ -483,6 +483,7 @@ function DatasetsView() {
                           <thead className="bg-[var(--bg-elevated)]/60 text-[var(--text-muted)] uppercase text-[10px] tracking-wider">
                             <tr>
                               <th className="px-3 py-2 text-left font-normal w-10">#</th>
+                              <th className="px-2 py-2 w-8" aria-label="Row actions" />
                               {preview.columns.map((c) => (
                                 <th key={c} className="px-3 py-2 text-left font-normal whitespace-nowrap">
                                   <button
@@ -504,6 +505,20 @@ function DatasetsView() {
                             {visibleRows.map((row, i) => (
                               <tr key={i} className="border-t border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)]/40">
                                 <td className="px-3 py-2 align-top text-[var(--text-muted)]">{i + 1}</td>
+                                <td className="px-2 py-2 align-top">
+                                  <button
+                                    type="button"
+                                    aria-label={`Copy row ${i + 1} as JSON`}
+                                    title="Copy row as JSON"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(JSON.stringify(row, null, 2));
+                                      toast.success(`Row ${i + 1} copied`);
+                                    }}
+                                    className="text-[var(--text-muted)] hover:text-[var(--text-primary)] opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                  >
+                                    <Copy className="h-3 w-3" />
+                                  </button>
+                                </td>
                                 {preview.columns.map((c) => (
                                   <td key={c} className="px-3 py-2 align-top text-[var(--text-secondary)] max-w-[280px] truncate" title={row[c]}>{row[c] || "—"}</td>
                                 ))}
