@@ -91,6 +91,21 @@ function exportPreviewJson(d: StoredDataset) {
   toast.success(`Exported ${d.preview.length} preview rows as JSON`);
 }
 
+function copyPreviewMarkdown(d: StoredDataset) {
+  if (d.preview.length === 0) {
+    toast.error("No rows match the current filter");
+    return;
+  }
+  const cell = (v: string) => v.replace(/\|/g, "\\|").replace(/\n/g, " ");
+  const header = `| ${d.columns.map(cell).join(" | ")} |`;
+  const sep = `| ${d.columns.map(() => "---").join(" | ")} |`;
+  const body = d.preview.map((row) => `| ${d.columns.map((c) => cell(row[c] ?? "")).join(" | ")} |`);
+  navigator.clipboard.writeText([header, sep, ...body].join("\n")).then(
+    () => toast.success(`Copied ${d.preview.length} preview rows as a Markdown table`),
+    () => toast.error("Could not copy to clipboard"),
+  );
+}
+
 function DatasetsView() {
   const queryClient = useQueryClient();
   const fetchDatasets = useServerFn(listDatasets);
@@ -403,7 +418,7 @@ function DatasetsView() {
                         <Copy className="h-3.5 w-3.5" /> Copy rows
                       </button>
                       <button
-                        onClick={() => exportPreviewCsv(viewRows(preview))}
+                        onClick={() => copyPreviewMarkdown(viewRows(preview))}
                         className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
                       >
                         <Download className="h-3.5 w-3.5" /> Export CSV
