@@ -421,6 +421,12 @@ function DatasetsView() {
                         onClick={() => copyPreviewMarkdown(viewRows(preview))}
                         className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
                       >
+                        <Copy className="h-3.5 w-3.5" /> Copy as Markdown
+                      </button>
+                      <button
+                        onClick={() => exportPreviewCsv(viewRows(preview))}
+                        className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
+                      >
                         <Download className="h-3.5 w-3.5" /> Export CSV
                       </button>
                       <button
