@@ -45,6 +45,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 >
 > **Phase 64 — Dataset library sorting** — The dataset library can now be sorted by newest, name, row count, or size, combined with the existing search and type filters.
 >
+> **Phase 76 — Copy as CSV** — the dataset preview toolbar now has a "Copy as CSV" button that copies the filtered (and sorted) preview rows to the clipboard as properly escaped CSV, ready to paste into spreadsheets.
 > **Phase 75 — Copy as Markdown** — the dataset preview toolbar now has a "Copy as Markdown" button that copies the filtered (and sorted) preview rows as a Markdown table, ready to paste into docs, READMEs, or issues.
 > **Phase 74 — Copy a single row** — hovering any row in the dataset preview reveals a copy button that copies just that row to the clipboard as JSON.
 > **Phase 73 — Row numbers** — the dataset preview table now shows a "#" row-number column, making it easy to reference specific preview rows in reviews and discussions.
