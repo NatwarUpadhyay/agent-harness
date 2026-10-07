@@ -106,6 +106,20 @@ function copyPreviewMarkdown(d: StoredDataset) {
   );
 }
 
+function copyPreviewCsv(d: StoredDataset) {
+  if (d.preview.length === 0) {
+    toast.error("No rows match the current filter");
+    return;
+  }
+  const escape = (v: string) => (/[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
+  const header = d.columns.map(escape).join(",");
+  const body = d.preview.map((row) => d.columns.map((c) => escape(row[c] ?? "")).join(","));
+  navigator.clipboard.writeText([header, ...body].join("\n")).then(
+    () => toast.success(`Copied ${d.preview.length} preview rows as CSV`),
+    () => toast.error("Could not copy to clipboard"),
+  );
+}
+
 function DatasetsView() {
   const queryClient = useQueryClient();
   const fetchDatasets = useServerFn(listDatasets);
@@ -422,6 +436,12 @@ function DatasetsView() {
                         className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
                       >
                         <Copy className="h-3.5 w-3.5" /> Copy as Markdown
+                      </button>
+                      <button
+                        onClick={() => copyPreviewCsv(viewRows(preview))}
+                        className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]"
+                      >
+                        <Copy className="h-3.5 w-3.5" /> Copy as CSV
                       </button>
                       <button
                         onClick={() => exportPreviewCsv(viewRows(preview))}
