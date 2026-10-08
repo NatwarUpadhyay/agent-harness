@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, FileSpreadsheet, FileText, FileJson, Trash2, Eye, X, Search, Database, Download, Pencil, Copy, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Upload, FileSpreadsheet, FileText, FileJson, Trash2, Eye, X, Search, Database, Download, Pencil, Copy, ArrowUpDown, ArrowUp, ArrowDown, WrapText } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { MetricCard } from "@/components/ui/metric-card";
@@ -133,6 +133,7 @@ function DatasetsView() {
   const [kindFilter, setKindFilter] = useState<DatasetKind | "all">("all");
   const [sortBy, setSortBy] = useState<"newest" | "name" | "rows" | "size">("newest");
   const [rowQuery, setRowQuery] = useState("");
+  const [wrapText, setWrapText] = useState(false);
   const [sortCol, setSortCol] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
@@ -480,6 +481,19 @@ function DatasetsView() {
                         className="h-8 w-[200px] rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] pl-8 pr-2.5 text-[12px] outline-none focus:border-[var(--accent)]"
                       />
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => setWrapText((w) => !w)}
+                      aria-pressed={wrapText}
+                      title={wrapText ? "Truncate long cell values" : "Wrap long cell values"}
+                      className={`inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md border text-[12px] ${
+                        wrapText
+                          ? "border-[var(--accent)] text-[var(--text-accent)]"
+                          : "border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                      }`}
+                    >
+                      <WrapText className="h-3.5 w-3.5" /> Wrap text
+                    </button>
                     {(rowQuery !== "" || sortCol !== null) && (
                       <button
                         onClick={() => { setRowQuery(""); setSortCol(null); setSortDir("asc"); }}
@@ -561,7 +575,7 @@ function DatasetsView() {
                                   </button>
                                 </td>
                                 {preview.columns.map((c) => (
-                                  <td key={c} className="px-3 py-2 align-top text-[var(--text-secondary)] max-w-[280px] truncate" title={row[c]}>{row[c] || "—"}</td>
+                                  <td key={c} className={`px-3 py-2 align-top text-[var(--text-secondary)] max-w-[280px] ${wrapText ? "whitespace-pre-wrap break-words" : "truncate"}`} title={row[c]}>{row[c] || "—"}</td>
                                 ))}
                               </tr>
                             ))}
