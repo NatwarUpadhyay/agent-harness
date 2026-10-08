@@ -575,7 +575,7 @@ function DatasetsView() {
                                   </button>
                                 </td>
                                 {preview.columns.map((c) => (
-                                  <td key={c} className="px-3 py-2 align-top text-[var(--text-secondary)] max-w-[280px] truncate" title={row[c]}>{row[c] || "—"}</td>
+                                  <td key={c} className={`px-3 py-2 align-top text-[var(--text-secondary)] max-w-[280px] ${wrapText ? "whitespace-pre-wrap break-words" : "truncate"}`} title={row[c]}>{row[c] || "—"}</td>
                                 ))}
                               </tr>
                             ))}
