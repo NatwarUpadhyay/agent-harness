@@ -481,6 +481,19 @@ function DatasetsView() {
                         className="h-8 w-[200px] rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] pl-8 pr-2.5 text-[12px] outline-none focus:border-[var(--accent)]"
                       />
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => setWrapText((w) => !w)}
+                      aria-pressed={wrapText}
+                      title={wrapText ? "Truncate long cell values" : "Wrap long cell values"}
+                      className={`inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md border text-[12px] ${
+                        wrapText
+                          ? "border-[var(--accent)] text-[var(--text-accent)]"
+                          : "border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                      }`}
+                    >
+                      <WrapText className="h-3.5 w-3.5" /> Wrap text
+                    </button>
                     {(rowQuery !== "" || sortCol !== null) && (
                       <button
                         onClick={() => { setRowQuery(""); setSortCol(null); setSortDir("asc"); }}
