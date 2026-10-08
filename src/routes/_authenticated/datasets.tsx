@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, FileSpreadsheet, FileText, FileJson, Trash2, Eye, X, Search, Database, Download, Pencil, Copy, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Upload, FileSpreadsheet, FileText, FileJson, Trash2, Eye, X, Search, Database, Download, Pencil, Copy, ArrowUpDown, ArrowUp, ArrowDown, WrapText } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { MetricCard } from "@/components/ui/metric-card";
@@ -133,6 +133,7 @@ function DatasetsView() {
   const [kindFilter, setKindFilter] = useState<DatasetKind | "all">("all");
   const [sortBy, setSortBy] = useState<"newest" | "name" | "rows" | "size">("newest");
   const [rowQuery, setRowQuery] = useState("");
+  const [wrapText, setWrapText] = useState(false);
   const [sortCol, setSortCol] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
