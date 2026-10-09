@@ -533,9 +533,10 @@ function DatasetsView() {
                   };
                   return (
                     <>
-                      <div className="overflow-x-auto rounded-md border border-[var(--border-subtle)]">
+                      <div className="max-h-[440px] overflow-auto rounded-md border border-[var(--border-subtle)]">
                         <table className="w-full text-[12px] font-mono-tabular">
-                          <thead className="bg-[var(--bg-elevated)]/60 text-[var(--text-muted)] uppercase text-[10px] tracking-wider">
+                          <thead className="sticky top-0 z-10 bg-[var(--bg-elevated)] text-[var(--text-muted)] uppercase text-[10px] tracking-wider">
+
                             <tr>
                               <th className="px-3 py-2 text-left font-normal w-10">#</th>
                               <th className="px-2 py-2 w-8" aria-label="Row actions" />
