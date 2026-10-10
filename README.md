@@ -45,6 +45,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 >
 > **Phase 64 — Dataset library sorting** — The dataset library can now be sorted by newest, name, row count, or size, combined with the existing search and type filters.
 >
+> **Phase 79 — Esc to close** — pressing the Escape key now closes the dataset preview window, matching standard modal behavior.
 > **Phase 78 — Sticky preview header** — the dataset preview table now keeps its column headers pinned while you scroll through long previews, with the table body scrolling in its own panel.
 > **Phase 77 — Wrap text toggle** — the dataset preview now has a "Wrap text" toggle that wraps long cell values in place, so full prompts and outputs can be read without hovering for tooltips.
 
