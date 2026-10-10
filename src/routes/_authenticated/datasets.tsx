@@ -158,6 +158,15 @@ function DatasetsView() {
     setSortDir("asc");
   }, [preview?.id]);
 
+  useEffect(() => {
+    if (!preview) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setPreview(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [preview]);
+
   const { data: rows } = useQuery({
     queryKey: ["datasets"],
     queryFn: () => fetchDatasets(),
