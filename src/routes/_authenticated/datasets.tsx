@@ -50,6 +50,20 @@ function withFilteredRows(d: StoredDataset, query: string): StoredDataset {
   };
 }
 
+function highlightMatch(text: string, query: string) {
+  const q = query.trim();
+  if (q === "" || text === "") return text || "—";
+  const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const parts = text.split(new RegExp(`(${escaped})`, "gi"));
+  return parts.map((part, i) =>
+    part.toLowerCase() === q.toLowerCase() ? (
+      <mark key={i} className="rounded-sm bg-[color-mix(in_srgb,var(--amber)_18%,transparent)] px-0.5 text-[var(--amber)]">{part}</mark>
+    ) : (
+      part
+    ),
+  );
+}
+
 function exportPreviewCsv(d: StoredDataset) {
   if (d.preview.length === 0) {
     toast.error("No rows match the current filter");
@@ -585,7 +599,7 @@ function DatasetsView() {
                                   </button>
                                 </td>
                                 {preview.columns.map((c) => (
-                                  <td key={c} className={`px-3 py-2 align-top text-[var(--text-secondary)] max-w-[280px] ${wrapText ? "whitespace-pre-wrap break-words" : "truncate"}`} title={row[c]}>{row[c] || "—"}</td>
+                                  <td key={c} className={`px-3 py-2 align-top text-[var(--text-secondary)] max-w-[280px] ${wrapText ? "whitespace-pre-wrap break-words" : "truncate"}`} title={row[c]}>{highlightMatch(row[c] ?? "", rq)}</td>
                                 ))}
                               </tr>
                             ))}
