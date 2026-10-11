@@ -50,6 +50,20 @@ function withFilteredRows(d: StoredDataset, query: string): StoredDataset {
   };
 }
 
+function highlightMatch(text: string, query: string) {
+  const q = query.trim();
+  if (q === "" || text === "") return text || "—";
+  const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const parts = text.split(new RegExp(`(${escaped})`, "gi"));
+  return parts.map((part, i) =>
+    part.toLowerCase() === q.toLowerCase() ? (
+      <mark key={i} className="rounded-sm bg-[var(--accent-muted)] px-0.5 text-[var(--text-accent)]">{part}</mark>
+    ) : (
+      part
+    ),
+  );
+}
+
 function exportPreviewCsv(d: StoredDataset) {
   if (d.preview.length === 0) {
     toast.error("No rows match the current filter");
