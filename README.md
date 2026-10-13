@@ -45,6 +45,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 >
 > **Phase 64 — Dataset library sorting** — The dataset library can now be sorted by newest, name, row count, or size, combined with the existing search and type filters.
 >
+> **Phase 82 — Copy a column** — hovering a column header in the dataset preview reveals a copy button that copies every value in that column (filtered and sorted rows included) to the clipboard as JSON — handy for pulling a single field into prompts, evals, or scripts.
 > **Phase 81 — Empty preview state** — when a row filter matches nothing, the dataset preview now says so inside the table and offers a one-click "Clear filter" instead of showing an empty grid.
 > **Phase 80 — Filter matches highlighted** — typing in the preview's "Filter rows" box now highlights the matching text in amber inside the visible cells, so you can see exactly why a row matched instead of scanning the whole table.
 > **Phase 79 — Esc to close** — pressing the Escape key now closes the dataset preview window, matching standard modal behavior.
