@@ -549,10 +549,21 @@ function DatasetsView() {
                     if (sortCol === col) {
                       if (sortDir === "asc") setSortDir("desc");
                       else { setSortCol(null); setSortDir("asc"); }
-                    } else {
+                      } else {
                       setSortCol(col);
                       setSortDir("asc");
                     }
+                  };
+                  const copyColumn = (col: string) => {
+                    const vals = visibleRows.map((row) => row[col] ?? "");
+                    if (vals.length === 0) {
+                      toast.error("No rows match the current filter");
+                      return;
+                    }
+                    navigator.clipboard.writeText(JSON.stringify(vals, null, 2)).then(
+                      () => toast.success(`Copied ${vals.length} values from “${col}”`),
+                      () => toast.error("Could not copy to clipboard"),
+                    );
                   };
                   return (
                     <>
@@ -564,18 +575,29 @@ function DatasetsView() {
                               <th className="px-3 py-2 text-left font-normal w-10">#</th>
                               <th className="px-2 py-2 w-8" aria-label="Row actions" />
                               {preview.columns.map((c) => (
-                                <th key={c} className="px-3 py-2 text-left font-normal whitespace-nowrap">
-                                  <button
-                                    type="button"
-                                    onClick={() => toggleSort(c)}
-                                    aria-label={`Sort by ${c}`}
-                                    className="inline-flex items-center gap-1 hover:text-[var(--text-secondary)]"
-                                  >
-                                    {c}
-                                    {sortCol === c
-                                      ? (sortDir === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)
-                                      : <ArrowUpDown className="h-3 w-3 opacity-40" />}
-                                  </button>
+                                <th key={c} className="group/th px-3 py-2 text-left font-normal whitespace-nowrap">
+                                  <span className="inline-flex items-center gap-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => toggleSort(c)}
+                                      aria-label={`Sort by ${c}`}
+                                      className="inline-flex items-center gap-1 hover:text-[var(--text-secondary)]"
+                                    >
+                                      {c}
+                                      {sortCol === c
+                                        ? (sortDir === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)
+                                        : <ArrowUpDown className="h-3 w-3 opacity-40" />}
+                                    </button>
+                                    <button
+                                      type="button"
+                                      aria-label={`Copy all values of column ${c} as JSON`}
+                                      title="Copy column values as JSON"
+                                      onClick={() => copyColumn(c)}
+                                      className="opacity-0 group-hover/th:opacity-100 focus:opacity-100 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                                    >
+                                      <Copy className="h-3 w-3" />
+                                    </button>
+                                  </span>
                                 </th>
                               ))}
                             </tr>
