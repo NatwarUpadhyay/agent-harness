@@ -549,10 +549,21 @@ function DatasetsView() {
                     if (sortCol === col) {
                       if (sortDir === "asc") setSortDir("desc");
                       else { setSortCol(null); setSortDir("asc"); }
-                    } else {
+                      } else {
                       setSortCol(col);
                       setSortDir("asc");
                     }
+                  };
+                  const copyColumn = (col: string) => {
+                    const vals = visibleRows.map((row) => row[col] ?? "");
+                    if (vals.length === 0) {
+                      toast.error("No rows match the current filter");
+                      return;
+                    }
+                    navigator.clipboard.writeText(JSON.stringify(vals, null, 2)).then(
+                      () => toast.success(`Copied ${vals.length} values from “${col}”`),
+                      () => toast.error("Could not copy to clipboard"),
+                    );
                   };
                   return (
                     <>
