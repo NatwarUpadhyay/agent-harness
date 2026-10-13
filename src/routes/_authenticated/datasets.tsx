@@ -603,6 +603,23 @@ function DatasetsView() {
                                 ))}
                               </tr>
                             ))}
+                            {visibleRows.length === 0 && (
+                              <tr>
+                                <td
+                                  colSpan={preview.columns.length + 2}
+                                  className="px-3 py-10 text-center text-[12px] text-[var(--text-muted)]"
+                                >
+                                  No preview rows match “{rowQuery.trim()}”.{" "}
+                                  <button
+                                    type="button"
+                                    onClick={() => setRowQuery("")}
+                                    className="text-[var(--text-accent)] hover:underline"
+                                  >
+                                    Clear filter
+                                  </button>
+                                </td>
+                              </tr>
+                            )}
                           </tbody>
                         </table>
                       </div>
