@@ -565,6 +565,12 @@ function DatasetsView() {
                       () => toast.error("Could not copy to clipboard"),
                     );
                   };
+                  const copyCell = (col: string, value: string) => {
+                    navigator.clipboard.writeText(value).then(
+                      () => toast.success(value ? `Copied value from “${col}”` : `Cleared clipboard (empty cell in “${col}”)`),
+                      () => toast.error("Could not copy to clipboard"),
+                    );
+                  };
                   return (
                     <>
                       <div className="max-h-[440px] overflow-auto rounded-md border border-[var(--border-subtle)]">
@@ -621,7 +627,12 @@ function DatasetsView() {
                                   </button>
                                 </td>
                                 {preview.columns.map((c) => (
-                                  <td key={c} className={`px-3 py-2 align-top text-[var(--text-secondary)] max-w-[280px] ${wrapText ? "whitespace-pre-wrap break-words" : "truncate"}`} title={row[c]}>{highlightMatch(row[c] ?? "", rq)}</td>
+                                  <td
+                                    key={c}
+                                    onClick={() => copyCell(c, row[c] ?? "")}
+                                    className={`cursor-pointer hover:text-[var(--text-primary)] px-3 py-2 align-top text-[var(--text-secondary)] max-w-[280px] ${wrapText ? "whitespace-pre-wrap break-words" : "truncate"}`}
+                                    title={row[c] ? `${row[c]} — click to copy` : "Empty cell — click to copy"}
+                                  >{highlightMatch(row[c] ?? "", rq)}</td>
                                 ))}
                               </tr>
                             ))}
