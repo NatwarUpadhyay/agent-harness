@@ -43,6 +43,8 @@ It is built for teams who want a shared visual language for AI systems before wr
 >
 > **Phase 61 — Workspace-shared dataset library** — Datasets moved out of browser-only storage into a new RLS-backed `public.datasets` table scoped to the workspace: every member sees the same uploads, previews, and curated seed corpora (support tickets, golden eval set, red-team prompts), while only the workspace owner can delete entries. Files are still parsed locally in the browser — only metadata and a ~50-row preview are persisted — via new `listDatasets` / `saveDataset` / `deleteDataset` server functions, and the curated seeds are inserted once per workspace by the idempotent `seedDatasets` seed.
 >
+> **Phase 84 — Live row count** — the dataset preview now shows "Showing X of Y preview rows" above the table, updating live as you filter and sort, with the active filter text called out.
+>
 > **Phase 83 — Click to copy a cell** — clicking any cell in the dataset preview copies its value straight to the clipboard, so a single field can be grabbed without opening a row or column copy first.
 >
 > **Phase 64 — Dataset library sorting** — The dataset library can now be sorted by newest, name, row count, or size, combined with the existing search and type filters.
