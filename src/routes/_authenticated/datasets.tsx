@@ -573,6 +573,10 @@ function DatasetsView() {
                   };
                   return (
                     <>
+                      <div className="text-[11px] text-[var(--text-muted)] font-mono-tabular mb-2">
+                        Showing {visibleRows.length} of {preview.preview.length} preview rows
+                        {rq !== "" && ` matching “${rowQuery.trim()}”`}
+                      </div>
                       <div className="max-h-[440px] overflow-auto rounded-md border border-[var(--border-subtle)]">
                         <table className="w-full text-[12px] font-mono-tabular">
                           <thead className="sticky top-0 z-10 bg-[var(--bg-elevated)] text-[var(--text-muted)] uppercase text-[10px] tracking-wider">
