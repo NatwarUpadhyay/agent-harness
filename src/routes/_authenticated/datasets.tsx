@@ -603,9 +603,29 @@ function DatasetsView() {
                   };
                   return (
                     <>
-                      <div className="text-[11px] text-[var(--text-muted)] font-mono-tabular mb-2">
-                        Showing {visibleRows.length} of {preview.preview.length} preview rows
-                        {rq !== "" && ` matching “${rowQuery.trim()}”`}
+                      <div className="text-[11px] text-[var(--text-muted)] font-mono-tabular mb-2 flex items-center gap-3 flex-wrap">
+                        <span>
+                          Showing {visibleRows.length} of {preview.preview.length} preview rows
+                          {rq !== "" && ` matching “${rowQuery.trim()}”`}
+                        </span>
+                        {selectedRows.size > 0 && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={copySelected}
+                              className="inline-flex items-center gap-1.5 h-6 px-2 rounded border border-[var(--accent)] text-[var(--text-accent)] hover:bg-[var(--accent-muted)]"
+                            >
+                              <Copy className="h-3 w-3" /> Copy selected ({visibleSelected.length})
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedRows(new Set())}
+                              className="h-6 px-2 rounded border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                            >
+                              Clear selection
+                            </button>
+                          </>
+                        )}
                       </div>
                       <div className="max-h-[440px] overflow-auto rounded-md border border-[var(--border-subtle)]">
                         <table className="w-full text-[12px] font-mono-tabular">
