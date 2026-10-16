@@ -171,6 +171,7 @@ function DatasetsView() {
     setRowQuery("");
     setSortCol(null);
     setSortDir("asc");
+    setSelectedRows(new Set());
   }, [preview?.id]);
 
   useEffect(() => {
