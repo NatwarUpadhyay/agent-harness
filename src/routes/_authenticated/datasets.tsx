@@ -712,7 +712,7 @@ function DatasetsView() {
                             {visibleRows.length === 0 && (
                               <tr>
                                 <td
-                                  colSpan={preview.columns.length + 2}
+                                  colSpan={preview.columns.length + 3}
                                   className="px-3 py-10 text-center text-[12px] text-[var(--text-muted)]"
                                 >
                                   No preview rows match “{rowQuery.trim()}”.{" "}
