@@ -150,6 +150,7 @@ function DatasetsView() {
   const [wrapText, setWrapText] = useState(false);
   const [sortCol, setSortCol] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [selectedRows, setSelectedRows] = useState<Set<Record<string, string>>>(new Set());
 
   const viewRows = (d: StoredDataset): StoredDataset => {
     const f = withFilteredRows(d, rowQuery);
@@ -170,6 +171,7 @@ function DatasetsView() {
     setRowQuery("");
     setSortCol(null);
     setSortDir("asc");
+    setSelectedRows(new Set());
   }, [preview?.id]);
 
   useEffect(() => {
@@ -571,17 +573,75 @@ function DatasetsView() {
                       () => toast.error("Could not copy to clipboard"),
                     );
                   };
+                  const visibleSelected = visibleRows.filter((row) => selectedRows.has(row));
+                  const allVisibleSelected = visibleRows.length > 0 && visibleSelected.length === visibleRows.length;
+                  const toggleRow = (row: Record<string, string>) => {
+                    setSelectedRows((prev) => {
+                      const next = new Set(prev);
+                      if (next.has(row)) next.delete(row);
+                      else next.add(row);
+                      return next;
+                    });
+                  };
+                  const toggleAllVisible = () => {
+                    setSelectedRows((prev) => {
+                      const next = new Set(prev);
+                      if (visibleRows.every((r) => next.has(r))) visibleRows.forEach((r) => next.delete(r));
+                      else visibleRows.forEach((r) => next.add(r));
+                      return next;
+                    });
+                  };
+                  const copySelected = () => {
+                    if (visibleSelected.length === 0) {
+                      toast.error("No selected rows in the current view");
+                      return;
+                    }
+                    navigator.clipboard.writeText(JSON.stringify(visibleSelected, null, 2)).then(
+                      () => toast.success(`Copied ${visibleSelected.length} selected rows as JSON`),
+                      () => toast.error("Could not copy to clipboard"),
+                    );
+                  };
                   return (
                     <>
-                      <div className="text-[11px] text-[var(--text-muted)] font-mono-tabular mb-2">
-                        Showing {visibleRows.length} of {preview.preview.length} preview rows
-                        {rq !== "" && ` matching “${rowQuery.trim()}”`}
+                      <div className="text-[11px] text-[var(--text-muted)] font-mono-tabular mb-2 flex items-center gap-3 flex-wrap">
+                        <span>
+                          Showing {visibleRows.length} of {preview.preview.length} preview rows
+                          {rq !== "" && ` matching “${rowQuery.trim()}”`}
+                        </span>
+                        {selectedRows.size > 0 && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={copySelected}
+                              className="inline-flex items-center gap-1.5 h-6 px-2 rounded border border-[var(--accent)] text-[var(--text-accent)] hover:bg-[var(--accent-muted)]"
+                            >
+                              <Copy className="h-3 w-3" /> Copy selected ({visibleSelected.length})
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedRows(new Set())}
+                              className="h-6 px-2 rounded border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                            >
+                              Clear selection
+                            </button>
+                          </>
+                        )}
                       </div>
                       <div className="max-h-[440px] overflow-auto rounded-md border border-[var(--border-subtle)]">
                         <table className="w-full text-[12px] font-mono-tabular">
                           <thead className="sticky top-0 z-10 bg-[var(--bg-elevated)] text-[var(--text-muted)] uppercase text-[10px] tracking-wider">
 
                             <tr>
+                              <th className="px-2 py-2 w-8">
+                                <input
+                                  type="checkbox"
+                                  aria-label="Select all visible rows"
+                                  title="Select all visible rows"
+                                  checked={allVisibleSelected}
+                                  onChange={toggleAllVisible}
+                                  className="h-3.5 w-3.5 cursor-pointer accent-[var(--accent)]"
+                                />
+                              </th>
                               <th className="px-3 py-2 text-left font-normal w-10">#</th>
                               <th className="px-2 py-2 w-8" aria-label="Row actions" />
                               {preview.columns.map((c) => (
@@ -615,6 +675,15 @@ function DatasetsView() {
                           <tbody>
                             {visibleRows.map((row, i) => (
                               <tr key={i} className="group border-t border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)]/40">
+                                <td className="px-2 py-2 align-top">
+                                  <input
+                                    type="checkbox"
+                                    aria-label={`Select row ${i + 1}`}
+                                    checked={selectedRows.has(row)}
+                                    onChange={() => toggleRow(row)}
+                                    className="h-3.5 w-3.5 cursor-pointer accent-[var(--accent)]"
+                                  />
+                                </td>
                                 <td className="px-3 py-2 align-top text-[var(--text-muted)]">{i + 1}</td>
                                 <td className="px-2 py-2 align-top">
                                   <button
@@ -643,7 +712,7 @@ function DatasetsView() {
                             {visibleRows.length === 0 && (
                               <tr>
                                 <td
-                                  colSpan={preview.columns.length + 2}
+                                  colSpan={preview.columns.length + 3}
                                   className="px-3 py-10 text-center text-[12px] text-[var(--text-muted)]"
                                 >
                                   No preview rows match “{rowQuery.trim()}”.{" "}
