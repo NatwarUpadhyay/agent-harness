@@ -573,6 +573,34 @@ function DatasetsView() {
                       () => toast.error("Could not copy to clipboard"),
                     );
                   };
+                  const visibleSelected = visibleRows.filter((row) => selectedRows.has(row));
+                  const allVisibleSelected = visibleRows.length > 0 && visibleSelected.length === visibleRows.length;
+                  const toggleRow = (row: Record<string, string>) => {
+                    setSelectedRows((prev) => {
+                      const next = new Set(prev);
+                      if (next.has(row)) next.delete(row);
+                      else next.add(row);
+                      return next;
+                    });
+                  };
+                  const toggleAllVisible = () => {
+                    setSelectedRows((prev) => {
+                      const next = new Set(prev);
+                      if (visibleRows.every((r) => next.has(r))) visibleRows.forEach((r) => next.delete(r));
+                      else visibleRows.forEach((r) => next.add(r));
+                      return next;
+                    });
+                  };
+                  const copySelected = () => {
+                    if (visibleSelected.length === 0) {
+                      toast.error("No selected rows in the current view");
+                      return;
+                    }
+                    navigator.clipboard.writeText(JSON.stringify(visibleSelected, null, 2)).then(
+                      () => toast.success(`Copied ${visibleSelected.length} selected rows as JSON`),
+                      () => toast.error("Could not copy to clipboard"),
+                    );
+                  };
                   return (
                     <>
                       <div className="text-[11px] text-[var(--text-muted)] font-mono-tabular mb-2">
