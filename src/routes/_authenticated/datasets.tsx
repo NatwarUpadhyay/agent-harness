@@ -632,6 +632,16 @@ function DatasetsView() {
                           <thead className="sticky top-0 z-10 bg-[var(--bg-elevated)] text-[var(--text-muted)] uppercase text-[10px] tracking-wider">
 
                             <tr>
+                              <th className="px-2 py-2 w-8">
+                                <input
+                                  type="checkbox"
+                                  aria-label="Select all visible rows"
+                                  title="Select all visible rows"
+                                  checked={allVisibleSelected}
+                                  onChange={toggleAllVisible}
+                                  className="h-3.5 w-3.5 cursor-pointer accent-[var(--accent)]"
+                                />
+                              </th>
                               <th className="px-3 py-2 text-left font-normal w-10">#</th>
                               <th className="px-2 py-2 w-8" aria-label="Row actions" />
                               {preview.columns.map((c) => (
