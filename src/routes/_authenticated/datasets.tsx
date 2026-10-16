@@ -675,6 +675,15 @@ function DatasetsView() {
                           <tbody>
                             {visibleRows.map((row, i) => (
                               <tr key={i} className="group border-t border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)]/40">
+                                <td className="px-2 py-2 align-top">
+                                  <input
+                                    type="checkbox"
+                                    aria-label={`Select row ${i + 1}`}
+                                    checked={selectedRows.has(row)}
+                                    onChange={() => toggleRow(row)}
+                                    className="h-3.5 w-3.5 cursor-pointer accent-[var(--accent)]"
+                                  />
+                                </td>
                                 <td className="px-3 py-2 align-top text-[var(--text-muted)]">{i + 1}</td>
                                 <td className="px-2 py-2 align-top">
                                   <button
