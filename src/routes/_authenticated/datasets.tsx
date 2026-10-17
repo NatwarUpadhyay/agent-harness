@@ -591,13 +591,16 @@ function DatasetsView() {
                       return next;
                     });
                   };
-                  const copySelected = () => {
+                  const copySelectedCsv = () => {
                     if (visibleSelected.length === 0) {
                       toast.error("No selected rows in the current view");
                       return;
                     }
-                    navigator.clipboard.writeText(JSON.stringify(visibleSelected, null, 2)).then(
-                      () => toast.success(`Copied ${visibleSelected.length} selected rows as JSON`),
+                    const escape = (v: string) => (/[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
+                    const header = preview.columns.map(escape).join(",");
+                    const body = visibleSelected.map((row) => preview.columns.map((c) => escape(row[c] ?? "")).join(","));
+                    navigator.clipboard.writeText([header, ...body].join("\n")).then(
+                      () => toast.success(`Copied ${visibleSelected.length} selected rows as CSV`),
                       () => toast.error("Could not copy to clipboard"),
                     );
                   };
@@ -616,6 +619,13 @@ function DatasetsView() {
                               className="inline-flex items-center gap-1.5 h-6 px-2 rounded border border-[var(--accent)] text-[var(--text-accent)] hover:bg-[var(--accent-muted)]"
                             >
                               <Copy className="h-3 w-3" /> Copy selected ({visibleSelected.length})
+                            </button>
+                            <button
+                              type="button"
+                              onClick={copySelectedCsv}
+                              className="inline-flex items-center gap-1.5 h-6 px-2 rounded border border-[var(--accent)] text-[var(--text-accent)] hover:bg-[var(--accent-muted)]"
+                            >
+                              <Copy className="h-3 w-3" /> Copy selected as CSV
                             </button>
                             <button
                               type="button"
