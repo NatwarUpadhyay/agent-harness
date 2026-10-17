@@ -601,6 +601,19 @@ function DatasetsView() {
                       () => toast.error("Could not copy to clipboard"),
                     );
                   };
+                  const copySelectedCsv = () => {
+                    if (visibleSelected.length === 0) {
+                      toast.error("No selected rows in the current view");
+                      return;
+                    }
+                    const escape = (v: string) => (/[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
+                    const header = preview.columns.map(escape).join(",");
+                    const body = visibleSelected.map((row) => preview.columns.map((c) => escape(row[c] ?? "")).join(","));
+                    navigator.clipboard.writeText([header, ...body].join("\n")).then(
+                      () => toast.success(`Copied ${visibleSelected.length} selected rows as CSV`),
+                      () => toast.error("Could not copy to clipboard"),
+                    );
+                  };
                   return (
                     <>
                       <div className="text-[11px] text-[var(--text-muted)] font-mono-tabular mb-2 flex items-center gap-3 flex-wrap">
@@ -616,6 +629,13 @@ function DatasetsView() {
                               className="inline-flex items-center gap-1.5 h-6 px-2 rounded border border-[var(--accent)] text-[var(--text-accent)] hover:bg-[var(--accent-muted)]"
                             >
                               <Copy className="h-3 w-3" /> Copy selected ({visibleSelected.length})
+                            </button>
+                            <button
+                              type="button"
+                              onClick={copySelectedCsv}
+                              className="inline-flex items-center gap-1.5 h-6 px-2 rounded border border-[var(--accent)] text-[var(--text-accent)] hover:bg-[var(--accent-muted)]"
+                            >
+                              <Copy className="h-3 w-3" /> Copy selected as CSV
                             </button>
                             <button
                               type="button"
