@@ -591,6 +591,16 @@ function DatasetsView() {
                       return next;
                     });
                   };
+                  const copySelected = () => {
+                    if (visibleSelected.length === 0) {
+                      toast.error("No selected rows in the current view");
+                      return;
+                    }
+                    navigator.clipboard.writeText(JSON.stringify(visibleSelected, null, 2)).then(
+                      () => toast.success(`Copied ${visibleSelected.length} selected rows as JSON`),
+                      () => toast.error("Could not copy to clipboard"),
+                    );
+                  };
                   const copySelectedCsv = () => {
                     if (visibleSelected.length === 0) {
                       toast.error("No selected rows in the current view");
