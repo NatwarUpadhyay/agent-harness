@@ -677,6 +677,13 @@ function DatasetsView() {
                             </button>
                             <button
                               type="button"
+                              onClick={exportSelectedCsv}
+                              className="inline-flex items-center gap-1.5 h-6 px-2 rounded border border-[var(--accent)] text-[var(--text-accent)] hover:bg-[var(--accent-muted)]"
+                            >
+                              <Download className="h-3 w-3" /> Export selected as CSV
+                            </button>
+                            <button
+                              type="button"
                               onClick={() => setSelectedRows(new Set())}
                               className="h-6 px-2 rounded border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                             >
