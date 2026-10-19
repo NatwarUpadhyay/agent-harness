@@ -628,6 +628,23 @@ function DatasetsView() {
                       () => toast.error("Could not copy to clipboard"),
                     );
                   };
+                  const exportSelectedCsv = () => {
+                    if (visibleSelected.length === 0) {
+                      toast.error("No selected rows in the current view");
+                      return;
+                    }
+                    const escape = (v: string) => (/[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
+                    const header = preview.columns.map(escape).join(",");
+                    const body = visibleSelected.map((row) => preview.columns.map((c) => escape(row[c] ?? "")).join(","));
+                    const blob = new Blob([header + "\n" + body.join("\n")], { type: "text/csv;charset=utf-8" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `${preview.name}-selected-${visibleSelected.length}.csv`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    toast.success(`Exported ${visibleSelected.length} selected rows as CSV`, { description: a.download });
+                  };
                   return (
                     <>
                       <div className="text-[11px] text-[var(--text-muted)] font-mono-tabular mb-2 flex items-center gap-3 flex-wrap">
