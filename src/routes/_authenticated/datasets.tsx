@@ -645,6 +645,20 @@ function DatasetsView() {
                     URL.revokeObjectURL(url);
                     toast.success(`Exported ${visibleSelected.length} selected rows as CSV`, { description: a.download });
                   };
+                  const exportSelectedJson = () => {
+                    if (visibleSelected.length === 0) {
+                      toast.error("No selected rows in the current view");
+                      return;
+                    }
+                    const blob = new Blob([JSON.stringify(visibleSelected, null, 2)], { type: "application/json;charset=utf-8" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `${preview.name}-selected-${visibleSelected.length}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    toast.success(`Exported ${visibleSelected.length} selected rows as JSON`, { description: a.download });
+                  };
                   return (
                     <>
                       <div className="text-[11px] text-[var(--text-muted)] font-mono-tabular mb-2 flex items-center gap-3 flex-wrap">
@@ -681,6 +695,13 @@ function DatasetsView() {
                               className="inline-flex items-center gap-1.5 h-6 px-2 rounded border border-[var(--accent)] text-[var(--text-accent)] hover:bg-[var(--accent-muted)]"
                             >
                               <Download className="h-3 w-3" /> Export selected as CSV
+                            </button>
+                            <button
+                              type="button"
+                              onClick={exportSelectedJson}
+                              className="inline-flex items-center gap-1.5 h-6 px-2 rounded border border-[var(--accent)] text-[var(--text-accent)] hover:bg-[var(--accent-muted)]"
+                            >
+                              <Download className="h-3 w-3" /> Export selected as JSON
                             </button>
                             <button
                               type="button"
