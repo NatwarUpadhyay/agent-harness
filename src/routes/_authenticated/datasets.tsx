@@ -705,6 +705,19 @@ function DatasetsView() {
                             </button>
                             <button
                               type="button"
+                              onClick={() =>
+                                setSelectedRows((prev) => {
+                                  const next = new Set(prev);
+                                  visibleRows.forEach((r) => (next.has(r) ? next.delete(r) : next.add(r)));
+                                  return next;
+                                })
+                              }
+                              className="h-6 px-2 rounded border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                            >
+                              Invert selection
+                            </button>
+                            <button
+                              type="button"
                               onClick={() => setSelectedRows(new Set())}
                               className="h-6 px-2 rounded border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                             >
