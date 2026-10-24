@@ -659,6 +659,24 @@ function DatasetsView() {
                     URL.revokeObjectURL(url);
                     toast.success(`Exported ${visibleSelected.length} selected rows as JSON`, { description: a.download });
                   };
+                  const exportSelectedMarkdown = () => {
+                    if (visibleSelected.length === 0) {
+                      toast.error("No selected rows in the current view");
+                      return;
+                    }
+                    const cell = (v: string) => v.replace(/\|/g, "\\|").replace(/\n/g, " ");
+                    const header = `| ${preview.columns.map(cell).join(" | ")} |`;
+                    const sep = `| ${preview.columns.map(() => "---").join(" | ")} |`;
+                    const body = visibleSelected.map((row) => `| ${preview.columns.map((c) => cell(row[c] ?? "")).join(" | ")} |`);
+                    const blob = new Blob([header + "\n" + sep + "\n" + body.join("\n") + "\n"], { type: "text/markdown;charset=utf-8" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `${preview.name}-selected-${visibleSelected.length}.md`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    toast.success(`Exported ${visibleSelected.length} selected rows as Markdown`, { description: a.download });
+                  };
                   return (
                     <>
                       <div className="text-[11px] text-[var(--text-muted)] font-mono-tabular mb-2 flex items-center gap-3 flex-wrap">
@@ -702,6 +720,13 @@ function DatasetsView() {
                               className="inline-flex items-center gap-1.5 h-6 px-2 rounded border border-[var(--accent)] text-[var(--text-accent)] hover:bg-[var(--accent-muted)]"
                             >
                               <Download className="h-3 w-3" /> Export selected as JSON
+                            </button>
+                            <button
+                              type="button"
+                              onClick={exportSelectedMarkdown}
+                              className="inline-flex items-center gap-1.5 h-6 px-2 rounded border border-[var(--accent)] text-[var(--text-accent)] hover:bg-[var(--accent-muted)]"
+                            >
+                              <Download className="h-3 w-3" /> Export selected as Markdown
                             </button>
                             <button
                               type="button"
