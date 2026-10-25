@@ -685,6 +685,11 @@ function DatasetsView() {
                           {rq !== "" && ` matching “${rowQuery.trim()}”`}
                         </span>
                         {selectedRows.size > 0 && (
+                          <span className="text-[var(--text-accent)]">
+                            {selectedRows.size} selected{visibleSelected.length < selectedRows.size ? ` · ${visibleSelected.length} in view` : ""}
+                          </span>
+                        )}
+                        {selectedRows.size > 0 && (
                           <>
                             <button
                               type="button"
