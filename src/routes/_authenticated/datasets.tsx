@@ -685,6 +685,11 @@ function DatasetsView() {
                           {rq !== "" && ` matching “${rowQuery.trim()}”`}
                         </span>
                         {selectedRows.size > 0 && (
+                          <span className="text-[var(--text-accent)]">
+                            {selectedRows.size} selected{visibleSelected.length < selectedRows.size ? ` · ${visibleSelected.length} in view` : ""}
+                          </span>
+                        )}
+                        {selectedRows.size > 0 && (
                           <>
                             <button
                               type="button"
@@ -798,7 +803,7 @@ function DatasetsView() {
                           </thead>
                           <tbody>
                             {visibleRows.map((row, i) => (
-                              <tr key={i} className="group border-t border-[var(--border-subtle)] hover:bg-[var(--bg-elevated)]/40">
+                              <tr key={i} className={`group border-t border-[var(--border-subtle)] ${selectedRows.has(row) ? "bg-[var(--accent)]/10" : "hover:bg-[var(--bg-elevated)]/40"}`}>
                                 <td className="px-2 py-2 align-top">
                                   <input
                                     type="checkbox"
