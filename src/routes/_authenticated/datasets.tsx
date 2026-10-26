@@ -827,8 +827,9 @@ function DatasetsView() {
                                   <input
                                     type="checkbox"
                                     aria-label={`Select row ${i + 1}`}
+                                    title="Select row — hold Shift when clicking another row to select the whole range"
                                     checked={selectedRows.has(row)}
-                                    onChange={() => toggleRow(row)}
+                                    onChange={(e) => toggleRow(row, i, e.shiftKey)}
                                     className="h-3.5 w-3.5 cursor-pointer accent-[var(--accent)]"
                                   />
                                 </td>
