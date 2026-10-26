@@ -152,6 +152,7 @@ function DatasetsView() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [selectedRows, setSelectedRows] = useState<Set<Record<string, string>>>(new Set());
   const lastAnchorRef = useRef<number | null>(null);
+  const shiftClickRef = useRef(false);
 
   const viewRows = (d: StoredDataset): StoredDataset => {
     const f = withFilteredRows(d, rowQuery);
