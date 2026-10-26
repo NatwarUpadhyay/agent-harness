@@ -151,6 +151,7 @@ function DatasetsView() {
   const [sortCol, setSortCol] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [selectedRows, setSelectedRows] = useState<Set<Record<string, string>>>(new Set());
+  const lastAnchorRef = useRef<number | null>(null);
 
   const viewRows = (d: StoredDataset): StoredDataset => {
     const f = withFilteredRows(d, rowQuery);
@@ -172,6 +173,7 @@ function DatasetsView() {
     setSortCol(null);
     setSortDir("asc");
     setSelectedRows(new Set());
+    lastAnchorRef.current = null;
   }, [preview?.id]);
 
   useEffect(() => {
