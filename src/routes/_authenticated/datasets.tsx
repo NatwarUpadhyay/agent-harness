@@ -767,7 +767,7 @@ function DatasetsView() {
                             </button>
                             <button
                               type="button"
-                              onClick={() => setSelectedRows(new Set())}
+                              onClick={() => { setSelectedRows(new Set()); lastAnchorRef.current = null; }}
                               className="h-6 px-2 rounded border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                             >
                               Clear selection
