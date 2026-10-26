@@ -151,6 +151,8 @@ function DatasetsView() {
   const [sortCol, setSortCol] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [selectedRows, setSelectedRows] = useState<Set<Record<string, string>>>(new Set());
+  const lastAnchorRef = useRef<number | null>(null);
+  const shiftClickRef = useRef(false);
 
   const viewRows = (d: StoredDataset): StoredDataset => {
     const f = withFilteredRows(d, rowQuery);
@@ -172,6 +174,7 @@ function DatasetsView() {
     setSortCol(null);
     setSortDir("asc");
     setSelectedRows(new Set());
+    lastAnchorRef.current = null;
   }, [preview?.id]);
 
   useEffect(() => {
@@ -575,13 +578,30 @@ function DatasetsView() {
                   };
                   const visibleSelected = visibleRows.filter((row) => selectedRows.has(row));
                   const allVisibleSelected = visibleRows.length > 0 && visibleSelected.length === visibleRows.length;
-                  const toggleRow = (row: Record<string, string>) => {
-                    setSelectedRows((prev) => {
-                      const next = new Set(prev);
-                      if (next.has(row)) next.delete(row);
-                      else next.add(row);
-                      return next;
-                    });
+                  const toggleRow = (row: Record<string, string>, index: number, shiftKey: boolean) => {
+                    const anchor = lastAnchorRef.current;
+                    if (shiftKey && anchor !== null && anchor !== index) {
+                      const targetChecked = !selectedRows.has(row);
+                      const [start, end] = anchor < index ? [anchor, index] : [index, anchor];
+                      setSelectedRows((prev) => {
+                        const next = new Set(prev);
+                        for (let k = start; k <= end; k++) {
+                          const r = visibleRows[k];
+                          if (r === undefined) continue;
+                          if (targetChecked) next.add(r);
+                          else next.delete(r);
+                        }
+                        return next;
+                      });
+                    } else {
+                      setSelectedRows((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(row)) next.delete(row);
+                        else next.add(row);
+                        return next;
+                      });
+                    }
+                    lastAnchorRef.current = index;
                   };
                   const toggleAllVisible = () => {
                     setSelectedRows((prev) => {
@@ -748,7 +768,7 @@ function DatasetsView() {
                             </button>
                             <button
                               type="button"
-                              onClick={() => setSelectedRows(new Set())}
+                              onClick={() => { setSelectedRows(new Set()); lastAnchorRef.current = null; }}
                               className="h-6 px-2 rounded border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                             >
                               Clear selection
@@ -808,8 +828,10 @@ function DatasetsView() {
                                   <input
                                     type="checkbox"
                                     aria-label={`Select row ${i + 1}`}
+                                    title="Select row — hold Shift when clicking another row to select the whole range"
                                     checked={selectedRows.has(row)}
-                                    onChange={() => toggleRow(row)}
+                                    onClick={(e) => (shiftClickRef.current = e.shiftKey)}
+                                    onChange={() => toggleRow(row, i, shiftClickRef.current === true)}
                                     className="h-3.5 w-3.5 cursor-pointer accent-[var(--accent)]"
                                   />
                                 </td>
