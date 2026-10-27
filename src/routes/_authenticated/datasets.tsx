@@ -177,6 +177,27 @@ function DatasetsView() {
     lastAnchorRef.current = null;
   }, [preview?.id]);
 
+  // Hoisted so the keyboard-shortcut effect and the preview table share one definition.
+  const visiblePreviewRows = useMemo(() => {
+    if (!preview) return [];
+    const rq = rowQuery.trim().toLowerCase();
+    const filteredRows = rq === ""
+      ? preview.preview
+      : preview.preview.filter((row) =>
+          preview.columns.some((c) => (row[c] ?? "").toLowerCase().includes(rq)));
+    if (sortCol === null) return filteredRows;
+    return [...filteredRows].sort((a, b) => {
+      const av = a[sortCol] ?? "";
+      const bv = b[sortCol] ?? "";
+      const an = Number(av);
+      const bn = Number(bv);
+      const cmp = av !== "" && bv !== "" && !Number.isNaN(an) && !Number.isNaN(bn)
+        ? an - bn
+        : av.localeCompare(bv);
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+  }, [preview, rowQuery, sortCol, sortDir]);
+
   useEffect(() => {
     if (!preview) return;
     const onKey = (e: KeyboardEvent) => {
@@ -200,27 +221,6 @@ function DatasetsView() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [preview, visiblePreviewRows]);
-
-  // Hoisted so the keyboard-shortcut effect and the preview table share one definition.
-  const visiblePreviewRows = useMemo(() => {
-    if (!preview) return [];
-    const rq = rowQuery.trim().toLowerCase();
-    const filteredRows = rq === ""
-      ? preview.preview
-      : preview.preview.filter((row) =>
-          preview.columns.some((c) => (row[c] ?? "").toLowerCase().includes(rq)));
-    if (sortCol === null) return filteredRows;
-    return [...filteredRows].sort((a, b) => {
-      const av = a[sortCol] ?? "";
-      const bv = b[sortCol] ?? "";
-      const an = Number(av);
-      const bn = Number(bv);
-      const cmp = av !== "" && bv !== "" && !Number.isNaN(an) && !Number.isNaN(bn)
-        ? an - bn
-        : av.localeCompare(bv);
-      return sortDir === "asc" ? cmp : -cmp;
-    });
-  }, [preview, rowQuery, sortCol, sortDir]);
 
   const { data: rows } = useQuery({
     queryKey: ["datasets"],
