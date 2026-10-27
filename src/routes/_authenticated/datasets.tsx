@@ -725,6 +725,9 @@ function DatasetsView() {
                           Showing {visibleRows.length} of {preview.preview.length} preview rows
                           {rq !== "" && ` matching “${rowQuery.trim()}”`}
                         </span>
+                        <span className="opacity-70" title="Keyboard: Ctrl/⌘+A selects all visible rows · Ctrl/⌘+Shift+A clears the selection">
+                          Ctrl/⌘+A select all · +Shift clear
+                        </span>
                         {selectedRows.size > 0 && (
                           <span className="text-[var(--text-accent)]">
                             {selectedRows.size} selected{visibleSelected.length < selectedRows.size ? ` · ${visibleSelected.length} in view` : ""}
