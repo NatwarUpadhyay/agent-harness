@@ -177,14 +177,50 @@ function DatasetsView() {
     lastAnchorRef.current = null;
   }, [preview?.id]);
 
+  // Hoisted so the keyboard-shortcut effect and the preview table share one definition.
+  const visiblePreviewRows = useMemo(() => {
+    if (!preview) return [];
+    const rq = rowQuery.trim().toLowerCase();
+    const filteredRows = rq === ""
+      ? preview.preview
+      : preview.preview.filter((row) =>
+          preview.columns.some((c) => (row[c] ?? "").toLowerCase().includes(rq)));
+    if (sortCol === null) return filteredRows;
+    return [...filteredRows].sort((a, b) => {
+      const av = a[sortCol] ?? "";
+      const bv = b[sortCol] ?? "";
+      const an = Number(av);
+      const bn = Number(bv);
+      const cmp = av !== "" && bv !== "" && !Number.isNaN(an) && !Number.isNaN(bn)
+        ? an - bn
+        : av.localeCompare(bv);
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+  }, [preview, rowQuery, sortCol, sortDir]);
+
   useEffect(() => {
     if (!preview) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setPreview(null);
+      if (e.key === "Escape") {
+        setPreview(null);
+        return;
+      }
+      if (!(e.metaKey || e.ctrlKey) || e.altKey) return;
+      const target = e.target as HTMLElement | null;
+      const inEditable =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        (target?.isContentEditable ?? false);
+      if (inEditable) return;
+      if (e.key.toLowerCase() === "a") {
+        e.preventDefault();
+        setSelectedRows(e.shiftKey ? new Set() : new Set(visiblePreviewRows));
+        lastAnchorRef.current = null;
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [preview]);
+  }, [preview, visiblePreviewRows]);
 
   const { data: rows } = useQuery({
     queryKey: ["datasets"],
@@ -534,22 +570,7 @@ function DatasetsView() {
                 )}
                 {preview.preview.length > 0 && (() => {
                   const rq = rowQuery.trim().toLowerCase();
-                  const filteredRows = rq === ""
-                    ? preview.preview
-                    : preview.preview.filter((row) =>
-                        preview.columns.some((c) => (row[c] ?? "").toLowerCase().includes(rq)));
-                  const visibleRows = sortCol === null
-                    ? filteredRows
-                    : [...filteredRows].sort((a, b) => {
-                        const av = a[sortCol] ?? "";
-                        const bv = b[sortCol] ?? "";
-                        const an = Number(av);
-                        const bn = Number(bv);
-                        const cmp = av !== "" && bv !== "" && !Number.isNaN(an) && !Number.isNaN(bn)
-                          ? an - bn
-                          : av.localeCompare(bv);
-                        return sortDir === "asc" ? cmp : -cmp;
-                      });
+                  const visibleRows = visiblePreviewRows;
                   const toggleSort = (col: string) => {
                     if (sortCol === col) {
                       if (sortDir === "asc") setSortDir("desc");
@@ -703,6 +724,9 @@ function DatasetsView() {
                         <span>
                           Showing {visibleRows.length} of {preview.preview.length} preview rows
                           {rq !== "" && ` matching “${rowQuery.trim()}”`}
+                        </span>
+                        <span className="opacity-70" title="Keyboard: Ctrl/⌘+A selects all visible rows · Ctrl/⌘+Shift+A clears the selection">
+                          Ctrl/⌘+A select all · +Shift clear
                         </span>
                         {selectedRows.size > 0 && (
                           <span className="text-[var(--text-accent)]">
