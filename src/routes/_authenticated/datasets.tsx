@@ -641,6 +641,7 @@ function DatasetsView() {
                 {preview.preview.length > 0 && (() => {
                   const rq = rowQuery.trim().toLowerCase();
                   const visibleRows = visiblePreviewRows;
+                  const activeColumns = preview.columns.filter((c) => !hiddenCols.has(c));
                   const toggleSort = (col: string) => {
                     if (sortCol === col) {
                       if (sortDir === "asc") setSortDir("desc");
