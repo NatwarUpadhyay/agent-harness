@@ -703,51 +703,52 @@ function DatasetsView() {
                       return next;
                     });
                   };
-                  const copySelected = () => {
+                  const guardColumns = () => {
                     if (visibleSelected.length === 0) {
                       toast.error("No selected rows in the current view");
-                      return;
+                      return false;
                     }
-                    navigator.clipboard.writeText(JSON.stringify(visibleSelected, null, 2)).then(
+                    if (activeColumns.length === 0) {
+                      toast.error("No columns are visible — show at least one column first");
+                      return false;
+                    }
+                    return true;
+                  };
+                  const projectRows = visibleSelected.map((row) =>
+                    Object.fromEntries(activeColumns.map((c) => [c, row[c] ?? ""])));
+                  const copySelected = () => {
+                    if (!guardColumns()) return;
+                    navigator.clipboard.writeText(JSON.stringify(projectRows, null, 2)).then(
                       () => toast.success(`Copied ${visibleSelected.length} selected rows as JSON`),
                       () => toast.error("Could not copy to clipboard"),
                     );
                   };
                   const copySelectedCsv = () => {
-                    if (visibleSelected.length === 0) {
-                      toast.error("No selected rows in the current view");
-                      return;
-                    }
+                    if (!guardColumns()) return;
                     const escape = (v: string) => (/[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
-                    const header = preview.columns.map(escape).join(",");
-                    const body = visibleSelected.map((row) => preview.columns.map((c) => escape(row[c] ?? "")).join(","));
+                    const header = activeColumns.map(escape).join(",");
+                    const body = visibleSelected.map((row) => activeColumns.map((c) => escape(row[c] ?? "")).join(","));
                     navigator.clipboard.writeText([header, ...body].join("\n")).then(
                       () => toast.success(`Copied ${visibleSelected.length} selected rows as CSV`),
                       () => toast.error("Could not copy to clipboard"),
                     );
                   };
                   const copySelectedMarkdown = () => {
-                    if (visibleSelected.length === 0) {
-                      toast.error("No selected rows in the current view");
-                      return;
-                    }
+                    if (!guardColumns()) return;
                     const cell = (v: string) => v.replace(/\|/g, "\\|").replace(/\n/g, " ");
-                    const header = `| ${preview.columns.map(cell).join(" | ")} |`;
-                    const sep = `| ${preview.columns.map(() => "---").join(" | ")} |`;
-                    const body = visibleSelected.map((row) => `| ${preview.columns.map((c) => cell(row[c] ?? "")).join(" | ")} |`);
+                    const header = `| ${activeColumns.map(cell).join(" | ")} |`;
+                    const sep = `| ${activeColumns.map(() => "---").join(" | ")} |`;
+                    const body = visibleSelected.map((row) => `| ${activeColumns.map((c) => cell(row[c] ?? "")).join(" | ")} |`);
                     navigator.clipboard.writeText([header, sep, ...body].join("\n")).then(
                       () => toast.success(`Copied ${visibleSelected.length} selected rows as a Markdown table`),
                       () => toast.error("Could not copy to clipboard"),
                     );
                   };
                   const exportSelectedCsv = () => {
-                    if (visibleSelected.length === 0) {
-                      toast.error("No selected rows in the current view");
-                      return;
-                    }
+                    if (!guardColumns()) return;
                     const escape = (v: string) => (/[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
-                    const header = preview.columns.map(escape).join(",");
-                    const body = visibleSelected.map((row) => preview.columns.map((c) => escape(row[c] ?? "")).join(","));
+                    const header = activeColumns.map(escape).join(",");
+                    const body = visibleSelected.map((row) => activeColumns.map((c) => escape(row[c] ?? "")).join(","));
                     const blob = new Blob([header + "\n" + body.join("\n")], { type: "text/csv;charset=utf-8" });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement("a");
@@ -758,11 +759,8 @@ function DatasetsView() {
                     toast.success(`Exported ${visibleSelected.length} selected rows as CSV`, { description: a.download });
                   };
                   const exportSelectedJson = () => {
-                    if (visibleSelected.length === 0) {
-                      toast.error("No selected rows in the current view");
-                      return;
-                    }
-                    const blob = new Blob([JSON.stringify(visibleSelected, null, 2)], { type: "application/json;charset=utf-8" });
+                    if (!guardColumns()) return;
+                    const blob = new Blob([JSON.stringify(projectRows, null, 2)], { type: "application/json;charset=utf-8" });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement("a");
                     a.href = url;
@@ -772,14 +770,11 @@ function DatasetsView() {
                     toast.success(`Exported ${visibleSelected.length} selected rows as JSON`, { description: a.download });
                   };
                   const exportSelectedMarkdown = () => {
-                    if (visibleSelected.length === 0) {
-                      toast.error("No selected rows in the current view");
-                      return;
-                    }
+                    if (!guardColumns()) return;
                     const cell = (v: string) => v.replace(/\|/g, "\\|").replace(/\n/g, " ");
-                    const header = `| ${preview.columns.map(cell).join(" | ")} |`;
-                    const sep = `| ${preview.columns.map(() => "---").join(" | ")} |`;
-                    const body = visibleSelected.map((row) => `| ${preview.columns.map((c) => cell(row[c] ?? "")).join(" | ")} |`);
+                    const header = `| ${activeColumns.map(cell).join(" | ")} |`;
+                    const sep = `| ${activeColumns.map(() => "---").join(" | ")} |`;
+                    const body = visibleSelected.map((row) => `| ${activeColumns.map((c) => cell(row[c] ?? "")).join(" | ")} |`);
                     const blob = new Blob([header + "\n" + sep + "\n" + body.join("\n") + "\n"], { type: "text/markdown;charset=utf-8" });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement("a");
