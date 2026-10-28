@@ -562,6 +562,72 @@ function DatasetsView() {
                     >
                       <WrapText className="h-3.5 w-3.5" /> Wrap text
                     </button>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => setColumnsOpen((o) => !o)}
+                        aria-expanded={columnsOpen}
+                        aria-haspopup="true"
+                        title="Show or hide columns in the preview table"
+                        className={`inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md border text-[12px] ${
+                          columnsOpen || hiddenCols.size > 0
+                            ? "border-[var(--accent)] text-[var(--text-accent)]"
+                            : "border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                        }`}
+                      >
+                        <EyeOff className="h-3.5 w-3.5" /> Columns{hiddenCols.size > 0 ? ` (${hiddenCols.size} hidden)` : ""}
+                      </button>
+                      {columnsOpen && (
+                        <div className="absolute right-0 top-10 z-30 w-60 rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-2 shadow-lg">
+                          <div className="flex items-center justify-between px-1 pb-1.5">
+                            <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)]">Visible columns</span>
+                            <button
+                              type="button"
+                              onClick={() => setHiddenCols(new Set())}
+                              className="text-[11px] text-[var(--text-accent)] hover:underline"
+                            >
+                              Show all
+                            </button>
+                          </div>
+                          <div className="max-h-56 overflow-auto">
+                            {preview.columns.map((c) => (
+                              <label key={c} className="flex items-center gap-2 rounded px-1.5 py-1 text-[12px] cursor-pointer hover:bg-[var(--bg-elevated)]/60">
+                                <input
+                                  type="checkbox"
+                                  checked={!hiddenCols.has(c)}
+                                  aria-label={`Show column ${c}`}
+                                  title={hiddenCols.has(c) && hiddenCols.size >= preview.columns.length ? "At least one column stays visible" : undefined}
+                                  onChange={() => {
+                                    if (hiddenCols.has(c)) {
+                                      setHiddenCols((prev) => {
+                                        const next = new Set(prev);
+                                        next.delete(c);
+                                        return next;
+                                      });
+                                    } else {
+                                      if (preview.columns.length - hiddenCols.size <= 1) {
+                                        toast.error("At least one column must stay visible");
+                                        return;
+                                      }
+                                      setHiddenCols((prev) => {
+                                        const next = new Set(prev);
+                                        next.add(c);
+                                        return next;
+                                      });
+                                    }
+                                  }}
+                                  className="h-3.5 w-3.5 cursor-pointer accent-[var(--accent)]"
+                                />
+                                <span className="truncate font-mono-tabular">{c}</span>
+                              </label>
+                            ))}
+                          </div>
+                          <div className="px-1 pt-1.5 text-[10px] text-[var(--text-muted)]">
+                            Hidden columns are left out of the table and of every copy and export.
+                          </div>
+                        </div>
+                      )}
+                    </div>
                     {(rowQuery !== "" || sortCol !== null) && (
                       <button
                         onClick={() => { setRowQuery(""); setSortCol(null); setSortDir("asc"); }}
