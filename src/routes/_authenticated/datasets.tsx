@@ -175,6 +175,8 @@ function DatasetsView() {
     setRowQuery("");
     setSortCol(null);
     setSortDir("asc");
+    setHiddenCols(new Set());
+    setColumnsOpen(false);
     setSelectedRows(new Set());
     lastAnchorRef.current = null;
   }, [preview?.id]);
