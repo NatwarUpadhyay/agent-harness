@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, FileSpreadsheet, FileText, FileJson, Trash2, Eye, X, Search, Database, Download, Pencil, Copy, ArrowUpDown, ArrowUp, ArrowDown, WrapText } from "lucide-react";
+import { Upload, FileSpreadsheet, FileText, FileJson, Trash2, Eye, EyeOff, X, Search, Database, Download, Pencil, Copy, ArrowUpDown, ArrowUp, ArrowDown, WrapText } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { MetricCard } from "@/components/ui/metric-card";
