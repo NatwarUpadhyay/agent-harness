@@ -628,6 +628,7 @@ function DatasetsView() {
                             Hidden columns are left out of the table and of every copy and export.
                           </div>
                         </div>
+                        </>
                       )}
                     </div>
                     {(rowQuery !== "" || sortCol !== null) && (
