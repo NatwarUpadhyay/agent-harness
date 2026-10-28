@@ -538,7 +538,7 @@ function DatasetsView() {
                   </div>
                 ) : (
                   <div className="flex items-center justify-between gap-3 flex-wrap">
-                    <SectionHeader title={`Preview · ${preview.columns.length} columns`} />
+                    <SectionHeader title={hiddenCols.size > 0 ? `Preview · ${preview.columns.length - hiddenCols.size}/${preview.columns.length} columns` : `Preview · ${preview.columns.length} columns`} />
                     <div className="relative">
                       <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--text-muted)]" />
                       <input
