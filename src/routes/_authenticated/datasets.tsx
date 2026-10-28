@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, FileSpreadsheet, FileText, FileJson, Trash2, Eye, X, Search, Database, Download, Pencil, Copy, ArrowUpDown, ArrowUp, ArrowDown, WrapText } from "lucide-react";
+import { Upload, FileSpreadsheet, FileText, FileJson, Trash2, Eye, EyeOff, X, Search, Database, Download, Pencil, Copy, ArrowUpDown, ArrowUp, ArrowDown, WrapText } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { MetricCard } from "@/components/ui/metric-card";
@@ -150,6 +150,8 @@ function DatasetsView() {
   const [wrapText, setWrapText] = useState(false);
   const [sortCol, setSortCol] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [hiddenCols, setHiddenCols] = useState<Set<string>>(new Set());
+  const [columnsOpen, setColumnsOpen] = useState(false);
   const [selectedRows, setSelectedRows] = useState<Set<Record<string, string>>>(new Set());
   const lastAnchorRef = useRef<number | null>(null);
   const shiftClickRef = useRef(false);
@@ -173,6 +175,8 @@ function DatasetsView() {
     setRowQuery("");
     setSortCol(null);
     setSortDir("asc");
+    setHiddenCols(new Set());
+    setColumnsOpen(false);
     setSelectedRows(new Set());
     lastAnchorRef.current = null;
   }, [preview?.id]);
@@ -534,7 +538,7 @@ function DatasetsView() {
                   </div>
                 ) : (
                   <div className="flex items-center justify-between gap-3 flex-wrap">
-                    <SectionHeader title={`Preview · ${preview.columns.length} columns`} />
+                    <SectionHeader title={hiddenCols.size > 0 ? `Preview · ${preview.columns.length - hiddenCols.size}/${preview.columns.length} columns` : `Preview · ${preview.columns.length} columns`} />
                     <div className="relative">
                       <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--text-muted)]" />
                       <input
@@ -558,9 +562,78 @@ function DatasetsView() {
                     >
                       <WrapText className="h-3.5 w-3.5" /> Wrap text
                     </button>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => setColumnsOpen((o) => !o)}
+                        aria-expanded={columnsOpen}
+                        aria-haspopup="true"
+                        title="Show or hide columns in the preview table"
+                        className={`inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md border text-[12px] ${
+                          columnsOpen || hiddenCols.size > 0
+                            ? "border-[var(--accent)] text-[var(--text-accent)]"
+                            : "border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                        }`}
+                      >
+                        <EyeOff className="h-3.5 w-3.5" /> Columns{hiddenCols.size > 0 ? ` (${hiddenCols.size} hidden)` : ""}
+                      </button>
+                      {columnsOpen && (
+                        <>
+                          <div className="fixed inset-0 z-20" aria-hidden="true" onPointerDown={(e) => { e.stopPropagation(); setColumnsOpen(false); }} onClick={(e) => e.stopPropagation()} />
+                          <div className="absolute right-0 top-10 z-30 w-60 rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-2 shadow-lg">
+                          <div className="flex items-center justify-between px-1 pb-1.5">
+                            <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)]">Visible columns</span>
+                            <button
+                              type="button"
+                              onClick={() => setHiddenCols(new Set())}
+                              className="text-[11px] text-[var(--text-accent)] hover:underline"
+                            >
+                              Show all
+                            </button>
+                          </div>
+                          <div className="max-h-56 overflow-auto">
+                            {preview.columns.map((c) => (
+                              <label key={c} className="flex items-center gap-2 rounded px-1.5 py-1 text-[12px] cursor-pointer hover:bg-[var(--bg-elevated)]/60">
+                                <input
+                                  type="checkbox"
+                                  checked={!hiddenCols.has(c)}
+                                  aria-label={`Show column ${c}`}
+                                  title={hiddenCols.has(c) && hiddenCols.size >= preview.columns.length ? "At least one column stays visible" : undefined}
+                                  onChange={() => {
+                                    if (hiddenCols.has(c)) {
+                                      setHiddenCols((prev) => {
+                                        const next = new Set(prev);
+                                        next.delete(c);
+                                        return next;
+                                      });
+                                    } else {
+                                      if (preview.columns.length - hiddenCols.size <= 1) {
+                                        toast.error("At least one column must stay visible");
+                                        return;
+                                      }
+                                      setHiddenCols((prev) => {
+                                        const next = new Set(prev);
+                                        next.add(c);
+                                        return next;
+                                      });
+                                    }
+                                  }}
+                                  className="h-3.5 w-3.5 cursor-pointer accent-[var(--accent)]"
+                                />
+                                <span className="truncate font-mono-tabular">{c}</span>
+                              </label>
+                            ))}
+                          </div>
+                          <div className="px-1 pt-1.5 text-[10px] text-[var(--text-muted)]">
+                            Hidden columns are left out of the table and of every copy and export.
+                          </div>
+                        </div>
+                        </>
+                      )}
+                    </div>
                     {(rowQuery !== "" || sortCol !== null) && (
                       <button
-                        onClick={() => { setRowQuery(""); setSortCol(null); setSortDir("asc"); }}
+                        onClick={() => { setRowQuery(""); setSortCol(null); setSortDir("asc"); setHiddenCols(new Set()); }}
                         className="h-8 px-2.5 rounded-md border border-[var(--border-subtle)] text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                       >
                         Reset view
@@ -571,6 +644,7 @@ function DatasetsView() {
                 {preview.preview.length > 0 && (() => {
                   const rq = rowQuery.trim().toLowerCase();
                   const visibleRows = visiblePreviewRows;
+                  const activeColumns = preview.columns.filter((c) => !hiddenCols.has(c));
                   const toggleSort = (col: string) => {
                     if (sortCol === col) {
                       if (sortDir === "asc") setSortDir("desc");
@@ -632,51 +706,52 @@ function DatasetsView() {
                       return next;
                     });
                   };
-                  const copySelected = () => {
+                  const guardColumns = () => {
                     if (visibleSelected.length === 0) {
                       toast.error("No selected rows in the current view");
-                      return;
+                      return false;
                     }
-                    navigator.clipboard.writeText(JSON.stringify(visibleSelected, null, 2)).then(
+                    if (activeColumns.length === 0) {
+                      toast.error("No columns are visible — show at least one column first");
+                      return false;
+                    }
+                    return true;
+                  };
+                  const projectRows = visibleSelected.map((row) =>
+                    Object.fromEntries(activeColumns.map((c) => [c, row[c] ?? ""])));
+                  const copySelected = () => {
+                    if (!guardColumns()) return;
+                    navigator.clipboard.writeText(JSON.stringify(projectRows, null, 2)).then(
                       () => toast.success(`Copied ${visibleSelected.length} selected rows as JSON`),
                       () => toast.error("Could not copy to clipboard"),
                     );
                   };
                   const copySelectedCsv = () => {
-                    if (visibleSelected.length === 0) {
-                      toast.error("No selected rows in the current view");
-                      return;
-                    }
+                    if (!guardColumns()) return;
                     const escape = (v: string) => (/[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
-                    const header = preview.columns.map(escape).join(",");
-                    const body = visibleSelected.map((row) => preview.columns.map((c) => escape(row[c] ?? "")).join(","));
+                    const header = activeColumns.map(escape).join(",");
+                    const body = visibleSelected.map((row) => activeColumns.map((c) => escape(row[c] ?? "")).join(","));
                     navigator.clipboard.writeText([header, ...body].join("\n")).then(
                       () => toast.success(`Copied ${visibleSelected.length} selected rows as CSV`),
                       () => toast.error("Could not copy to clipboard"),
                     );
                   };
                   const copySelectedMarkdown = () => {
-                    if (visibleSelected.length === 0) {
-                      toast.error("No selected rows in the current view");
-                      return;
-                    }
+                    if (!guardColumns()) return;
                     const cell = (v: string) => v.replace(/\|/g, "\\|").replace(/\n/g, " ");
-                    const header = `| ${preview.columns.map(cell).join(" | ")} |`;
-                    const sep = `| ${preview.columns.map(() => "---").join(" | ")} |`;
-                    const body = visibleSelected.map((row) => `| ${preview.columns.map((c) => cell(row[c] ?? "")).join(" | ")} |`);
+                    const header = `| ${activeColumns.map(cell).join(" | ")} |`;
+                    const sep = `| ${activeColumns.map(() => "---").join(" | ")} |`;
+                    const body = visibleSelected.map((row) => `| ${activeColumns.map((c) => cell(row[c] ?? "")).join(" | ")} |`);
                     navigator.clipboard.writeText([header, sep, ...body].join("\n")).then(
                       () => toast.success(`Copied ${visibleSelected.length} selected rows as a Markdown table`),
                       () => toast.error("Could not copy to clipboard"),
                     );
                   };
                   const exportSelectedCsv = () => {
-                    if (visibleSelected.length === 0) {
-                      toast.error("No selected rows in the current view");
-                      return;
-                    }
+                    if (!guardColumns()) return;
                     const escape = (v: string) => (/[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
-                    const header = preview.columns.map(escape).join(",");
-                    const body = visibleSelected.map((row) => preview.columns.map((c) => escape(row[c] ?? "")).join(","));
+                    const header = activeColumns.map(escape).join(",");
+                    const body = visibleSelected.map((row) => activeColumns.map((c) => escape(row[c] ?? "")).join(","));
                     const blob = new Blob([header + "\n" + body.join("\n")], { type: "text/csv;charset=utf-8" });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement("a");
@@ -687,11 +762,8 @@ function DatasetsView() {
                     toast.success(`Exported ${visibleSelected.length} selected rows as CSV`, { description: a.download });
                   };
                   const exportSelectedJson = () => {
-                    if (visibleSelected.length === 0) {
-                      toast.error("No selected rows in the current view");
-                      return;
-                    }
-                    const blob = new Blob([JSON.stringify(visibleSelected, null, 2)], { type: "application/json;charset=utf-8" });
+                    if (!guardColumns()) return;
+                    const blob = new Blob([JSON.stringify(projectRows, null, 2)], { type: "application/json;charset=utf-8" });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement("a");
                     a.href = url;
@@ -701,14 +773,11 @@ function DatasetsView() {
                     toast.success(`Exported ${visibleSelected.length} selected rows as JSON`, { description: a.download });
                   };
                   const exportSelectedMarkdown = () => {
-                    if (visibleSelected.length === 0) {
-                      toast.error("No selected rows in the current view");
-                      return;
-                    }
+                    if (!guardColumns()) return;
                     const cell = (v: string) => v.replace(/\|/g, "\\|").replace(/\n/g, " ");
-                    const header = `| ${preview.columns.map(cell).join(" | ")} |`;
-                    const sep = `| ${preview.columns.map(() => "---").join(" | ")} |`;
-                    const body = visibleSelected.map((row) => `| ${preview.columns.map((c) => cell(row[c] ?? "")).join(" | ")} |`);
+                    const header = `| ${activeColumns.map(cell).join(" | ")} |`;
+                    const sep = `| ${activeColumns.map(() => "---").join(" | ")} |`;
+                    const body = visibleSelected.map((row) => `| ${activeColumns.map((c) => cell(row[c] ?? "")).join(" | ")} |`);
                     const blob = new Blob([header + "\n" + sep + "\n" + body.join("\n") + "\n"], { type: "text/markdown;charset=utf-8" });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement("a");
@@ -817,7 +886,7 @@ function DatasetsView() {
                               </th>
                               <th className="px-3 py-2 text-left font-normal w-10">#</th>
                               <th className="px-2 py-2 w-8" aria-label="Row actions" />
-                              {preview.columns.map((c) => (
+                              {activeColumns.map((c) => (
                                 <th key={c} className="group/th px-3 py-2 text-left font-normal whitespace-nowrap">
                                   <span className="inline-flex items-center gap-1">
                                     <button
@@ -874,7 +943,7 @@ function DatasetsView() {
                                     <Copy className="h-3 w-3" />
                                   </button>
                                 </td>
-                                {preview.columns.map((c) => (
+                                {activeColumns.map((c) => (
                                   <td
                                     key={c}
                                     onClick={() => copyCell(c, row[c] ?? "")}
