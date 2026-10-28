@@ -578,7 +578,9 @@ function DatasetsView() {
                         <EyeOff className="h-3.5 w-3.5" /> Columns{hiddenCols.size > 0 ? ` (${hiddenCols.size} hidden)` : ""}
                       </button>
                       {columnsOpen && (
-                        <div className="absolute right-0 top-10 z-30 w-60 rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-2 shadow-lg">
+                        <>
+                          <div className="fixed inset-0 z-20" aria-hidden="true" onPointerDown={() => setColumnsOpen(false)} />
+                          <div className="absolute right-0 top-10 z-30 w-60 rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-2 shadow-lg">
                           <div className="flex items-center justify-between px-1 pb-1.5">
                             <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)]">Visible columns</span>
                             <button
