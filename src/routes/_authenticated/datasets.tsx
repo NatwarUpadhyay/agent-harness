@@ -150,6 +150,8 @@ function DatasetsView() {
   const [wrapText, setWrapText] = useState(false);
   const [sortCol, setSortCol] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [hiddenCols, setHiddenCols] = useState<Set<string>>(new Set());
+  const [columnsOpen, setColumnsOpen] = useState(false);
   const [selectedRows, setSelectedRows] = useState<Set<Record<string, string>>>(new Set());
   const lastAnchorRef = useRef<number | null>(null);
   const shiftClickRef = useRef(false);
