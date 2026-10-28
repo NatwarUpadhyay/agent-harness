@@ -883,7 +883,7 @@ function DatasetsView() {
                               </th>
                               <th className="px-3 py-2 text-left font-normal w-10">#</th>
                               <th className="px-2 py-2 w-8" aria-label="Row actions" />
-                              {preview.columns.map((c) => (
+                              {activeColumns.map((c) => (
                                 <th key={c} className="group/th px-3 py-2 text-left font-normal whitespace-nowrap">
                                   <span className="inline-flex items-center gap-1">
                                     <button
@@ -940,7 +940,7 @@ function DatasetsView() {
                                     <Copy className="h-3 w-3" />
                                   </button>
                                 </td>
-                                {preview.columns.map((c) => (
+                                {activeColumns.map((c) => (
                                   <td
                                     key={c}
                                     onClick={() => copyCell(c, row[c] ?? "")}
