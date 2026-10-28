@@ -579,7 +579,7 @@ function DatasetsView() {
                       </button>
                       {columnsOpen && (
                         <>
-                          <div className="fixed inset-0 z-20" aria-hidden="true" onPointerDown={() => setColumnsOpen(false)} />
+                          <div className="fixed inset-0 z-20" aria-hidden="true" onPointerDown={(e) => { e.stopPropagation(); setColumnsOpen(false); }} onClick={(e) => e.stopPropagation()} />
                           <div className="absolute right-0 top-10 z-30 w-60 rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-2 shadow-lg">
                           <div className="flex items-center justify-between px-1 pb-1.5">
                             <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)]">Visible columns</span>
