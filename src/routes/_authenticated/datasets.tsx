@@ -171,15 +171,38 @@ function DatasetsView() {
     return { ...f, preview: sorted };
   };
 
+  const persistHiddenCols = (datasetId: string, next: Set<string>) => {
+    try {
+      localStorage.setItem(`harness:preview:hidden-cols:${datasetId}`, JSON.stringify([...next]));
+    } catch {
+      // Storage unavailable (private mode, quota) — visibility simply won't persist.
+    }
+  };
+
   useEffect(() => {
     setRowQuery("");
     setSortCol(null);
     setSortDir("asc");
-    setHiddenCols(new Set());
+    // Restore this dataset's remembered hidden columns; unknown or stale names are dropped.
+    let restored = new Set<string>();
+    if (preview) {
+      try {
+        const raw = localStorage.getItem(`harness:preview:hidden-cols:${preview.id}`);
+        if (raw) {
+          const parsed: unknown = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            restored = new Set(parsed.filter((c): c is string => typeof c === "string" && preview.columns.includes(c)));
+          }
+        }
+      } catch {
+        // Corrupt value — fall back to all columns visible.
+      }
+    }
+    setHiddenCols(restored);
     setColumnsOpen(false);
     setSelectedRows(new Set());
     lastAnchorRef.current = null;
-  }, [preview?.id]);
+  }, [preview?.id, preview]);
 
   // Hoisted so the keyboard-shortcut effect and the preview table share one definition.
   const visiblePreviewRows = useMemo(() => {
@@ -585,7 +608,7 @@ function DatasetsView() {
                             <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)]">Visible columns</span>
                             <button
                               type="button"
-                              onClick={() => setHiddenCols(new Set())}
+                              onClick={() => { setHiddenCols(new Set()); persistHiddenCols(preview.id, new Set()); }}
                               className="text-[11px] text-[var(--text-accent)] hover:underline"
                             >
                               Show all
@@ -601,21 +624,19 @@ function DatasetsView() {
                                   title={hiddenCols.has(c) && hiddenCols.size >= preview.columns.length ? "At least one column stays visible" : undefined}
                                   onChange={() => {
                                     if (hiddenCols.has(c)) {
-                                      setHiddenCols((prev) => {
-                                        const next = new Set(prev);
-                                        next.delete(c);
-                                        return next;
-                                      });
+                                      const next = new Set(hiddenCols);
+                                      next.delete(c);
+                                      setHiddenCols(next);
+                                      persistHiddenCols(preview.id, next);
                                     } else {
                                       if (preview.columns.length - hiddenCols.size <= 1) {
                                         toast.error("At least one column must stay visible");
                                         return;
                                       }
-                                      setHiddenCols((prev) => {
-                                        const next = new Set(prev);
-                                        next.add(c);
-                                        return next;
-                                      });
+                                      const next = new Set(hiddenCols);
+                                      next.add(c);
+                                      setHiddenCols(next);
+                                      persistHiddenCols(preview.id, next);
                                     }
                                   }}
                                   className="h-3.5 w-3.5 cursor-pointer accent-[var(--accent)]"
@@ -625,7 +646,7 @@ function DatasetsView() {
                             ))}
                           </div>
                           <div className="px-1 pt-1.5 text-[10px] text-[var(--text-muted)]">
-                            Hidden columns are left out of the table and of every copy and export.
+                            Hidden columns are left out of the table and of every copy and export, and are remembered for this dataset.
                           </div>
                         </div>
                         </>
@@ -633,7 +654,7 @@ function DatasetsView() {
                     </div>
                     {(rowQuery !== "" || sortCol !== null) && (
                       <button
-                        onClick={() => { setRowQuery(""); setSortCol(null); setSortDir("asc"); setHiddenCols(new Set()); }}
+                        onClick={() => { setRowQuery(""); setSortCol(null); setSortDir("asc"); const next = new Set<string>(); setHiddenCols(next); persistHiddenCols(preview.id, next); }}
                         className="h-8 px-2.5 rounded-md border border-[var(--border-subtle)] text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                       >
                         Reset view
