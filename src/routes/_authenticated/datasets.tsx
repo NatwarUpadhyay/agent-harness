@@ -171,15 +171,38 @@ function DatasetsView() {
     return { ...f, preview: sorted };
   };
 
+  const persistHiddenCols = (datasetId: string, next: Set<string>) => {
+    try {
+      localStorage.setItem(`harness:preview:hidden-cols:${datasetId}`, JSON.stringify([...next]));
+    } catch {
+      // Storage unavailable (private mode, quota) — visibility simply won't persist.
+    }
+  };
+
   useEffect(() => {
     setRowQuery("");
     setSortCol(null);
     setSortDir("asc");
-    setHiddenCols(new Set());
+    // Restore this dataset's remembered hidden columns; unknown or stale names are dropped.
+    let restored = new Set<string>();
+    if (preview) {
+      try {
+        const raw = localStorage.getItem(`harness:preview:hidden-cols:${preview.id}`);
+        if (raw) {
+          const parsed: unknown = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            restored = new Set(parsed.filter((c): c is string => typeof c === "string" && preview.columns.includes(c)));
+          }
+        }
+      } catch {
+        // Corrupt value — fall back to all columns visible.
+      }
+    }
+    setHiddenCols(restored);
     setColumnsOpen(false);
     setSelectedRows(new Set());
     lastAnchorRef.current = null;
-  }, [preview?.id]);
+  }, [preview?.id, preview]);
 
   // Hoisted so the keyboard-shortcut effect and the preview table share one definition.
   const visiblePreviewRows = useMemo(() => {
@@ -585,7 +608,7 @@ function DatasetsView() {
                             <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)]">Visible columns</span>
                             <button
                               type="button"
-                              onClick={() => setHiddenCols(new Set())}
+                              onClick={() => { setHiddenCols(new Set()); persistHiddenCols(preview.id, new Set()); }}
                               className="text-[11px] text-[var(--text-accent)] hover:underline"
                             >
                               Show all
