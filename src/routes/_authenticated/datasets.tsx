@@ -547,8 +547,8 @@ function DatasetsView() {
                     <>
                       <button
                         onClick={() => {
-                          navigator.clipboard.writeText(preview.columns.join(", ")).then(
-                            () => toast.success(`Copied ${preview.columns.length} column names`),
+                          navigator.clipboard.writeText(orderedCols.join(", ")).then(
+                            () => toast.success(`Copied ${orderedCols.length} column names`),
                             () => toast.error("Could not copy to clipboard"),
                           );
                         }}
