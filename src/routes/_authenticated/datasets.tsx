@@ -151,6 +151,7 @@ function DatasetsView() {
   const [sortCol, setSortCol] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [hiddenCols, setHiddenCols] = useState<Set<string>>(new Set());
+  const [colOrder, setColOrder] = useState<string[]>([]);
   const [columnsOpen, setColumnsOpen] = useState(false);
   const [selectedRows, setSelectedRows] = useState<Set<Record<string, string>>>(new Set());
   const lastAnchorRef = useRef<number | null>(null);
