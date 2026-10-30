@@ -657,7 +657,7 @@ function DatasetsView() {
                             <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)]">Visible columns</span>
                             <button
                               type="button"
-                              onClick={() => { setHiddenCols(new Set()); persistHiddenCols(preview.id, new Set()); setColOrder([]); persistColOrder(preview.id, []); }}
+                              onClick={() => { setHiddenCols(new Set()); persistHiddenCols(preview.id, new Set()); }}
                               className="text-[11px] text-[var(--text-accent)] hover:underline"
                             >
                               Show all
@@ -727,7 +727,7 @@ function DatasetsView() {
                     </div>
                     {(rowQuery !== "" || sortCol !== null) && (
                       <button
-                        onClick={() => { setRowQuery(""); setSortCol(null); setSortDir("asc"); const next = new Set<string>(); setHiddenCols(next); persistHiddenCols(preview.id, next); }}
+                        onClick={() => { setRowQuery(""); setSortCol(null); setSortDir("asc"); const next = new Set<string>(); setHiddenCols(next); persistHiddenCols(preview.id, next); setColOrder([]); persistColOrder(preview.id, []); }}
                         className="h-8 px-2.5 rounded-md border border-[var(--border-subtle)] text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                       >
                         Reset view
@@ -738,7 +738,7 @@ function DatasetsView() {
                 {preview.preview.length > 0 && (() => {
                   const rq = rowQuery.trim().toLowerCase();
                   const visibleRows = visiblePreviewRows;
-                  const activeColumns = preview.columns.filter((c) => !hiddenCols.has(c));
+                  const activeColumns = orderedCols.filter((c) => !hiddenCols.has(c));
                   const toggleSort = (col: string) => {
                     if (sortCol === col) {
                       if (sortDir === "asc") setSortDir("desc");
