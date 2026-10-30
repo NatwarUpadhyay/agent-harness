@@ -151,6 +151,7 @@ function DatasetsView() {
   const [sortCol, setSortCol] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [hiddenCols, setHiddenCols] = useState<Set<string>>(new Set());
+  const [colOrder, setColOrder] = useState<string[]>([]);
   const [columnsOpen, setColumnsOpen] = useState(false);
   const [selectedRows, setSelectedRows] = useState<Set<Record<string, string>>>(new Set());
   const lastAnchorRef = useRef<number | null>(null);
@@ -179,12 +180,43 @@ function DatasetsView() {
     }
   };
 
+  const persistColOrder = (datasetId: string, next: string[]) => {
+    try {
+      localStorage.setItem(`harness:preview:col-order:${datasetId}`, JSON.stringify(next));
+    } catch {
+      // Storage unavailable — ordering simply won't persist.
+    }
+  };
+
+  // Full column list in the chosen display order: remembered order first, then any
+  // columns not yet ordered appended in their natural dataset order.
+  const orderedCols = useMemo(() => {
+    if (!preview) return [];
+    const known = new Set(preview.columns);
+    const ordered = colOrder.filter((c) => known.has(c));
+    const rest = preview.columns.filter((c) => !colOrder.includes(c));
+    return [...ordered, ...rest];
+  }, [preview, colOrder]);
+
+  const moveColumn = (col: string, dir: -1 | 1) => {
+    if (!preview) return;
+    const from = orderedCols.indexOf(col);
+    const to = from + dir;
+    if (from < 0 || to < 0 || to >= orderedCols.length) return;
+    const next = [...orderedCols];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    setColOrder(next);
+    persistColOrder(preview.id, next);
+  };
+
   useEffect(() => {
     setRowQuery("");
     setSortCol(null);
     setSortDir("asc");
     // Restore this dataset's remembered hidden columns; unknown or stale names are dropped.
     let restored = new Set<string>();
+    let restoredOrder: string[] = [];
     if (preview) {
       try {
         const raw = localStorage.getItem(`harness:preview:hidden-cols:${preview.id}`);
@@ -197,8 +229,25 @@ function DatasetsView() {
       } catch {
         // Corrupt value — fall back to all columns visible.
       }
+      try {
+        const rawOrder = localStorage.getItem(`harness:preview:col-order:${preview.id}`);
+        if (rawOrder) {
+          const parsedOrder: unknown = JSON.parse(rawOrder);
+          if (Array.isArray(parsedOrder)) {
+            const seen = new Set<string>();
+            restoredOrder = parsedOrder.filter((c): c is string => {
+              if (typeof c !== "string" || !preview.columns.includes(c) || seen.has(c)) return false;
+              seen.add(c);
+              return true;
+            });
+          }
+        }
+      } catch {
+        // Corrupt value — fall back to the dataset's natural column order.
+      }
     }
     setHiddenCols(restored);
+    setColOrder(restoredOrder);
     setColumnsOpen(false);
     setSelectedRows(new Set());
     lastAnchorRef.current = null;
@@ -498,8 +547,8 @@ function DatasetsView() {
                     <>
                       <button
                         onClick={() => {
-                          navigator.clipboard.writeText(preview.columns.join(", ")).then(
-                            () => toast.success(`Copied ${preview.columns.length} column names`),
+                          navigator.clipboard.writeText(orderedCols.join(", ")).then(
+                            () => toast.success(`Copied ${orderedCols.length} column names`),
                             () => toast.error("Could not copy to clipboard"),
                           );
                         }}
@@ -603,7 +652,7 @@ function DatasetsView() {
                       {columnsOpen && (
                         <>
                           <div className="fixed inset-0 z-20" aria-hidden="true" onPointerDown={(e) => { e.stopPropagation(); setColumnsOpen(false); }} onClick={(e) => e.stopPropagation()} />
-                          <div className="absolute right-0 top-10 z-30 w-60 rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-2 shadow-lg">
+                          <div className="absolute right-0 top-10 z-30 w-64 rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-2 shadow-lg">
                           <div className="flex items-center justify-between px-1 pb-1.5">
                             <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)]">Visible columns</span>
                             <button
@@ -615,38 +664,62 @@ function DatasetsView() {
                             </button>
                           </div>
                           <div className="max-h-56 overflow-auto">
-                            {preview.columns.map((c) => (
-                              <label key={c} className="flex items-center gap-2 rounded px-1.5 py-1 text-[12px] cursor-pointer hover:bg-[var(--bg-elevated)]/60">
-                                <input
-                                  type="checkbox"
-                                  checked={!hiddenCols.has(c)}
-                                  aria-label={`Show column ${c}`}
-                                  title={hiddenCols.has(c) && hiddenCols.size >= preview.columns.length ? "At least one column stays visible" : undefined}
-                                  onChange={() => {
-                                    if (hiddenCols.has(c)) {
-                                      const next = new Set(hiddenCols);
-                                      next.delete(c);
-                                      setHiddenCols(next);
-                                      persistHiddenCols(preview.id, next);
-                                    } else {
-                                      if (preview.columns.length - hiddenCols.size <= 1) {
-                                        toast.error("At least one column must stay visible");
-                                        return;
+                            {orderedCols.map((c, i) => (
+                              <div key={c} className="flex items-center gap-1 rounded px-1.5 py-1 text-[12px] hover:bg-[var(--bg-elevated)]/60">
+                                <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-2">
+                                  <input
+                                    type="checkbox"
+                                    checked={!hiddenCols.has(c)}
+                                    aria-label={`Show column ${c}`}
+                                    title={hiddenCols.has(c) && hiddenCols.size >= preview.columns.length ? "At least one column stays visible" : undefined}
+                                    onChange={() => {
+                                      if (hiddenCols.has(c)) {
+                                        const next = new Set(hiddenCols);
+                                        next.delete(c);
+                                        setHiddenCols(next);
+                                        persistHiddenCols(preview.id, next);
+                                      } else {
+                                        if (preview.columns.length - hiddenCols.size <= 1) {
+                                          toast.error("At least one column must stay visible");
+                                          return;
+                                        }
+                                        const next = new Set(hiddenCols);
+                                        next.add(c);
+                                        setHiddenCols(next);
+                                        persistHiddenCols(preview.id, next);
                                       }
-                                      const next = new Set(hiddenCols);
-                                      next.add(c);
-                                      setHiddenCols(next);
-                                      persistHiddenCols(preview.id, next);
-                                    }
-                                  }}
-                                  className="h-3.5 w-3.5 cursor-pointer accent-[var(--accent)]"
-                                />
-                                <span className="truncate font-mono-tabular">{c}</span>
-                              </label>
+                                    }}
+                                    className="h-3.5 w-3.5 cursor-pointer accent-[var(--accent)]"
+                                  />
+                                  <span className="truncate font-mono-tabular">{c}</span>
+                                </label>
+                                <div className="flex items-center">
+                                  <button
+                                    type="button"
+                                    aria-label={`Move column ${c} earlier`}
+                                    disabled={i === 0}
+                                    title={i === 0 ? "Already first" : "Move earlier"}
+                                    onClick={() => moveColumn(c, -1)}
+                                    className="rounded p-0.5 text-[var(--text-muted)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)] disabled:opacity-30 disabled:hover:bg-transparent"
+                                  >
+                                    <ArrowUp className="h-3 w-3" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    aria-label={`Move column ${c} later`}
+                                    disabled={i === orderedCols.length - 1}
+                                    title={i === orderedCols.length - 1 ? "Already last" : "Move later"}
+                                    onClick={() => moveColumn(c, 1)}
+                                    className="rounded p-0.5 text-[var(--text-muted)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)] disabled:opacity-30 disabled:hover:bg-transparent"
+                                  >
+                                    <ArrowDown className="h-3 w-3" />
+                                  </button>
+                                </div>
+                              </div>
                             ))}
                           </div>
                           <div className="px-1 pt-1.5 text-[10px] text-[var(--text-muted)]">
-                            Hidden columns are left out of the table and of every copy and export, and are remembered for this dataset.
+                            Hidden columns are left out of the table and of every copy and export; arrows reorder them. Both are remembered for this dataset.
                           </div>
                         </div>
                         </>
@@ -654,7 +727,7 @@ function DatasetsView() {
                     </div>
                     {(rowQuery !== "" || sortCol !== null) && (
                       <button
-                        onClick={() => { setRowQuery(""); setSortCol(null); setSortDir("asc"); const next = new Set<string>(); setHiddenCols(next); persistHiddenCols(preview.id, next); }}
+                        onClick={() => { setRowQuery(""); setSortCol(null); setSortDir("asc"); const next = new Set<string>(); setHiddenCols(next); persistHiddenCols(preview.id, next); setColOrder([]); persistColOrder(preview.id, []); }}
                         className="h-8 px-2.5 rounded-md border border-[var(--border-subtle)] text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                       >
                         Reset view
@@ -665,7 +738,7 @@ function DatasetsView() {
                 {preview.preview.length > 0 && (() => {
                   const rq = rowQuery.trim().toLowerCase();
                   const visibleRows = visiblePreviewRows;
-                  const activeColumns = preview.columns.filter((c) => !hiddenCols.has(c));
+                  const activeColumns = orderedCols.filter((c) => !hiddenCols.has(c));
                   const toggleSort = (col: string) => {
                     if (sortCol === col) {
                       if (sortDir === "asc") setSortDir("desc");
