@@ -180,12 +180,43 @@ function DatasetsView() {
     }
   };
 
+  const persistColOrder = (datasetId: string, next: string[]) => {
+    try {
+      localStorage.setItem(`harness:preview:col-order:${datasetId}`, JSON.stringify(next));
+    } catch {
+      // Storage unavailable — ordering simply won't persist.
+    }
+  };
+
+  // Full column list in the chosen display order: remembered order first, then any
+  // columns not yet ordered appended in their natural dataset order.
+  const orderedCols = useMemo(() => {
+    if (!preview) return [];
+    const known = new Set(preview.columns);
+    const ordered = colOrder.filter((c) => known.has(c));
+    const rest = preview.columns.filter((c) => !colOrder.includes(c));
+    return [...ordered, ...rest];
+  }, [preview, colOrder]);
+
+  const moveColumn = (col: string, dir: -1 | 1) => {
+    if (!preview) return;
+    const from = orderedCols.indexOf(col);
+    const to = from + dir;
+    if (from < 0 || to < 0 || to >= orderedCols.length) return;
+    const next = [...orderedCols];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    setColOrder(next);
+    persistColOrder(preview.id, next);
+  };
+
   useEffect(() => {
     setRowQuery("");
     setSortCol(null);
     setSortDir("asc");
     // Restore this dataset's remembered hidden columns; unknown or stale names are dropped.
     let restored = new Set<string>();
+    let restoredOrder: string[] = [];
     if (preview) {
       try {
         const raw = localStorage.getItem(`harness:preview:hidden-cols:${preview.id}`);
@@ -198,8 +229,23 @@ function DatasetsView() {
       } catch {
         // Corrupt value — fall back to all columns visible.
       }
+      try {
+        const rawOrder = localStorage.getItem(`harness:preview:col-order:${preview.id}`);
+        if (rawOrder) {
+          const parsedOrder: unknown = JSON.parse(rawOrder);
+          if (Array.isArray(parsedOrder)) {
+            const seen = new Set<string>();
+            restoredOrder = parsedOrder.filter(
+              (c): c is string => typeof c === "string" && preview.columns.includes(c) && !seen.has(c) && seen.add(c) !== undefined,
+            );
+          }
+        }
+      } catch {
+        // Corrupt value — fall back to the dataset's natural column order.
+      }
     }
     setHiddenCols(restored);
+    setColOrder(restoredOrder);
     setColumnsOpen(false);
     setSelectedRows(new Set());
     lastAnchorRef.current = null;
