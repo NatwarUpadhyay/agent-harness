@@ -235,9 +235,11 @@ function DatasetsView() {
           const parsedOrder: unknown = JSON.parse(rawOrder);
           if (Array.isArray(parsedOrder)) {
             const seen = new Set<string>();
-            restoredOrder = parsedOrder.filter(
-              (c): c is string => typeof c === "string" && preview.columns.includes(c) && !seen.has(c) && seen.add(c) !== undefined,
-            );
+            restoredOrder = parsedOrder.filter((c): c is string => {
+              if (typeof c !== "string" || !preview.columns.includes(c) || seen.has(c)) return false;
+              seen.add(c);
+              return true;
+            });
           }
         }
       } catch {
