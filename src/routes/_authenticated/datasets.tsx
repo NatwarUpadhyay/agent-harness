@@ -672,7 +672,7 @@ function DatasetsView() {
                       <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--text-muted)]" />
                       <input
                         value={rowQuery}
-                        onChange={(e) => setRowQuery(e.target.value)}
+                        onChange={(e) => { setRowQuery(e.target.value); persistViewFilter(preview.id, e.target.value); }}
                         aria-label="Filter preview rows"
                         placeholder="Filter rows…"
                         className="h-8 w-[200px] rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] pl-8 pr-2.5 text-[12px] outline-none focus:border-[var(--accent)]"
@@ -795,7 +795,7 @@ function DatasetsView() {
                     </div>
                     {(rowQuery !== "" || sortCol !== null) && (
                       <button
-                        onClick={() => { setRowQuery(""); setSortCol(null); setSortDir("asc"); const next = new Set<string>(); setHiddenCols(next); persistHiddenCols(preview.id, next); setColOrder([]); persistColOrder(preview.id, []); }}
+                        onClick={() => { setRowQuery(""); setSortCol(null); setSortDir("asc"); persistViewFilter(preview.id, ""); persistViewSort(preview.id, null, "asc"); const next = new Set<string>(); setHiddenCols(next); persistHiddenCols(preview.id, next); setColOrder([]); persistColOrder(preview.id, []); }}
                         className="h-8 px-2.5 rounded-md border border-[var(--border-subtle)] text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                       >
                         Reset view
@@ -808,13 +808,15 @@ function DatasetsView() {
                   const visibleRows = visiblePreviewRows;
                   const activeColumns = orderedCols.filter((c) => !hiddenCols.has(c));
                   const toggleSort = (col: string) => {
+                    let nextCol: string | null = col;
+                    let nextDir: "asc" | "desc" = "asc";
                     if (sortCol === col) {
-                      if (sortDir === "asc") setSortDir("desc");
-                      else { setSortCol(null); setSortDir("asc"); }
-                      } else {
-                      setSortCol(col);
-                      setSortDir("asc");
+                      if (sortDir === "asc") nextDir = "desc";
+                      else nextCol = null;
                     }
+                    setSortCol(nextCol);
+                    setSortDir(nextDir);
+                    persistViewSort(preview.id, nextCol, nextDir);
                   };
                   const copyColumn = (col: string) => {
                     const vals = visibleRows.map((row) => row[col] ?? "");
