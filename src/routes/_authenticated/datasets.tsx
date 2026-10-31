@@ -1126,7 +1126,7 @@ function DatasetsView() {
                                   No preview rows match “{rowQuery.trim()}”.{" "}
                                   <button
                                     type="button"
-                                    onClick={() => setRowQuery("")}
+                                    onClick={() => { setRowQuery(""); persistViewFilter(preview.id, ""); }}
                                     className="text-[var(--text-accent)] hover:underline"
                                   >
                                     Clear filter
