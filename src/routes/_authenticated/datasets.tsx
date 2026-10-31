@@ -242,13 +242,36 @@ function DatasetsView() {
   };
 
   useEffect(() => {
-    setRowQuery("");
-    setSortCol(null);
-    setSortDir("asc");
-    // Restore this dataset's remembered hidden columns; unknown or stale names are dropped.
+    // Restore this dataset's remembered filter, sort order and hidden columns;
+    // unknown or stale names are dropped.
+    let restoredQuery = "";
+    let restoredSortCol: string | null = null;
+    let restoredSortDir: "asc" | "desc" = "asc";
     let restored = new Set<string>();
     let restoredOrder: string[] = [];
     if (preview) {
+      try {
+        const rawFilter = localStorage.getItem(`harness:preview:filter:${preview.id}`);
+        if (rawFilter) {
+          const parsedFilter: unknown = JSON.parse(rawFilter);
+          if (typeof parsedFilter === "string") restoredQuery = parsedFilter;
+        }
+      } catch {
+        // Corrupt value — fall back to no filter.
+      }
+      try {
+        const rawSort = localStorage.getItem(`harness:preview:sort:${preview.id}`);
+        if (rawSort) {
+          const parsedSort: unknown = JSON.parse(rawSort);
+          if (typeof parsedSort === "object" && parsedSort !== null) {
+            const s = parsedSort as { col?: unknown; dir?: unknown };
+            if (typeof s.col === "string" && preview.columns.includes(s.col)) restoredSortCol = s.col;
+            if (s.dir === "asc" || s.dir === "desc") restoredSortDir = s.dir;
+          }
+        }
+      } catch {
+        // Corrupt value — fall back to the dataset's natural order.
+      }
       try {
         const raw = localStorage.getItem(`harness:preview:hidden-cols:${preview.id}`);
         if (raw) {
@@ -277,6 +300,9 @@ function DatasetsView() {
         // Corrupt value — fall back to the dataset's natural column order.
       }
     }
+    setRowQuery(restoredQuery);
+    setSortCol(restoredSortCol);
+    setSortDir(restoredSortDir);
     setHiddenCols(restored);
     setColOrder(restoredOrder);
     setColumnsOpen(false);
