@@ -188,6 +188,22 @@ function DatasetsView() {
     }
   };
 
+  const persistViewFilter = (datasetId: string, q: string) => {
+    try {
+      localStorage.setItem(`harness:preview:filter:${datasetId}`, JSON.stringify(q));
+    } catch {
+      // Storage unavailable — the filter simply won't persist.
+    }
+  };
+
+  const persistViewSort = (datasetId: string, col: string | null, dir: "asc" | "desc") => {
+    try {
+      localStorage.setItem(`harness:preview:sort:${datasetId}`, JSON.stringify({ col, dir }));
+    } catch {
+      // Storage unavailable — sorting simply won't persist.
+    }
+  };
+
   // Full column list in the chosen display order: remembered order first, then any
   // columns not yet ordered appended in their natural dataset order.
   const orderedCols = useMemo(() => {
