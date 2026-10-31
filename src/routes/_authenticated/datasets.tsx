@@ -188,6 +188,22 @@ function DatasetsView() {
     }
   };
 
+  const persistViewFilter = (datasetId: string, q: string) => {
+    try {
+      localStorage.setItem(`harness:preview:filter:${datasetId}`, JSON.stringify(q));
+    } catch {
+      // Storage unavailable — the filter simply won't persist.
+    }
+  };
+
+  const persistViewSort = (datasetId: string, col: string | null, dir: "asc" | "desc") => {
+    try {
+      localStorage.setItem(`harness:preview:sort:${datasetId}`, JSON.stringify({ col, dir }));
+    } catch {
+      // Storage unavailable — sorting simply won't persist.
+    }
+  };
+
   // Full column list in the chosen display order: remembered order first, then any
   // columns not yet ordered appended in their natural dataset order.
   const orderedCols = useMemo(() => {
@@ -226,13 +242,36 @@ function DatasetsView() {
   };
 
   useEffect(() => {
-    setRowQuery("");
-    setSortCol(null);
-    setSortDir("asc");
-    // Restore this dataset's remembered hidden columns; unknown or stale names are dropped.
+    // Restore this dataset's remembered filter, sort order and hidden columns;
+    // unknown or stale names are dropped.
+    let restoredQuery = "";
+    let restoredSortCol: string | null = null;
+    let restoredSortDir: "asc" | "desc" = "asc";
     let restored = new Set<string>();
     let restoredOrder: string[] = [];
     if (preview) {
+      try {
+        const rawFilter = localStorage.getItem(`harness:preview:filter:${preview.id}`);
+        if (rawFilter) {
+          const parsedFilter: unknown = JSON.parse(rawFilter);
+          if (typeof parsedFilter === "string") restoredQuery = parsedFilter;
+        }
+      } catch {
+        // Corrupt value — fall back to no filter.
+      }
+      try {
+        const rawSort = localStorage.getItem(`harness:preview:sort:${preview.id}`);
+        if (rawSort) {
+          const parsedSort: unknown = JSON.parse(rawSort);
+          if (typeof parsedSort === "object" && parsedSort !== null) {
+            const s = parsedSort as { col?: unknown; dir?: unknown };
+            if (typeof s.col === "string" && preview.columns.includes(s.col)) restoredSortCol = s.col;
+            if (s.dir === "asc" || s.dir === "desc") restoredSortDir = s.dir;
+          }
+        }
+      } catch {
+        // Corrupt value — fall back to the dataset's natural order.
+      }
       try {
         const raw = localStorage.getItem(`harness:preview:hidden-cols:${preview.id}`);
         if (raw) {
@@ -261,6 +300,9 @@ function DatasetsView() {
         // Corrupt value — fall back to the dataset's natural column order.
       }
     }
+    setRowQuery(restoredQuery);
+    setSortCol(restoredSortCol);
+    setSortDir(restoredSortDir);
     setHiddenCols(restored);
     setColOrder(restoredOrder);
     setColumnsOpen(false);
@@ -630,7 +672,7 @@ function DatasetsView() {
                       <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--text-muted)]" />
                       <input
                         value={rowQuery}
-                        onChange={(e) => setRowQuery(e.target.value)}
+                        onChange={(e) => { setRowQuery(e.target.value); persistViewFilter(preview.id, e.target.value); }}
                         aria-label="Filter preview rows"
                         placeholder="Filter rows…"
                         className="h-8 w-[200px] rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] pl-8 pr-2.5 text-[12px] outline-none focus:border-[var(--accent)]"
@@ -753,7 +795,7 @@ function DatasetsView() {
                     </div>
                     {(rowQuery !== "" || sortCol !== null) && (
                       <button
-                        onClick={() => { setRowQuery(""); setSortCol(null); setSortDir("asc"); const next = new Set<string>(); setHiddenCols(next); persistHiddenCols(preview.id, next); setColOrder([]); persistColOrder(preview.id, []); }}
+                        onClick={() => { setRowQuery(""); setSortCol(null); setSortDir("asc"); persistViewFilter(preview.id, ""); persistViewSort(preview.id, null, "asc"); const next = new Set<string>(); setHiddenCols(next); persistHiddenCols(preview.id, next); setColOrder([]); persistColOrder(preview.id, []); }}
                         className="h-8 px-2.5 rounded-md border border-[var(--border-subtle)] text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                       >
                         Reset view
@@ -766,13 +808,15 @@ function DatasetsView() {
                   const visibleRows = visiblePreviewRows;
                   const activeColumns = orderedCols.filter((c) => !hiddenCols.has(c));
                   const toggleSort = (col: string) => {
+                    let nextCol: string | null = col;
+                    let nextDir: "asc" | "desc" = "asc";
                     if (sortCol === col) {
-                      if (sortDir === "asc") setSortDir("desc");
-                      else { setSortCol(null); setSortDir("asc"); }
-                      } else {
-                      setSortCol(col);
-                      setSortDir("asc");
+                      if (sortDir === "asc") nextDir = "desc";
+                      else nextCol = null;
                     }
+                    setSortCol(nextCol);
+                    setSortDir(nextDir);
+                    persistViewSort(preview.id, nextCol, nextDir);
                   };
                   const copyColumn = (col: string) => {
                     const vals = visibleRows.map((row) => row[col] ?? "");
@@ -1082,7 +1126,7 @@ function DatasetsView() {
                                   No preview rows match “{rowQuery.trim()}”.{" "}
                                   <button
                                     type="button"
-                                    onClick={() => setRowQuery("")}
+                                    onClick={() => { setRowQuery(""); persistViewFilter(preview.id, ""); }}
                                     className="text-[var(--text-accent)] hover:underline"
                                   >
                                     Clear filter
