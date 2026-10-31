@@ -210,6 +210,21 @@ function DatasetsView() {
     persistColOrder(preview.id, next);
   };
 
+  // Restore the dataset's natural column order and show every column, clearing
+  // both remembered preferences for this dataset.
+  const resetColumnLayout = () => {
+    if (!preview) return;
+    setHiddenCols(new Set());
+    setColOrder([]);
+    try {
+      localStorage.removeItem(`harness:preview:hidden-cols:${preview.id}`);
+      localStorage.removeItem(`harness:preview:col-order:${preview.id}`);
+    } catch {
+      // Storage unavailable — nothing to clear.
+    }
+    toast.success("Column layout reset");
+  };
+
   useEffect(() => {
     setRowQuery("");
     setSortCol(null);
