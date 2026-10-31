@@ -733,8 +733,19 @@ function DatasetsView() {
                               </div>
                             ))}
                           </div>
-                          <div className="px-1 pt-1.5 text-[10px] text-[var(--text-muted)]">
-                            Hidden columns are left out of the table and of every copy and export; arrows reorder them. Both are remembered for this dataset.
+                          <div className="flex items-center justify-between gap-2 px-1 pt-1.5">
+                            <span className="text-[10px] text-[var(--text-muted)]">
+                              Hidden columns are left out of the table and of every copy and export; arrows reorder them. Both are remembered for this dataset.
+                            </span>
+                            <button
+                              type="button"
+                              onClick={resetColumnLayout}
+                              disabled={hiddenCols.size === 0 && colOrder.length === 0}
+                              title="Restore the natural column order and show every column"
+                              className="shrink-0 text-[11px] text-[var(--text-accent)] hover:underline disabled:opacity-40 disabled:hover:no-underline"
+                            >
+                              Reset layout
+                            </button>
                           </div>
                         </div>
                         </>
