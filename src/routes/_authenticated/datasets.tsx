@@ -321,6 +321,7 @@ function DatasetsView() {
     setRowQuery(restoredQuery);
     setSortCol(restoredSortCol);
     setSortDir(restoredSortDir);
+    setWrapText(restoredWrap);
     setHiddenCols(restored);
     setColOrder(restoredOrder);
     setColumnsOpen(false);
