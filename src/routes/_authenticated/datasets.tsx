@@ -204,6 +204,14 @@ function DatasetsView() {
     }
   };
 
+  const persistWrapText = (datasetId: string, on: boolean) => {
+    try {
+      localStorage.setItem(`harness:preview:wrap:${datasetId}`, JSON.stringify(on));
+    } catch {
+      // Storage unavailable — wrapping simply won't persist.
+    }
+  };
+
   // Full column list in the chosen display order: remembered order first, then any
   // columns not yet ordered appended in their natural dataset order.
   const orderedCols = useMemo(() => {
