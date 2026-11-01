@@ -699,7 +699,7 @@ function DatasetsView() {
                     </div>
                     <button
                       type="button"
-                      onClick={() => setWrapText((w) => !w)}
+                      onClick={() => { const next = !wrapText; setWrapText(next); persistWrapText(preview.id, next); }}
                       aria-pressed={wrapText}
                       title={wrapText ? "Truncate long cell values" : "Wrap long cell values"}
                       className={`inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md border text-[12px] ${
