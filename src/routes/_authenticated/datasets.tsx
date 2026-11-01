@@ -257,7 +257,17 @@ function DatasetsView() {
     let restoredSortDir: "asc" | "desc" = "asc";
     let restored = new Set<string>();
     let restoredOrder: string[] = [];
+    let restoredWrap = false;
     if (preview) {
+      try {
+        const rawWrap = localStorage.getItem(`harness:preview:wrap:${preview.id}`);
+        if (rawWrap) {
+          const parsedWrap: unknown = JSON.parse(rawWrap);
+          if (typeof parsedWrap === "boolean") restoredWrap = parsedWrap;
+        }
+      } catch {
+        // Corrupt value — fall back to truncating long cell values.
+      }
       try {
         const rawFilter = localStorage.getItem(`harness:preview:filter:${preview.id}`);
         if (rawFilter) {
