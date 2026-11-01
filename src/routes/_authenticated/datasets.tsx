@@ -814,7 +814,7 @@ function DatasetsView() {
                     </div>
                     {(rowQuery !== "" || sortCol !== null) && (
                       <button
-                        onClick={() => { setRowQuery(""); setSortCol(null); setSortDir("asc"); persistViewFilter(preview.id, ""); persistViewSort(preview.id, null, "asc"); const next = new Set<string>(); setHiddenCols(next); persistHiddenCols(preview.id, next); setColOrder([]); persistColOrder(preview.id, []); }}
+                        onClick={() => { setRowQuery(""); setSortCol(null); setSortDir("asc"); setWrapText(false); persistViewFilter(preview.id, ""); persistViewSort(preview.id, null, "asc"); persistWrapText(preview.id, false); const next = new Set<string>(); setHiddenCols(next); persistHiddenCols(preview.id, next); setColOrder([]); persistColOrder(preview.id, []); }}
                         className="h-8 px-2.5 rounded-md border border-[var(--border-subtle)] text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                       >
                         Reset view
