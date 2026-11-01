@@ -204,6 +204,14 @@ function DatasetsView() {
     }
   };
 
+  const persistWrapText = (datasetId: string, on: boolean) => {
+    try {
+      localStorage.setItem(`harness:preview:wrap:${datasetId}`, JSON.stringify(on));
+    } catch {
+      // Storage unavailable — wrapping simply won't persist.
+    }
+  };
+
   // Full column list in the chosen display order: remembered order first, then any
   // columns not yet ordered appended in their natural dataset order.
   const orderedCols = useMemo(() => {
@@ -249,7 +257,17 @@ function DatasetsView() {
     let restoredSortDir: "asc" | "desc" = "asc";
     let restored = new Set<string>();
     let restoredOrder: string[] = [];
+    let restoredWrap = false;
     if (preview) {
+      try {
+        const rawWrap = localStorage.getItem(`harness:preview:wrap:${preview.id}`);
+        if (rawWrap) {
+          const parsedWrap: unknown = JSON.parse(rawWrap);
+          if (typeof parsedWrap === "boolean") restoredWrap = parsedWrap;
+        }
+      } catch {
+        // Corrupt value — fall back to truncating long cell values.
+      }
       try {
         const rawFilter = localStorage.getItem(`harness:preview:filter:${preview.id}`);
         if (rawFilter) {
@@ -303,6 +321,7 @@ function DatasetsView() {
     setRowQuery(restoredQuery);
     setSortCol(restoredSortCol);
     setSortDir(restoredSortDir);
+    setWrapText(restoredWrap);
     setHiddenCols(restored);
     setColOrder(restoredOrder);
     setColumnsOpen(false);
@@ -680,7 +699,7 @@ function DatasetsView() {
                     </div>
                     <button
                       type="button"
-                      onClick={() => setWrapText((w) => !w)}
+                      onClick={() => { const next = !wrapText; setWrapText(next); persistWrapText(preview.id, next); }}
                       aria-pressed={wrapText}
                       title={wrapText ? "Truncate long cell values" : "Wrap long cell values"}
                       className={`inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md border text-[12px] ${
@@ -795,7 +814,7 @@ function DatasetsView() {
                     </div>
                     {(rowQuery !== "" || sortCol !== null) && (
                       <button
-                        onClick={() => { setRowQuery(""); setSortCol(null); setSortDir("asc"); persistViewFilter(preview.id, ""); persistViewSort(preview.id, null, "asc"); const next = new Set<string>(); setHiddenCols(next); persistHiddenCols(preview.id, next); setColOrder([]); persistColOrder(preview.id, []); }}
+                        onClick={() => { setRowQuery(""); setSortCol(null); setSortDir("asc"); setWrapText(false); persistViewFilter(preview.id, ""); persistViewSort(preview.id, null, "asc"); persistWrapText(preview.id, false); const next = new Set<string>(); setHiddenCols(next); persistHiddenCols(preview.id, next); setColOrder([]); persistColOrder(preview.id, []); }}
                         className="h-8 px-2.5 rounded-md border border-[var(--border-subtle)] text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                       >
                         Reset view
