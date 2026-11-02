@@ -288,6 +288,16 @@ function DatasetsView() {
         // Corrupt value — fall back to no filter.
       }
       try {
+        const rawFilterCol = localStorage.getItem(`harness:preview:filter-col:${preview.id}`);
+        if (rawFilterCol) {
+          const parsedFilterCol: unknown = JSON.parse(rawFilterCol);
+          if (parsedFilterCol === "all") restoredFilterCol = "all";
+          else if (typeof parsedFilterCol === "string" && preview.columns.includes(parsedFilterCol)) restoredFilterCol = parsedFilterCol;
+        }
+      } catch {
+        // Corrupt value — fall back to filtering every column.
+      }
+      try {
         const rawSort = localStorage.getItem(`harness:preview:sort:${preview.id}`);
         if (rawSort) {
           const parsedSort: unknown = JSON.parse(rawSort);
