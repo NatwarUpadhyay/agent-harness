@@ -262,6 +262,7 @@ function DatasetsView() {
     // Restore this dataset's remembered filter, sort order and hidden columns;
     // unknown or stale names are dropped.
     let restoredQuery = "";
+    let restoredFilterCol = "all";
     let restoredSortCol: string | null = null;
     let restoredSortDir: "asc" | "desc" = "asc";
     let restored = new Set<string>();
