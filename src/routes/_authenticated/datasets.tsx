@@ -721,6 +721,18 @@ function DatasetsView() {
                         className="h-8 w-[200px] rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] pl-8 pr-2.5 text-[12px] outline-none focus:border-[var(--accent)]"
                       />
                     </div>
+                    <select
+                      value={filterCol}
+                      onChange={(e) => { const next = e.target.value; setFilterCol(next); persistViewFilterCol(preview.id, next); }}
+                      aria-label="Filter scope"
+                      title={filterCol === "all" ? "Search every column" : `Search only the “${filterCol}” column`}
+                      className="h-8 rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-2 text-[12px] text-[var(--text-secondary)] outline-none focus:border-[var(--accent)]"
+                    >
+                      <option value="all">All columns</option>
+                      {preview.columns.map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
                     <button
                       type="button"
                       onClick={() => { const next = !wrapText; setWrapText(next); persistWrapText(preview.id, next); }}
