@@ -147,6 +147,7 @@ function DatasetsView() {
   const [kindFilter, setKindFilter] = useState<DatasetKind | "all">("all");
   const [sortBy, setSortBy] = useState<"newest" | "name" | "rows" | "size">("newest");
   const [rowQuery, setRowQuery] = useState("");
+  const [filterCol, setFilterCol] = useState<string | "all">("all");
   const [wrapText, setWrapText] = useState(false);
   const [sortCol, setSortCol] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
@@ -193,6 +194,14 @@ function DatasetsView() {
       localStorage.setItem(`harness:preview:filter:${datasetId}`, JSON.stringify(q));
     } catch {
       // Storage unavailable — the filter simply won't persist.
+    }
+  };
+
+  const persistViewFilterCol = (datasetId: string, col: string) => {
+    try {
+      localStorage.setItem(`harness:preview:filter-col:${datasetId}`, JSON.stringify(col));
+    } catch {
+      // Storage unavailable — the filter scope simply won't persist.
     }
   };
 
@@ -253,6 +262,7 @@ function DatasetsView() {
     // Restore this dataset's remembered filter, sort order and hidden columns;
     // unknown or stale names are dropped.
     let restoredQuery = "";
+    let restoredFilterCol = "all";
     let restoredSortCol: string | null = null;
     let restoredSortDir: "asc" | "desc" = "asc";
     let restored = new Set<string>();
@@ -276,6 +286,16 @@ function DatasetsView() {
         }
       } catch {
         // Corrupt value — fall back to no filter.
+      }
+      try {
+        const rawFilterCol = localStorage.getItem(`harness:preview:filter-col:${preview.id}`);
+        if (rawFilterCol) {
+          const parsedFilterCol: unknown = JSON.parse(rawFilterCol);
+          if (parsedFilterCol === "all") restoredFilterCol = "all";
+          else if (typeof parsedFilterCol === "string" && preview.columns.includes(parsedFilterCol)) restoredFilterCol = parsedFilterCol;
+        }
+      } catch {
+        // Corrupt value — fall back to filtering every column.
       }
       try {
         const rawSort = localStorage.getItem(`harness:preview:sort:${preview.id}`);
@@ -319,6 +339,7 @@ function DatasetsView() {
       }
     }
     setRowQuery(restoredQuery);
+    setFilterCol(restoredFilterCol);
     setSortCol(restoredSortCol);
     setSortDir(restoredSortDir);
     setWrapText(restoredWrap);
@@ -333,10 +354,13 @@ function DatasetsView() {
   const visiblePreviewRows = useMemo(() => {
     if (!preview) return [];
     const rq = rowQuery.trim().toLowerCase();
+    const scopeCols = filterCol !== "all" && preview.columns.includes(filterCol)
+      ? [filterCol]
+      : preview.columns;
     const filteredRows = rq === ""
       ? preview.preview
       : preview.preview.filter((row) =>
-          preview.columns.some((c) => (row[c] ?? "").toLowerCase().includes(rq)));
+          scopeCols.some((c) => (row[c] ?? "").toLowerCase().includes(rq)));
     if (sortCol === null) return filteredRows;
     return [...filteredRows].sort((a, b) => {
       const av = a[sortCol] ?? "";
@@ -348,7 +372,7 @@ function DatasetsView() {
         : av.localeCompare(bv);
       return sortDir === "asc" ? cmp : -cmp;
     });
-  }, [preview, rowQuery, sortCol, sortDir]);
+  }, [preview, rowQuery, filterCol, sortCol, sortDir]);
 
   useEffect(() => {
     if (!preview) return;
@@ -697,6 +721,18 @@ function DatasetsView() {
                         className="h-8 w-[200px] rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] pl-8 pr-2.5 text-[12px] outline-none focus:border-[var(--accent)]"
                       />
                     </div>
+                    <select
+                      value={filterCol}
+                      onChange={(e) => { const next = e.target.value; setFilterCol(next); persistViewFilterCol(preview.id, next); }}
+                      aria-label="Filter scope"
+                      title={filterCol === "all" ? "Search every column" : `Search only the “${filterCol}” column`}
+                      className="h-8 rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-2 text-[12px] text-[var(--text-secondary)] outline-none focus:border-[var(--accent)]"
+                    >
+                      <option value="all">All columns</option>
+                      {preview.columns.map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
                     <button
                       type="button"
                       onClick={() => { const next = !wrapText; setWrapText(next); persistWrapText(preview.id, next); }}
@@ -814,7 +850,7 @@ function DatasetsView() {
                     </div>
                     {(rowQuery !== "" || sortCol !== null) && (
                       <button
-                        onClick={() => { setRowQuery(""); setSortCol(null); setSortDir("asc"); setWrapText(false); persistViewFilter(preview.id, ""); persistViewSort(preview.id, null, "asc"); persistWrapText(preview.id, false); const next = new Set<string>(); setHiddenCols(next); persistHiddenCols(preview.id, next); setColOrder([]); persistColOrder(preview.id, []); }}
+                        onClick={() => { setRowQuery(""); setFilterCol("all"); setSortCol(null); setSortDir("asc"); setWrapText(false); persistViewFilter(preview.id, ""); persistViewFilterCol(preview.id, "all"); persistViewSort(preview.id, null, "asc"); persistWrapText(preview.id, false); const next = new Set<string>(); setHiddenCols(next); persistHiddenCols(preview.id, next); setColOrder([]); persistColOrder(preview.id, []); }}
                         className="h-8 px-2.5 rounded-md border border-[var(--border-subtle)] text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                       >
                         Reset view
@@ -975,7 +1011,7 @@ function DatasetsView() {
                       <div className="text-[11px] text-[var(--text-muted)] font-mono-tabular mb-2 flex items-center gap-3 flex-wrap">
                         <span>
                           Showing {visibleRows.length} of {preview.preview.length} preview rows
-                          {rq !== "" && ` matching “${rowQuery.trim()}”`}
+                          {rq !== "" && ` matching “${rowQuery.trim()}”${filterCol !== "all" ? ` in ${filterCol}` : ""}`}
                         </span>
                         <span className="opacity-70" title="Keyboard: Ctrl/⌘+A selects all visible rows · Ctrl/⌘+Shift+A clears the selection">
                           Ctrl/⌘+A select all · +Shift clear
@@ -1142,10 +1178,11 @@ function DatasetsView() {
                                   colSpan={preview.columns.length + 3}
                                   className="px-3 py-10 text-center text-[12px] text-[var(--text-muted)]"
                                 >
-                                  No preview rows match “{rowQuery.trim()}”.{" "}
+                                  No preview rows match “{rowQuery.trim()}”
+                                  {filterCol !== "all" ? ` in ${filterCol}` : ""}.{" "}
                                   <button
                                     type="button"
-                                    onClick={() => { setRowQuery(""); persistViewFilter(preview.id, ""); }}
+                                    onClick={() => { setRowQuery(""); setFilterCol("all"); persistViewFilter(preview.id, ""); persistViewFilterCol(preview.id, "all"); }}
                                     className="text-[var(--text-accent)] hover:underline"
                                   >
                                     Clear filter
@@ -1158,7 +1195,8 @@ function DatasetsView() {
                       </div>
                       {rq !== "" && (
                         <div className="mt-2 text-[10px] text-[var(--text-muted)]">
-                          {visibleRows.length} of {preview.preview.length} preview rows match “{rowQuery.trim()}”.
+                          {visibleRows.length} of {preview.preview.length} preview rows match “{rowQuery.trim()}”
+                          {filterCol !== "all" ? ` in ${filterCol}` : ""}.
                         </div>
                       )}
                     </>
