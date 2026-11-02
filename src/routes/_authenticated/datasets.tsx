@@ -147,6 +147,7 @@ function DatasetsView() {
   const [kindFilter, setKindFilter] = useState<DatasetKind | "all">("all");
   const [sortBy, setSortBy] = useState<"newest" | "name" | "rows" | "size">("newest");
   const [rowQuery, setRowQuery] = useState("");
+  const [filterCol, setFilterCol] = useState<string | "all">("all");
   const [wrapText, setWrapText] = useState(false);
   const [sortCol, setSortCol] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
@@ -193,6 +194,14 @@ function DatasetsView() {
       localStorage.setItem(`harness:preview:filter:${datasetId}`, JSON.stringify(q));
     } catch {
       // Storage unavailable — the filter simply won't persist.
+    }
+  };
+
+  const persistViewFilterCol = (datasetId: string, col: string) => {
+    try {
+      localStorage.setItem(`harness:preview:filter-col:${datasetId}`, JSON.stringify(col));
+    } catch {
+      // Storage unavailable — the filter scope simply won't persist.
     }
   };
 
