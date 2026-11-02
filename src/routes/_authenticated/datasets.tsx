@@ -339,6 +339,7 @@ function DatasetsView() {
       }
     }
     setRowQuery(restoredQuery);
+    setFilterCol(restoredFilterCol);
     setSortCol(restoredSortCol);
     setSortDir(restoredSortDir);
     setWrapText(restoredWrap);
