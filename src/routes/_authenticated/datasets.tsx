@@ -850,7 +850,7 @@ function DatasetsView() {
                     </div>
                     {(rowQuery !== "" || sortCol !== null) && (
                       <button
-                        onClick={() => { setRowQuery(""); setSortCol(null); setSortDir("asc"); setWrapText(false); persistViewFilter(preview.id, ""); persistViewSort(preview.id, null, "asc"); persistWrapText(preview.id, false); const next = new Set<string>(); setHiddenCols(next); persistHiddenCols(preview.id, next); setColOrder([]); persistColOrder(preview.id, []); }}
+                        onClick={() => { setRowQuery(""); setFilterCol("all"); setSortCol(null); setSortDir("asc"); setWrapText(false); persistViewFilter(preview.id, ""); persistViewFilterCol(preview.id, "all"); persistViewSort(preview.id, null, "asc"); persistWrapText(preview.id, false); const next = new Set<string>(); setHiddenCols(next); persistHiddenCols(preview.id, next); setColOrder([]); persistColOrder(preview.id, []); }}
                         className="h-8 px-2.5 rounded-md border border-[var(--border-subtle)] text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                       >
                         Reset view
@@ -1011,7 +1011,7 @@ function DatasetsView() {
                       <div className="text-[11px] text-[var(--text-muted)] font-mono-tabular mb-2 flex items-center gap-3 flex-wrap">
                         <span>
                           Showing {visibleRows.length} of {preview.preview.length} preview rows
-                          {rq !== "" && ` matching “${rowQuery.trim()}”`}
+                          {rq !== "" && ` matching “${rowQuery.trim()}”${filterCol !== "all" ? ` in ${filterCol}` : ""}`}
                         </span>
                         <span className="opacity-70" title="Keyboard: Ctrl/⌘+A selects all visible rows · Ctrl/⌘+Shift+A clears the selection">
                           Ctrl/⌘+A select all · +Shift clear
@@ -1178,10 +1178,11 @@ function DatasetsView() {
                                   colSpan={preview.columns.length + 3}
                                   className="px-3 py-10 text-center text-[12px] text-[var(--text-muted)]"
                                 >
-                                  No preview rows match “{rowQuery.trim()}”.{" "}
+                                  No preview rows match “{rowQuery.trim()}”
+                                  {filterCol !== "all" ? ` in ${filterCol}` : ""}.{" "}
                                   <button
                                     type="button"
-                                    onClick={() => { setRowQuery(""); persistViewFilter(preview.id, ""); }}
+                                    onClick={() => { setRowQuery(""); setFilterCol("all"); persistViewFilter(preview.id, ""); persistViewFilterCol(preview.id, "all"); }}
                                     className="text-[var(--text-accent)] hover:underline"
                                   >
                                     Clear filter
@@ -1194,7 +1195,8 @@ function DatasetsView() {
                       </div>
                       {rq !== "" && (
                         <div className="mt-2 text-[10px] text-[var(--text-muted)]">
-                          {visibleRows.length} of {preview.preview.length} preview rows match “{rowQuery.trim()}”.
+                          {visibleRows.length} of {preview.preview.length} preview rows match “{rowQuery.trim()}”
+                          {filterCol !== "all" ? ` in ${filterCol}` : ""}.
                         </div>
                       )}
                     </>
