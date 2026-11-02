@@ -354,10 +354,13 @@ function DatasetsView() {
   const visiblePreviewRows = useMemo(() => {
     if (!preview) return [];
     const rq = rowQuery.trim().toLowerCase();
+    const scopeCols = filterCol !== "all" && preview.columns.includes(filterCol)
+      ? [filterCol]
+      : preview.columns;
     const filteredRows = rq === ""
       ? preview.preview
       : preview.preview.filter((row) =>
-          preview.columns.some((c) => (row[c] ?? "").toLowerCase().includes(rq)));
+          scopeCols.some((c) => (row[c] ?? "").toLowerCase().includes(rq)));
     if (sortCol === null) return filteredRows;
     return [...filteredRows].sort((a, b) => {
       const av = a[sortCol] ?? "";
@@ -369,7 +372,7 @@ function DatasetsView() {
         : av.localeCompare(bv);
       return sortDir === "asc" ? cmp : -cmp;
     });
-  }, [preview, rowQuery, sortCol, sortDir]);
+  }, [preview, rowQuery, filterCol, sortCol, sortDir]);
 
   useEffect(() => {
     if (!preview) return;
