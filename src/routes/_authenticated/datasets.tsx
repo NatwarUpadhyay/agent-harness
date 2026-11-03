@@ -375,26 +375,20 @@ function DatasetsView() {
   // Hoisted so the keyboard-shortcut effect and the preview table share one definition.
   const visiblePreviewRows = useMemo(() => {
     if (!preview) return [];
-    const rq = rowQuery.trim().toLowerCase();
+    const rq = rowQuery.trim();
+    if (rq === "") return sortCol === null ? preview.preview : sortRows(preview.preview, sortCol!, sortDir);
+    const needle = matchCase ? rq : rq.toLowerCase();
     const scopeCols = filterCol !== "all" && preview.columns.includes(filterCol)
       ? [filterCol]
       : preview.columns;
-    const filteredRows = rq === ""
-      ? preview.preview
-      : preview.preview.filter((row) =>
-          scopeCols.some((c) => (row[c] ?? "").toLowerCase().includes(rq)));
+    const filteredRows = preview.preview.filter((row) =>
+      scopeCols.some((c) => {
+        const hay = row[c] ?? "";
+        return (matchCase ? hay : hay.toLowerCase()).includes(needle);
+      }));
     if (sortCol === null) return filteredRows;
-    return [...filteredRows].sort((a, b) => {
-      const av = a[sortCol] ?? "";
-      const bv = b[sortCol] ?? "";
-      const an = Number(av);
-      const bn = Number(bv);
-      const cmp = av !== "" && bv !== "" && !Number.isNaN(an) && !Number.isNaN(bn)
-        ? an - bn
-        : av.localeCompare(bv);
-      return sortDir === "asc" ? cmp : -cmp;
-    });
-  }, [preview, rowQuery, filterCol, sortCol, sortDir]);
+    return sortRows(filteredRows, sortCol, sortDir);
+  }, [preview, rowQuery, filterCol, matchCase, sortCol, sortDir]);
 
   useEffect(() => {
     if (!preview) return;
