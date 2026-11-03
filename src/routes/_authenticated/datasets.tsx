@@ -41,22 +41,24 @@ function relTime(ts: number): string {
   return new Date(ts).toISOString().slice(0, 10);
 }
 
-function withFilteredRows(d: StoredDataset, query: string): StoredDataset {
-  const q = query.trim().toLowerCase();
+function withFilteredRows(d: StoredDataset, query: string, matchCase = false): StoredDataset {
+  const q = query.trim();
   if (q === "") return d;
+  const contains = (haystack: string) => (matchCase ? haystack.includes(q) : haystack.toLowerCase().includes(q.toLowerCase()));
   return {
     ...d,
-    preview: d.preview.filter((row) => d.columns.some((c) => (row[c] ?? "").toLowerCase().includes(q))),
+    preview: d.preview.filter((row) => d.columns.some((c) => contains(row[c] ?? ""))),
   };
 }
 
-function highlightMatch(text: string, query: string) {
+function highlightMatch(text: string, query: string, matchCase = false) {
   const q = query.trim();
   if (q === "" || text === "") return text || "—";
   const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const parts = text.split(new RegExp(`(${escaped})`, "gi"));
+  const parts = text.split(new RegExp(`(${escaped})`, matchCase ? "g" : "gi"));
+  const isMatch = (part: string) => (matchCase ? part === q : part.toLowerCase() === q.toLowerCase());
   return parts.map((part, i) =>
-    part.toLowerCase() === q.toLowerCase() ? (
+    isMatch(part) ? (
       <mark key={i} className="rounded-sm bg-[color-mix(in_srgb,var(--amber)_18%,transparent)] px-0.5 text-[var(--amber)]">{part}</mark>
     ) : (
       part
@@ -148,6 +150,7 @@ function DatasetsView() {
   const [sortBy, setSortBy] = useState<"newest" | "name" | "rows" | "size">("newest");
   const [rowQuery, setRowQuery] = useState("");
   const [filterCol, setFilterCol] = useState<string | "all">("all");
+  const [matchCase, setMatchCase] = useState(false);
   const [wrapText, setWrapText] = useState(false);
   const [sortCol, setSortCol] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
