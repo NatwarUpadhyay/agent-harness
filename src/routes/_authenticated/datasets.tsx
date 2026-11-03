@@ -279,6 +279,7 @@ function DatasetsView() {
     let restored = new Set<string>();
     let restoredOrder: string[] = [];
     let restoredWrap = false;
+    let restoredMatchCase = false;
     if (preview) {
       try {
         const rawWrap = localStorage.getItem(`harness:preview:wrap:${preview.id}`);
@@ -288,6 +289,15 @@ function DatasetsView() {
         }
       } catch {
         // Corrupt value — fall back to truncating long cell values.
+      }
+      try {
+        const rawMatchCase = localStorage.getItem(`harness:preview:match-case:${preview.id}`);
+        if (rawMatchCase) {
+          const parsedMatchCase: unknown = JSON.parse(rawMatchCase);
+          if (typeof parsedMatchCase === "boolean") restoredMatchCase = parsedMatchCase;
+        }
+      } catch {
+        // Corrupt value — fall back to case-insensitive matching.
       }
       try {
         const rawFilter = localStorage.getItem(`harness:preview:filter:${preview.id}`);
