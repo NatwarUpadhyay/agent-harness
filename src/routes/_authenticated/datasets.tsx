@@ -162,7 +162,7 @@ function DatasetsView() {
   const shiftClickRef = useRef(false);
 
   const viewRows = (d: StoredDataset): StoredDataset => {
-    const f = withFilteredRows(d, rowQuery);
+    const f = withFilteredRows(d, rowQuery, matchCase);
     if (sortCol === null) return f;
     const col = sortCol;
     const sorted = [...f.preview].sort((a, b) => {
@@ -221,6 +221,14 @@ function DatasetsView() {
       localStorage.setItem(`harness:preview:wrap:${datasetId}`, JSON.stringify(on));
     } catch {
       // Storage unavailable — wrapping simply won't persist.
+    }
+  };
+
+  const persistMatchCase = (datasetId: string, on: boolean) => {
+    try {
+      localStorage.setItem(`harness:preview:match-case:${datasetId}`, JSON.stringify(on));
+    } catch {
+      // Storage unavailable — the case-sensitivity preference simply won't persist.
     }
   };
 
