@@ -892,7 +892,7 @@ function DatasetsView() {
                     </div>
                     {(rowQuery !== "" || sortCol !== null) && (
                       <button
-                        onClick={() => { setRowQuery(""); setFilterCol("all"); setSortCol(null); setSortDir("asc"); setWrapText(false); persistViewFilter(preview.id, ""); persistViewFilterCol(preview.id, "all"); persistViewSort(preview.id, null, "asc"); persistWrapText(preview.id, false); const next = new Set<string>(); setHiddenCols(next); persistHiddenCols(preview.id, next); setColOrder([]); persistColOrder(preview.id, []); }}
+onClick={() => { setRowQuery(""); setFilterCol("all"); setSortCol(null); setSortDir("asc"); setWrapText(false); setMatchCase(false); persistViewFilter(preview.id, ""); persistViewFilterCol(preview.id, "all"); persistViewSort(preview.id, null, "asc"); persistWrapText(preview.id, false); persistMatchCase(preview.id, false); const next = new Set<string>(); setHiddenCols(next); persistHiddenCols(preview.id, next); setColOrder([]); persistColOrder(preview.id, []); }}
                         className="h-8 px-2.5 rounded-md border border-[var(--border-subtle)] text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                       >
                         Reset view
@@ -901,7 +901,7 @@ function DatasetsView() {
                   </div>
                 )}
                 {preview.preview.length > 0 && (() => {
-                  const rq = rowQuery.trim().toLowerCase();
+                  const rq = rowQuery.trim();
                   const visibleRows = visiblePreviewRows;
                   const activeColumns = orderedCols.filter((c) => !hiddenCols.has(c));
                   const toggleSort = (col: string) => {
