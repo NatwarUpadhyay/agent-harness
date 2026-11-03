@@ -1053,7 +1053,7 @@ onClick={() => { setRowQuery(""); setFilterCol("all"); setSortCol(null); setSort
                       <div className="text-[11px] text-[var(--text-muted)] font-mono-tabular mb-2 flex items-center gap-3 flex-wrap">
                         <span>
                           Showing {visibleRows.length} of {preview.preview.length} preview rows
-                          {rq !== "" && ` matching “${rowQuery.trim()}”${filterCol !== "all" ? ` in ${filterCol}` : ""}`}
+                          {rq !== "" && ` matching “${rowQuery.trim()}”${filterCol !== "all" ? ` in ${filterCol}` : ""}${matchCase ? " (case-sensitive)" : ""}`}
                         </span>
                         <span className="opacity-70" title="Keyboard: Ctrl/⌘+A selects all visible rows · Ctrl/⌘+Shift+A clears the selection">
                           Ctrl/⌘+A select all · +Shift clear
