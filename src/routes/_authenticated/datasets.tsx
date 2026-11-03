@@ -41,27 +41,42 @@ function relTime(ts: number): string {
   return new Date(ts).toISOString().slice(0, 10);
 }
 
-function withFilteredRows(d: StoredDataset, query: string): StoredDataset {
-  const q = query.trim().toLowerCase();
+function withFilteredRows(d: StoredDataset, query: string, matchCase = false): StoredDataset {
+  const q = query.trim();
   if (q === "") return d;
+  const contains = (haystack: string) => (matchCase ? haystack.includes(q) : haystack.toLowerCase().includes(q.toLowerCase()));
   return {
     ...d,
-    preview: d.preview.filter((row) => d.columns.some((c) => (row[c] ?? "").toLowerCase().includes(q))),
+    preview: d.preview.filter((row) => d.columns.some((c) => contains(row[c] ?? ""))),
   };
 }
 
-function highlightMatch(text: string, query: string) {
+function highlightMatch(text: string, query: string, matchCase = false) {
   const q = query.trim();
   if (q === "" || text === "") return text || "—";
   const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const parts = text.split(new RegExp(`(${escaped})`, "gi"));
+  const parts = text.split(new RegExp(`(${escaped})`, matchCase ? "g" : "gi"));
+  const isMatch = (part: string) => (matchCase ? part === q : part.toLowerCase() === q.toLowerCase());
   return parts.map((part, i) =>
-    part.toLowerCase() === q.toLowerCase() ? (
+    isMatch(part) ? (
       <mark key={i} className="rounded-sm bg-[color-mix(in_srgb,var(--amber)_18%,transparent)] px-0.5 text-[var(--amber)]">{part}</mark>
     ) : (
       part
     ),
   );
+}
+
+function sortRows(rows: Record<string, string>[], col: string, dir: "asc" | "desc") {
+  return [...rows].sort((a, b) => {
+    const av = a[col] ?? "";
+    const bv = b[col] ?? "";
+    const an = Number(av);
+    const bn = Number(bv);
+    const cmp = av !== "" && bv !== "" && !Number.isNaN(an) && !Number.isNaN(bn)
+      ? an - bn
+      : av.localeCompare(bv);
+    return dir === "asc" ? cmp : -cmp;
+  });
 }
 
 function exportPreviewCsv(d: StoredDataset) {
@@ -148,6 +163,7 @@ function DatasetsView() {
   const [sortBy, setSortBy] = useState<"newest" | "name" | "rows" | "size">("newest");
   const [rowQuery, setRowQuery] = useState("");
   const [filterCol, setFilterCol] = useState<string | "all">("all");
+  const [matchCase, setMatchCase] = useState(false);
   const [wrapText, setWrapText] = useState(false);
   const [sortCol, setSortCol] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
@@ -159,7 +175,7 @@ function DatasetsView() {
   const shiftClickRef = useRef(false);
 
   const viewRows = (d: StoredDataset): StoredDataset => {
-    const f = withFilteredRows(d, rowQuery);
+    const f = withFilteredRows(d, rowQuery, matchCase);
     if (sortCol === null) return f;
     const col = sortCol;
     const sorted = [...f.preview].sort((a, b) => {
@@ -221,6 +237,14 @@ function DatasetsView() {
     }
   };
 
+  const persistMatchCase = (datasetId: string, on: boolean) => {
+    try {
+      localStorage.setItem(`harness:preview:match-case:${datasetId}`, JSON.stringify(on));
+    } catch {
+      // Storage unavailable — the case-sensitivity preference simply won't persist.
+    }
+  };
+
   // Full column list in the chosen display order: remembered order first, then any
   // columns not yet ordered appended in their natural dataset order.
   const orderedCols = useMemo(() => {
@@ -268,6 +292,7 @@ function DatasetsView() {
     let restored = new Set<string>();
     let restoredOrder: string[] = [];
     let restoredWrap = false;
+    let restoredMatchCase = false;
     if (preview) {
       try {
         const rawWrap = localStorage.getItem(`harness:preview:wrap:${preview.id}`);
@@ -277,6 +302,15 @@ function DatasetsView() {
         }
       } catch {
         // Corrupt value — fall back to truncating long cell values.
+      }
+      try {
+        const rawMatchCase = localStorage.getItem(`harness:preview:match-case:${preview.id}`);
+        if (rawMatchCase) {
+          const parsedMatchCase: unknown = JSON.parse(rawMatchCase);
+          if (typeof parsedMatchCase === "boolean") restoredMatchCase = parsedMatchCase;
+        }
+      } catch {
+        // Corrupt value — fall back to case-insensitive matching.
       }
       try {
         const rawFilter = localStorage.getItem(`harness:preview:filter:${preview.id}`);
@@ -343,6 +377,7 @@ function DatasetsView() {
     setSortCol(restoredSortCol);
     setSortDir(restoredSortDir);
     setWrapText(restoredWrap);
+    setMatchCase(restoredMatchCase);
     setHiddenCols(restored);
     setColOrder(restoredOrder);
     setColumnsOpen(false);
@@ -353,26 +388,20 @@ function DatasetsView() {
   // Hoisted so the keyboard-shortcut effect and the preview table share one definition.
   const visiblePreviewRows = useMemo(() => {
     if (!preview) return [];
-    const rq = rowQuery.trim().toLowerCase();
+    const rq = rowQuery.trim();
+    if (rq === "") return sortCol === null ? preview.preview : sortRows(preview.preview, sortCol!, sortDir);
+    const needle = matchCase ? rq : rq.toLowerCase();
     const scopeCols = filterCol !== "all" && preview.columns.includes(filterCol)
       ? [filterCol]
       : preview.columns;
-    const filteredRows = rq === ""
-      ? preview.preview
-      : preview.preview.filter((row) =>
-          scopeCols.some((c) => (row[c] ?? "").toLowerCase().includes(rq)));
+    const filteredRows = preview.preview.filter((row) =>
+      scopeCols.some((c) => {
+        const hay = row[c] ?? "";
+        return (matchCase ? hay : hay.toLowerCase()).includes(needle);
+      }));
     if (sortCol === null) return filteredRows;
-    return [...filteredRows].sort((a, b) => {
-      const av = a[sortCol] ?? "";
-      const bv = b[sortCol] ?? "";
-      const an = Number(av);
-      const bn = Number(bv);
-      const cmp = av !== "" && bv !== "" && !Number.isNaN(an) && !Number.isNaN(bn)
-        ? an - bn
-        : av.localeCompare(bv);
-      return sortDir === "asc" ? cmp : -cmp;
-    });
-  }, [preview, rowQuery, filterCol, sortCol, sortDir]);
+    return sortRows(filteredRows, sortCol, sortDir);
+  }, [preview, rowQuery, filterCol, matchCase, sortCol, sortDir]);
 
   useEffect(() => {
     if (!preview) return;
@@ -735,6 +764,19 @@ function DatasetsView() {
                     </select>
                     <button
                       type="button"
+                      onClick={() => { const next = !matchCase; setMatchCase(next); persistMatchCase(preview.id, next); }}
+                      aria-pressed={matchCase}
+                      title={matchCase ? "Match uppercase and lowercase exactly (currently case-sensitive)" : "Ignore uppercase and lowercase when matching (currently case-insensitive)"}
+                      className={`inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md border text-[12px] font-mono ${
+                        matchCase
+                          ? "border-[var(--accent)] text-[var(--text-accent)]"
+                          : "border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                      }`}
+                    >
+                      Aa
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => { const next = !wrapText; setWrapText(next); persistWrapText(preview.id, next); }}
                       aria-pressed={wrapText}
                       title={wrapText ? "Truncate long cell values" : "Wrap long cell values"}
@@ -850,7 +892,7 @@ function DatasetsView() {
                     </div>
                     {(rowQuery !== "" || sortCol !== null) && (
                       <button
-                        onClick={() => { setRowQuery(""); setFilterCol("all"); setSortCol(null); setSortDir("asc"); setWrapText(false); persistViewFilter(preview.id, ""); persistViewFilterCol(preview.id, "all"); persistViewSort(preview.id, null, "asc"); persistWrapText(preview.id, false); const next = new Set<string>(); setHiddenCols(next); persistHiddenCols(preview.id, next); setColOrder([]); persistColOrder(preview.id, []); }}
+onClick={() => { setRowQuery(""); setFilterCol("all"); setSortCol(null); setSortDir("asc"); setWrapText(false); setMatchCase(false); persistViewFilter(preview.id, ""); persistViewFilterCol(preview.id, "all"); persistViewSort(preview.id, null, "asc"); persistWrapText(preview.id, false); persistMatchCase(preview.id, false); const next = new Set<string>(); setHiddenCols(next); persistHiddenCols(preview.id, next); setColOrder([]); persistColOrder(preview.id, []); }}
                         className="h-8 px-2.5 rounded-md border border-[var(--border-subtle)] text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                       >
                         Reset view
@@ -859,7 +901,7 @@ function DatasetsView() {
                   </div>
                 )}
                 {preview.preview.length > 0 && (() => {
-                  const rq = rowQuery.trim().toLowerCase();
+                  const rq = rowQuery.trim();
                   const visibleRows = visiblePreviewRows;
                   const activeColumns = orderedCols.filter((c) => !hiddenCols.has(c));
                   const toggleSort = (col: string) => {
@@ -1011,7 +1053,7 @@ function DatasetsView() {
                       <div className="text-[11px] text-[var(--text-muted)] font-mono-tabular mb-2 flex items-center gap-3 flex-wrap">
                         <span>
                           Showing {visibleRows.length} of {preview.preview.length} preview rows
-                          {rq !== "" && ` matching “${rowQuery.trim()}”${filterCol !== "all" ? ` in ${filterCol}` : ""}`}
+                          {rq !== "" && ` matching “${rowQuery.trim()}”${filterCol !== "all" ? ` in ${filterCol}` : ""}${matchCase ? " (case-sensitive)" : ""}`}
                         </span>
                         <span className="opacity-70" title="Keyboard: Ctrl/⌘+A selects all visible rows · Ctrl/⌘+Shift+A clears the selection">
                           Ctrl/⌘+A select all · +Shift clear
@@ -1168,7 +1210,7 @@ function DatasetsView() {
                                     onClick={() => copyCell(c, row[c] ?? "")}
                                     className={`cursor-pointer hover:text-[var(--text-primary)] px-3 py-2 align-top text-[var(--text-secondary)] max-w-[280px] ${wrapText ? "whitespace-pre-wrap break-words" : "truncate"}`}
                                     title={row[c] ? `${row[c]} — click to copy` : "Empty cell — click to copy"}
-                                  >{highlightMatch(row[c] ?? "", rq)}</td>
+                                  >{highlightMatch(row[c] ?? "", rq, matchCase)}</td>
                                 ))}
                               </tr>
                             ))}
@@ -1196,7 +1238,7 @@ function DatasetsView() {
                       {rq !== "" && (
                         <div className="mt-2 text-[10px] text-[var(--text-muted)]">
                           {visibleRows.length} of {preview.preview.length} preview rows match “{rowQuery.trim()}”
-                          {filterCol !== "all" ? ` in ${filterCol}` : ""}.
+                          {filterCol !== "all" ? ` in ${filterCol}` : ""}{matchCase ? " (case-sensitive)" : ""}.
                         </div>
                       )}
                     </>
