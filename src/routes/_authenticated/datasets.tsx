@@ -66,6 +66,19 @@ function highlightMatch(text: string, query: string, matchCase = false) {
   );
 }
 
+function sortRows(rows: Record<string, string>[], col: string, dir: "asc" | "desc") {
+  return [...rows].sort((a, b) => {
+    const av = a[col] ?? "";
+    const bv = b[col] ?? "";
+    const an = Number(av);
+    const bn = Number(bv);
+    const cmp = av !== "" && bv !== "" && !Number.isNaN(an) && !Number.isNaN(bn)
+      ? an - bn
+      : av.localeCompare(bv);
+    return dir === "asc" ? cmp : -cmp;
+  });
+}
+
 function exportPreviewCsv(d: StoredDataset) {
   if (d.preview.length === 0) {
     toast.error("No rows match the current filter");
