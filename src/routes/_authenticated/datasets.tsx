@@ -364,6 +364,7 @@ function DatasetsView() {
     setSortCol(restoredSortCol);
     setSortDir(restoredSortDir);
     setWrapText(restoredWrap);
+    setMatchCase(restoredMatchCase);
     setHiddenCols(restored);
     setColOrder(restoredOrder);
     setColumnsOpen(false);
