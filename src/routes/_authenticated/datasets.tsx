@@ -764,6 +764,19 @@ function DatasetsView() {
                     </select>
                     <button
                       type="button"
+                      onClick={() => { const next = !matchCase; setMatchCase(next); persistMatchCase(preview.id, next); }}
+                      aria-pressed={matchCase}
+                      title={matchCase ? "Match uppercase and lowercase exactly (currently case-sensitive)" : "Ignore uppercase and lowercase when matching (currently case-insensitive)"}
+                      className={`inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md border text-[12px] font-mono ${
+                        matchCase
+                          ? "border-[var(--accent)] text-[var(--text-accent)]"
+                          : "border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                      }`}
+                    >
+                      Aa
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => { const next = !wrapText; setWrapText(next); persistWrapText(preview.id, next); }}
                       aria-pressed={wrapText}
                       title={wrapText ? "Truncate long cell values" : "Wrap long cell values"}
