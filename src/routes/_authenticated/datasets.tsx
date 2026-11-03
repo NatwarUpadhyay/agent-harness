@@ -1210,7 +1210,7 @@ onClick={() => { setRowQuery(""); setFilterCol("all"); setSortCol(null); setSort
                                     onClick={() => copyCell(c, row[c] ?? "")}
                                     className={`cursor-pointer hover:text-[var(--text-primary)] px-3 py-2 align-top text-[var(--text-secondary)] max-w-[280px] ${wrapText ? "whitespace-pre-wrap break-words" : "truncate"}`}
                                     title={row[c] ? `${row[c]} — click to copy` : "Empty cell — click to copy"}
-                                  >{highlightMatch(row[c] ?? "", rq)}</td>
+                                  >{highlightMatch(row[c] ?? "", rq, matchCase)}</td>
                                 ))}
                               </tr>
                             ))}
@@ -1238,7 +1238,7 @@ onClick={() => { setRowQuery(""); setFilterCol("all"); setSortCol(null); setSort
                       {rq !== "" && (
                         <div className="mt-2 text-[10px] text-[var(--text-muted)]">
                           {visibleRows.length} of {preview.preview.length} preview rows match “{rowQuery.trim()}”
-                          {filterCol !== "all" ? ` in ${filterCol}` : ""}.
+                          {filterCol !== "all" ? ` in ${filterCol}` : ""}{matchCase ? " (case-sensitive)" : ""}.
                         </div>
                       )}
                     </>
