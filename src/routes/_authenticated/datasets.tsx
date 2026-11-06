@@ -41,13 +41,19 @@ function relTime(ts: number): string {
   return new Date(ts).toISOString().slice(0, 10);
 }
 
-function withFilteredRows(d: StoredDataset, query: string, matchCase = false): StoredDataset {
+export function withFilteredRows(
+  d: StoredDataset,
+  query: string,
+  matchCase = false,
+  filterCol: string | "all" = "all",
+): StoredDataset {
   const q = query.trim();
   if (q === "") return d;
   const contains = (haystack: string) => (matchCase ? haystack.includes(q) : haystack.toLowerCase().includes(q.toLowerCase()));
+  const scopeCols = filterCol !== "all" && d.columns.includes(filterCol) ? [filterCol] : d.columns;
   return {
     ...d,
-    preview: d.preview.filter((row) => d.columns.some((c) => contains(row[c] ?? ""))),
+    preview: d.preview.filter((row) => scopeCols.some((c) => contains(row[c] ?? ""))),
   };
 }
 
@@ -175,18 +181,9 @@ function DatasetsView() {
   const shiftClickRef = useRef(false);
 
   const viewRows = (d: StoredDataset): StoredDataset => {
-    const f = withFilteredRows(d, rowQuery, matchCase);
+    const f = withFilteredRows(d, rowQuery, matchCase, filterCol);
     if (sortCol === null) return f;
-    const col = sortCol;
-    const sorted = [...f.preview].sort((a, b) => {
-      const av = a[col] ?? "";
-      const bv = b[col] ?? "";
-      const an = Number(av);
-      const bn = Number(bv);
-      const cmp = av !== "" && bv !== "" && !Number.isNaN(an) && !Number.isNaN(bn) ? an - bn : av.localeCompare(bv);
-      return sortDir === "asc" ? cmp : -cmp;
-    });
-    return { ...f, preview: sorted };
+    return { ...f, preview: sortRows(f.preview, sortCol, sortDir) };
   };
 
   const persistHiddenCols = (datasetId: string, next: Set<string>) => {
@@ -388,19 +385,8 @@ function DatasetsView() {
   // Hoisted so the keyboard-shortcut effect and the preview table share one definition.
   const visiblePreviewRows = useMemo(() => {
     if (!preview) return [];
-    const rq = rowQuery.trim();
-    if (rq === "") return sortCol === null ? preview.preview : sortRows(preview.preview, sortCol!, sortDir);
-    const needle = matchCase ? rq : rq.toLowerCase();
-    const scopeCols = filterCol !== "all" && preview.columns.includes(filterCol)
-      ? [filterCol]
-      : preview.columns;
-    const filteredRows = preview.preview.filter((row) =>
-      scopeCols.some((c) => {
-        const hay = row[c] ?? "";
-        return (matchCase ? hay : hay.toLowerCase()).includes(needle);
-      }));
-    if (sortCol === null) return filteredRows;
-    return sortRows(filteredRows, sortCol, sortDir);
+    const filteredRows = withFilteredRows(preview, rowQuery, matchCase, filterCol).preview;
+    return sortCol === null ? filteredRows : sortRows(filteredRows, sortCol, sortDir);
   }, [preview, rowQuery, filterCol, matchCase, sortCol, sortDir]);
 
   useEffect(() => {
