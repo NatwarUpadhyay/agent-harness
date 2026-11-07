@@ -39,4 +39,28 @@ describe("dataset preview filtering", () => {
     expect(withFilteredRows(dataset, "ERROR", true, "status").preview).toEqual([]);
     expect(withFilteredRows(dataset, "error", true, "status").preview.map((row) => row.ticket)).toEqual(["T-2"]);
   });
+
+  it("keeps matching anywhere in the value by default", () => {
+    expect(withFilteredRows(dataset, "open", false, "all", "contains").preview.map((row) => row.ticket)).toEqual(["T-1"]);
+    expect(withFilteredRows(dataset, "pen", false, "all", "contains").preview.map((row) => row.ticket)).toEqual(["T-1"]);
+  });
+
+  it("keeps only values beginning with the filter text in starts-with mode", () => {
+    expect(withFilteredRows(dataset, "open", false, "all", "starts").preview.map((row) => row.ticket)).toEqual(["T-1"]);
+    expect(withFilteredRows(dataset, "pen", false, "all", "starts").preview).toEqual([]);
+  });
+
+  it("keeps only identical values in exact-match mode", () => {
+    expect(withFilteredRows(dataset, "open", false, "all", "exact").preview.map((row) => row.ticket)).toEqual(["T-1"]);
+    expect(withFilteredRows(dataset, "open", false, "status", "exact").preview.map((row) => row.ticket)).toEqual(["T-1"]);
+    expect(withFilteredRows(dataset, "error@example.com", false, "all", "exact").preview.map((row) => row.ticket)).toEqual(["T-1"]);
+    expect(withFilteredRows(dataset, "error", false, "status", "exact").preview.map((row) => row.ticket)).toEqual(["T-2"]);
+    expect(withFilteredRows(dataset, "erro", false, "status", "exact").preview).toEqual([]);
+  });
+
+  it("combines the match mode with case sensitivity", () => {
+    expect(withFilteredRows(dataset, "OPEN", false, "status", "starts").preview.map((row) => row.ticket)).toEqual(["T-1"]);
+    expect(withFilteredRows(dataset, "OPEN", true, "status", "starts").preview).toEqual([]);
+    expect(withFilteredRows(dataset, "OPEN", true, "status", "exact").preview).toEqual([]);
+  });
 });

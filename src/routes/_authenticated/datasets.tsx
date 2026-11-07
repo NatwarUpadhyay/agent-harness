@@ -41,35 +41,61 @@ function relTime(ts: number): string {
   return new Date(ts).toISOString().slice(0, 10);
 }
 
+export type FilterMode = "contains" | "starts" | "exact";
+
+// How the row-count line describes each mode: "Showing 3 of 50 rows <phrase> “acme”".
+export const FILTER_MODE_PHRASE: Record<FilterMode, string> = {
+  contains: "matching",
+  starts: "starting with",
+  exact: "equal to",
+};
+
+// How the empty state describes each mode: "No preview rows <verb> “acme”".
+export const FILTER_MODE_VERB: Record<FilterMode, string> = {
+  contains: "match",
+  starts: "start with",
+  exact: "equal",
+};
+
+function valueMatches(haystack: string, q: string, matchCase: boolean, mode: FilterMode) {
+  const hay = matchCase ? haystack : haystack.toLowerCase();
+  const needle = matchCase ? q : q.toLowerCase();
+  if (mode === "starts") return hay.startsWith(needle);
+  if (mode === "exact") return hay === needle;
+  return hay.includes(needle);
+}
+
 export function withFilteredRows(
   d: StoredDataset,
   query: string,
   matchCase = false,
   filterCol: string | "all" = "all",
+  mode: FilterMode = "contains",
 ): StoredDataset {
   const q = query.trim();
   if (q === "") return d;
-  const contains = (haystack: string) => (matchCase ? haystack.includes(q) : haystack.toLowerCase().includes(q.toLowerCase()));
   const scopeCols = filterCol !== "all" && d.columns.includes(filterCol) ? [filterCol] : d.columns;
   return {
     ...d,
-    preview: d.preview.filter((row) => scopeCols.some((c) => contains(row[c] ?? ""))),
+    preview: d.preview.filter((row) => scopeCols.some((c) => valueMatches(row[c] ?? "", q, matchCase, mode))),
   };
 }
 
-function highlightMatch(text: string, query: string, matchCase = false) {
+function highlightMatch(text: string, query: string, matchCase = false, mode: FilterMode = "contains") {
   const q = query.trim();
   if (q === "" || text === "") return text || "—";
+  const mark = (part: string, key = 0) => (
+    <mark key={key} className="rounded-sm bg-[color-mix(in_srgb,var(--amber)_18%,transparent)] px-0.5 text-[var(--amber)]">{part}</mark>
+  );
+  if (mode === "exact") return valueMatches(text, q, matchCase, mode) ? mark(text) : text;
+  if (mode === "starts") {
+    if (!valueMatches(text, q, matchCase, mode)) return text;
+    return <>{mark(text.slice(0, q.length))}{text.slice(q.length)}</>;
+  }
   const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const parts = text.split(new RegExp(`(${escaped})`, matchCase ? "g" : "gi"));
   const isMatch = (part: string) => (matchCase ? part === q : part.toLowerCase() === q.toLowerCase());
-  return parts.map((part, i) =>
-    isMatch(part) ? (
-      <mark key={i} className="rounded-sm bg-[color-mix(in_srgb,var(--amber)_18%,transparent)] px-0.5 text-[var(--amber)]">{part}</mark>
-    ) : (
-      part
-    ),
-  );
+  return parts.map((part, i) => (isMatch(part) ? mark(part, i) : part));
 }
 
 function sortRows(rows: Record<string, string>[], col: string, dir: "asc" | "desc") {
@@ -170,6 +196,7 @@ function DatasetsView() {
   const [rowQuery, setRowQuery] = useState("");
   const [filterCol, setFilterCol] = useState<string | "all">("all");
   const [matchCase, setMatchCase] = useState(false);
+  const [filterMode, setFilterMode] = useState<FilterMode>("contains");
   const [wrapText, setWrapText] = useState(false);
   const [sortCol, setSortCol] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
@@ -181,7 +208,7 @@ function DatasetsView() {
   const shiftClickRef = useRef(false);
 
   const viewRows = (d: StoredDataset): StoredDataset => {
-    const f = withFilteredRows(d, rowQuery, matchCase, filterCol);
+    const f = withFilteredRows(d, rowQuery, matchCase, filterCol, filterMode);
     if (sortCol === null) return f;
     return { ...f, preview: sortRows(f.preview, sortCol, sortDir) };
   };
@@ -215,6 +242,14 @@ function DatasetsView() {
       localStorage.setItem(`harness:preview:filter-col:${datasetId}`, JSON.stringify(col));
     } catch {
       // Storage unavailable — the filter scope simply won't persist.
+    }
+  };
+
+  const persistFilterMode = (datasetId: string, mode: FilterMode) => {
+    try {
+      localStorage.setItem(`harness:preview:filter-mode:${datasetId}`, JSON.stringify(mode));
+    } catch {
+      // Storage unavailable — the match mode simply won't persist.
     }
   };
 
@@ -290,6 +325,7 @@ function DatasetsView() {
     let restoredOrder: string[] = [];
     let restoredWrap = false;
     let restoredMatchCase = false;
+    let restoredFilterMode: FilterMode = "contains";
     if (preview) {
       try {
         const rawWrap = localStorage.getItem(`harness:preview:wrap:${preview.id}`);
@@ -308,6 +344,17 @@ function DatasetsView() {
         }
       } catch {
         // Corrupt value — fall back to case-insensitive matching.
+      }
+      try {
+        const rawFilterMode = localStorage.getItem(`harness:preview:filter-mode:${preview.id}`);
+        if (rawFilterMode) {
+          const parsedFilterMode: unknown = JSON.parse(rawFilterMode);
+          if (parsedFilterMode === "contains" || parsedFilterMode === "starts" || parsedFilterMode === "exact") {
+            restoredFilterMode = parsedFilterMode;
+          }
+        }
+      } catch {
+        // Corrupt value — fall back to matching anywhere in the value.
       }
       try {
         const rawFilter = localStorage.getItem(`harness:preview:filter:${preview.id}`);
@@ -375,6 +422,7 @@ function DatasetsView() {
     setSortDir(restoredSortDir);
     setWrapText(restoredWrap);
     setMatchCase(restoredMatchCase);
+    setFilterMode(restoredFilterMode);
     setHiddenCols(restored);
     setColOrder(restoredOrder);
     setColumnsOpen(false);
@@ -385,9 +433,9 @@ function DatasetsView() {
   // Hoisted so the keyboard-shortcut effect and the preview table share one definition.
   const visiblePreviewRows = useMemo(() => {
     if (!preview) return [];
-    const filteredRows = withFilteredRows(preview, rowQuery, matchCase, filterCol).preview;
+    const filteredRows = withFilteredRows(preview, rowQuery, matchCase, filterCol, filterMode).preview;
     return sortCol === null ? filteredRows : sortRows(filteredRows, sortCol, sortDir);
-  }, [preview, rowQuery, filterCol, matchCase, sortCol, sortDir]);
+  }, [preview, rowQuery, filterCol, matchCase, filterMode, sortCol, sortDir]);
 
   useEffect(() => {
     if (!preview) return;
@@ -748,6 +796,23 @@ function DatasetsView() {
                         <option key={c} value={c}>{c}</option>
                       ))}
                     </select>
+                    <select
+                      value={filterMode}
+                      onChange={(e) => { const next = e.target.value as FilterMode; setFilterMode(next); persistFilterMode(preview.id, next); }}
+                      aria-label="Filter match mode"
+                      title={
+                        filterMode === "contains"
+                          ? "Match the filter text anywhere inside a cell value"
+                          : filterMode === "starts"
+                            ? "Match only cell values that begin with the filter text"
+                            : "Match only cell values identical to the filter text"
+                      }
+                      className="h-8 rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-2 text-[12px] text-[var(--text-secondary)] outline-none focus:border-[var(--accent)]"
+                    >
+                      <option value="contains">Contains</option>
+                      <option value="starts">Starts with</option>
+                      <option value="exact">Exact match</option>
+                    </select>
                     <button
                       type="button"
                       onClick={() => { const next = !matchCase; setMatchCase(next); persistMatchCase(preview.id, next); }}
@@ -878,7 +943,7 @@ function DatasetsView() {
                     </div>
                     {(rowQuery !== "" || sortCol !== null) && (
                       <button
-onClick={() => { setRowQuery(""); setFilterCol("all"); setSortCol(null); setSortDir("asc"); setWrapText(false); setMatchCase(false); persistViewFilter(preview.id, ""); persistViewFilterCol(preview.id, "all"); persistViewSort(preview.id, null, "asc"); persistWrapText(preview.id, false); persistMatchCase(preview.id, false); const next = new Set<string>(); setHiddenCols(next); persistHiddenCols(preview.id, next); setColOrder([]); persistColOrder(preview.id, []); }}
+onClick={() => { setRowQuery(""); setFilterCol("all"); setFilterMode("contains"); setSortCol(null); setSortDir("asc"); setWrapText(false); setMatchCase(false); persistViewFilter(preview.id, ""); persistViewFilterCol(preview.id, "all"); persistFilterMode(preview.id, "contains"); persistViewSort(preview.id, null, "asc"); persistWrapText(preview.id, false); persistMatchCase(preview.id, false); const next = new Set<string>(); setHiddenCols(next); persistHiddenCols(preview.id, next); setColOrder([]); persistColOrder(preview.id, []); }}
                         className="h-8 px-2.5 rounded-md border border-[var(--border-subtle)] text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                       >
                         Reset view
@@ -1039,7 +1104,7 @@ onClick={() => { setRowQuery(""); setFilterCol("all"); setSortCol(null); setSort
                       <div className="text-[11px] text-[var(--text-muted)] font-mono-tabular mb-2 flex items-center gap-3 flex-wrap">
                         <span>
                           Showing {visibleRows.length} of {preview.preview.length} preview rows
-                          {rq !== "" && ` matching “${rowQuery.trim()}”${filterCol !== "all" ? ` in ${filterCol}` : ""}${matchCase ? " (case-sensitive)" : ""}`}
+                          {rq !== "" && ` ${FILTER_MODE_PHRASE[filterMode]} “${rowQuery.trim()}”${filterCol !== "all" ? ` in ${filterCol}` : ""}${matchCase ? " (case-sensitive)" : ""}`}
                         </span>
                         <span className="opacity-70" title="Keyboard: Ctrl/⌘+A selects all visible rows · Ctrl/⌘+Shift+A clears the selection">
                           Ctrl/⌘+A select all · +Shift clear
@@ -1196,7 +1261,7 @@ onClick={() => { setRowQuery(""); setFilterCol("all"); setSortCol(null); setSort
                                     onClick={() => copyCell(c, row[c] ?? "")}
                                     className={`cursor-pointer hover:text-[var(--text-primary)] px-3 py-2 align-top text-[var(--text-secondary)] max-w-[280px] ${wrapText ? "whitespace-pre-wrap break-words" : "truncate"}`}
                                     title={row[c] ? `${row[c]} — click to copy` : "Empty cell — click to copy"}
-                                  >{highlightMatch(row[c] ?? "", rq, matchCase)}</td>
+                                  >{highlightMatch(row[c] ?? "", rq, matchCase, filterMode)}</td>
                                 ))}
                               </tr>
                             ))}
@@ -1206,7 +1271,7 @@ onClick={() => { setRowQuery(""); setFilterCol("all"); setSortCol(null); setSort
                                   colSpan={preview.columns.length + 3}
                                   className="px-3 py-10 text-center text-[12px] text-[var(--text-muted)]"
                                 >
-                                  No preview rows match “{rowQuery.trim()}”
+                                  No preview rows {FILTER_MODE_VERB[filterMode]} “{rowQuery.trim()}”
                                   {filterCol !== "all" ? ` in ${filterCol}` : ""}.{" "}
                                   <button
                                     type="button"
@@ -1223,7 +1288,7 @@ onClick={() => { setRowQuery(""); setFilterCol("all"); setSortCol(null); setSort
                       </div>
                       {rq !== "" && (
                         <div className="mt-2 text-[10px] text-[var(--text-muted)]">
-                          {visibleRows.length} of {preview.preview.length} preview rows match “{rowQuery.trim()}”
+                          {visibleRows.length} of {preview.preview.length} preview rows {FILTER_MODE_PHRASE[filterMode]} “{rowQuery.trim()}”
                           {filterCol !== "all" ? ` in ${filterCol}` : ""}{matchCase ? " (case-sensitive)" : ""}.
                         </div>
                       )}
