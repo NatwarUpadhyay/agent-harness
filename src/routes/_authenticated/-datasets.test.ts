@@ -78,4 +78,10 @@ describe("dataset preview filtering", () => {
     expect(withFilteredRows(dataset, "PEN", false, "status", "ends").preview.map((row) => row.ticket)).toEqual(["T-1"]);
     expect(withFilteredRows(dataset, "PEN", true, "status", "ends").preview).toEqual([]);
   });
+
+  it("hides every row containing the text in doesn't-contain mode", () => {
+    expect(withFilteredRows(dataset, "error", false, "all", "excludes").preview.map((row) => row.ticket)).toEqual(["T-3"]);
+    expect(withFilteredRows(dataset, "error", false, "status", "excludes").preview.map((row) => row.ticket)).toEqual(["T-1", "T-3"]);
+    expect(withFilteredRows(dataset, "ERROR", true, "all", "excludes").preview).toHaveLength(3);
+  });
 });

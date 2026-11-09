@@ -41,7 +41,7 @@ function relTime(ts: number): string {
   return new Date(ts).toISOString().slice(0, 10);
 }
 
-export type FilterMode = "contains" | "starts" | "ends" | "exact";
+export type FilterMode = "contains" | "starts" | "ends" | "exact" | "excludes";
 
 // How the row-count line describes each mode: "Showing 3 of 50 rows <phrase> “acme”".
 export const FILTER_MODE_PHRASE: Record<FilterMode, string> = {
@@ -49,6 +49,7 @@ export const FILTER_MODE_PHRASE: Record<FilterMode, string> = {
   starts: "starting with",
   ends: "ending with",
   exact: "equal to",
+  excludes: "not containing",
 };
 
 // How the empty state describes each mode: "No preview rows <verb> “acme”".
@@ -57,6 +58,7 @@ export const FILTER_MODE_VERB: Record<FilterMode, string> = {
   starts: "start with",
   ends: "end with",
   exact: "equal",
+  excludes: "are free of",
 };
 
 function valueMatches(haystack: string, q: string, matchCase: boolean, mode: FilterMode) {
@@ -80,7 +82,12 @@ export function withFilteredRows(
   const scopeCols = filterCol !== "all" && d.columns.includes(filterCol) ? [filterCol] : d.columns;
   return {
     ...d,
-    preview: d.preview.filter((row) => scopeCols.some((c) => valueMatches(row[c] ?? "", q, matchCase, mode))),
+    // "Doesn't contain" keeps a row only when no scoped column contains the text.
+    preview: d.preview.filter((row) =>
+      mode === "excludes"
+        ? scopeCols.every((c) => !valueMatches(row[c] ?? "", q, matchCase, "contains"))
+        : scopeCols.some((c) => valueMatches(row[c] ?? "", q, matchCase, mode)),
+    ),
   };
 }
 
@@ -90,6 +97,7 @@ function highlightMatch(text: string, query: string, matchCase = false, mode: Fi
   const mark = (part: string, key = 0) => (
     <mark key={key} className="rounded-sm bg-[color-mix(in_srgb,var(--amber)_18%,transparent)] px-0.5 text-[var(--amber)]">{part}</mark>
   );
+  if (mode === "excludes") return text;
   if (mode === "exact") return valueMatches(text, q, matchCase, mode) ? mark(text) : text;
   if (mode === "starts") {
     if (!valueMatches(text, q, matchCase, mode)) return text;
@@ -356,7 +364,7 @@ function DatasetsView() {
         const rawFilterMode = localStorage.getItem(`harness:preview:filter-mode:${preview.id}`);
         if (rawFilterMode) {
           const parsedFilterMode: unknown = JSON.parse(rawFilterMode);
-          if (parsedFilterMode === "contains" || parsedFilterMode === "starts" || parsedFilterMode === "ends" || parsedFilterMode === "exact") {
+          if (parsedFilterMode === "contains" || parsedFilterMode === "starts" || parsedFilterMode === "ends" || parsedFilterMode === "exact" || parsedFilterMode === "excludes") {
             restoredFilterMode = parsedFilterMode;
           }
         }
@@ -814,6 +822,8 @@ function DatasetsView() {
                             ? "Match only cell values that begin with the filter text"
                             : filterMode === "ends"
                               ? "Match only cell values that end with the filter text"
+                            : filterMode === "excludes"
+                              ? "Keep only rows where no cell contains the filter text"
                             : "Match only cell values identical to the filter text"
                       }
                       className="h-8 rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-2 text-[12px] text-[var(--text-secondary)] outline-none focus:border-[var(--accent)]"
@@ -822,6 +832,7 @@ function DatasetsView() {
                       <option value="starts">Starts with</option>
                       <option value="ends">Ends with</option>
                       <option value="exact">Exact match</option>
+                      <option value="excludes">Doesn&apos;t contain</option>
                     </select>
                     <button
                       type="button"
