@@ -63,4 +63,19 @@ describe("dataset preview filtering", () => {
     expect(withFilteredRows(dataset, "OPEN", true, "status", "starts").preview).toEqual([]);
     expect(withFilteredRows(dataset, "OPEN", true, "status", "exact").preview).toEqual([]);
   });
+
+  it("matches only suffixes in ends-with mode", () => {
+    expect(withFilteredRows(dataset, "pen", false, "status", "ends").preview.map((row) => row.ticket)).toEqual(["T-1"]);
+    expect(withFilteredRows(dataset, "ope", false, "status", "ends").preview).toEqual([]);
+  });
+
+  it("respects the column scope for suffix matches in visible and exported rows", () => {
+    expect(withFilteredRows(dataset, "com", false, "requester", "ends").preview.map((row) => row.ticket)).toEqual(["T-1", "T-2", "T-3"]);
+    expect(withFilteredRows(dataset, "com", false, "status", "ends").preview).toEqual([]);
+  });
+
+  it("respects case sensitivity for suffix matches", () => {
+    expect(withFilteredRows(dataset, "PEN", false, "status", "ends").preview.map((row) => row.ticket)).toEqual(["T-1"]);
+    expect(withFilteredRows(dataset, "PEN", true, "status", "ends").preview).toEqual([]);
+  });
 });

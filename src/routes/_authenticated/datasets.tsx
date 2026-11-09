@@ -41,12 +41,13 @@ function relTime(ts: number): string {
   return new Date(ts).toISOString().slice(0, 10);
 }
 
-export type FilterMode = "contains" | "starts" | "exact";
+export type FilterMode = "contains" | "starts" | "ends" | "exact";
 
 // How the row-count line describes each mode: "Showing 3 of 50 rows <phrase> “acme”".
 export const FILTER_MODE_PHRASE: Record<FilterMode, string> = {
   contains: "matching",
   starts: "starting with",
+  ends: "ending with",
   exact: "equal to",
 };
 
@@ -54,6 +55,7 @@ export const FILTER_MODE_PHRASE: Record<FilterMode, string> = {
 export const FILTER_MODE_VERB: Record<FilterMode, string> = {
   contains: "match",
   starts: "start with",
+  ends: "end with",
   exact: "equal",
 };
 
@@ -61,6 +63,7 @@ function valueMatches(haystack: string, q: string, matchCase: boolean, mode: Fil
   const hay = matchCase ? haystack : haystack.toLowerCase();
   const needle = matchCase ? q : q.toLowerCase();
   if (mode === "starts") return hay.startsWith(needle);
+  if (mode === "ends") return hay.endsWith(needle);
   if (mode === "exact") return hay === needle;
   return hay.includes(needle);
 }
@@ -91,6 +94,10 @@ function highlightMatch(text: string, query: string, matchCase = false, mode: Fi
   if (mode === "starts") {
     if (!valueMatches(text, q, matchCase, mode)) return text;
     return <>{mark(text.slice(0, q.length))}{text.slice(q.length)}</>;
+  }
+  if (mode === "ends") {
+    if (!valueMatches(text, q, matchCase, mode)) return text;
+    return <>{text.slice(0, text.length - q.length)}{mark(text.slice(-q.length))}</>;
   }
   const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const parts = text.split(new RegExp(`(${escaped})`, matchCase ? "g" : "gi"));
@@ -349,7 +356,7 @@ function DatasetsView() {
         const rawFilterMode = localStorage.getItem(`harness:preview:filter-mode:${preview.id}`);
         if (rawFilterMode) {
           const parsedFilterMode: unknown = JSON.parse(rawFilterMode);
-          if (parsedFilterMode === "contains" || parsedFilterMode === "starts" || parsedFilterMode === "exact") {
+          if (parsedFilterMode === "contains" || parsedFilterMode === "starts" || parsedFilterMode === "ends" || parsedFilterMode === "exact") {
             restoredFilterMode = parsedFilterMode;
           }
         }
@@ -805,12 +812,15 @@ function DatasetsView() {
                           ? "Match the filter text anywhere inside a cell value"
                           : filterMode === "starts"
                             ? "Match only cell values that begin with the filter text"
+                            : filterMode === "ends"
+                              ? "Match only cell values that end with the filter text"
                             : "Match only cell values identical to the filter text"
                       }
                       className="h-8 rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-2 text-[12px] text-[var(--text-secondary)] outline-none focus:border-[var(--accent)]"
                     >
                       <option value="contains">Contains</option>
                       <option value="starts">Starts with</option>
+                      <option value="ends">Ends with</option>
                       <option value="exact">Exact match</option>
                     </select>
                     <button
@@ -1326,6 +1336,13 @@ onClick={() => { setRowQuery(""); setFilterCol("all"); setFilterMode("contains")
 }
 
 export const Route = createFileRoute("/_authenticated/datasets")({
-  head: () => ({ meta: [{ title: "Datasets — Harness" }] }),
+  head: () => ({ meta: [
+    { title: "Datasets — Harness" },
+    { name: "description", content: "Manage workspace datasets, inspect preview rows, and export filtered data in Harness." },
+    { property: "og:title", content: "Datasets — Harness" },
+    { property: "og:description", content: "Manage workspace datasets, inspect preview rows, and export filtered data in Harness." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary_large_image" },
+  ] }),
   component: DatasetsView,
 });
