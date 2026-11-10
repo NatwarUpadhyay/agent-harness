@@ -84,4 +84,10 @@ describe("dataset preview filtering", () => {
     expect(withFilteredRows(dataset, "error", false, "status", "excludes").preview.map((row) => row.ticket)).toEqual(["T-1", "T-3"]);
     expect(withFilteredRows(dataset, "ERROR", true, "all", "excludes").preview).toHaveLength(3);
   });
+
+  it("drops rows with a value identical to the filter text in doesn't-equal mode", () => {
+    const kept = withFilteredRows(dataset, "open", false, "status", "notequal").preview;
+    expect(kept.map((r) => r.ticket)).toEqual(["T-2", "T-3"]);
+    expect(withFilteredRows(dataset, "Open", true, "status", "notequal").preview).toHaveLength(3);
+  });
 });
