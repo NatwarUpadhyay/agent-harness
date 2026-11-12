@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, FileSpreadsheet, FileText, FileJson, Trash2, Eye, EyeOff, X, Search, Database, Download, Pencil, Copy, ArrowUpDown, ArrowUp, ArrowDown, WrapText } from "lucide-react";
+import { Upload, FileSpreadsheet, FileText, FileJson, Trash2, Eye, EyeOff, X, Search, Database, Download, Pencil, Copy, ArrowUpDown, ArrowUp, ArrowDown, WrapText, History } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader, SectionHeader } from "@/components/ui/page-header";
 import { MetricCard } from "@/components/ui/metric-card";
@@ -70,6 +70,13 @@ function valueMatches(haystack: string, q: string, matchCase: boolean, mode: Fil
   if (mode === "ends") return hay.endsWith(needle);
   if (mode === "exact") return hay === needle;
   return hay.includes(needle);
+}
+
+// Recent filter history: newest first, duplicates moved to the front, capped at 5.
+export function updateFilterHistory(items: string[], value: string, limit = 5): string[] {
+  const v = value.trim();
+  if (v === "") return items;
+  return [v, ...items.filter((i) => i !== v)].slice(0, limit);
 }
 
 export function withFilteredRows(
@@ -216,6 +223,8 @@ function DatasetsView() {
   const [filterCol, setFilterCol] = useState<string | "all">("all");
   const [matchCase, setMatchCase] = useState(false);
   const [filterMode, setFilterMode] = useState<FilterMode>("contains");
+  const [recentFilters, setRecentFilters] = useState<string[]>([]);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [wrapText, setWrapText] = useState(false);
   const [sortCol, setSortCol] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
@@ -270,6 +279,23 @@ function DatasetsView() {
     } catch {
       // Storage unavailable — the match mode simply won't persist.
     }
+  };
+
+  const persistFilterHistory = (datasetId: string, items: string[]) => {
+    try {
+      localStorage.setItem(`harness:preview:filter-history:${datasetId}`, JSON.stringify(items));
+    } catch {
+      // Storage unavailable — the filter history simply won't persist.
+    }
+  };
+
+  // Record a filter text in this dataset's recent history (newest first, capped).
+  const recordFilter = (value: string) => {
+    if (!preview) return;
+    const next = updateFilterHistory(recentFilters, value);
+    if (next === recentFilters) return;
+    setRecentFilters(next);
+    persistFilterHistory(preview.id, next);
   };
 
   const persistViewSort = (datasetId: string, col: string | null, dir: "asc" | "desc") => {
@@ -345,6 +371,7 @@ function DatasetsView() {
     let restoredWrap = false;
     let restoredMatchCase = false;
     let restoredFilterMode: FilterMode = "contains";
+    let restoredHistory: string[] = [];
     if (preview) {
       try {
         const rawWrap = localStorage.getItem(`harness:preview:wrap:${preview.id}`);
@@ -374,6 +401,17 @@ function DatasetsView() {
         }
       } catch {
         // Corrupt value — fall back to matching anywhere in the value.
+      }
+      try {
+        const rawHistory = localStorage.getItem(`harness:preview:filter-history:${preview.id}`);
+        if (rawHistory) {
+          const parsedHistory: unknown = JSON.parse(rawHistory);
+          if (Array.isArray(parsedHistory)) {
+            restoredHistory = parsedHistory.filter((h): h is string => typeof h === "string" && h.trim() !== "").slice(0, 5);
+          }
+        }
+      } catch {
+        // Corrupt value — fall back to an empty history.
       }
       try {
         const rawFilter = localStorage.getItem(`harness:preview:filter:${preview.id}`);
@@ -442,9 +480,11 @@ function DatasetsView() {
     setWrapText(restoredWrap);
     setMatchCase(restoredMatchCase);
     setFilterMode(restoredFilterMode);
+    setRecentFilters(restoredHistory);
     setHiddenCols(restored);
     setColOrder(restoredOrder);
     setColumnsOpen(false);
+    setHistoryOpen(false);
     setSelectedRows(new Set());
     lastAnchorRef.current = null;
   }, [preview?.id, preview]);
@@ -798,10 +838,73 @@ function DatasetsView() {
                       <input
                         value={rowQuery}
                         onChange={(e) => { setRowQuery(e.target.value); persistViewFilter(preview.id, e.target.value); }}
+                        onBlur={() => recordFilter(rowQuery)}
+                        onKeyDown={(e) => { if (e.key === "Enter") recordFilter(rowQuery); }}
                         aria-label="Filter preview rows"
                         placeholder="Filter rows…"
                         className="h-8 w-[200px] rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] pl-8 pr-2.5 text-[12px] outline-none focus:border-[var(--accent)]"
                       />
+                    </div>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => setHistoryOpen((o) => !o)}
+                        aria-expanded={historyOpen}
+                        aria-haspopup="true"
+                        title="Re-apply a recent filter"
+                        className={`inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md border text-[12px] ${
+                          historyOpen
+                            ? "border-[var(--accent)] text-[var(--text-accent)]"
+                            : "border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                        }`}
+                      >
+                        <History className="h-3.5 w-3.5" /> Recent
+                      </button>
+                      {historyOpen && (
+                        <>
+                          <div className="fixed inset-0 z-20" aria-hidden="true" onPointerDown={(e) => { e.stopPropagation(); setHistoryOpen(false); }} onClick={(e) => e.stopPropagation()} />
+                          <div className="absolute left-0 top-10 z-30 w-64 rounded-md border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-2 shadow-lg">
+                            <div className="flex items-center justify-between px-1 pb-1.5">
+                              <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)]">Recent filters</span>
+                              {recentFilters.length > 0 && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setRecentFilters([]);
+                                    try {
+                                      localStorage.removeItem(`harness:preview:filter-history:${preview.id}`);
+                                    } catch {
+                                      // Storage unavailable — nothing to clear.
+                                    }
+                                  }}
+                                  className="text-[11px] text-[var(--text-accent)] hover:underline"
+                                >
+                                  Clear history
+                                </button>
+                              )}
+                            </div>
+                            {recentFilters.length === 0 ? (
+                              <div className="px-1.5 py-2 text-[12px] text-[var(--text-muted)]">
+                                No recent filters yet. Type a filter and press Enter to save it here.
+                              </div>
+                            ) : (
+                              <div className="max-h-56 overflow-auto">
+                                {recentFilters.map((h) => (
+                                  <button
+                                    key={h}
+                                    type="button"
+                                    onClick={() => { setRowQuery(h); persistViewFilter(preview.id, h); recordFilter(h); setHistoryOpen(false); }}
+                                    title={`Filter rows by “${h}”`}
+                                    className="block w-full truncate rounded px-1.5 py-1 text-left text-[12px] text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]/60 hover:text-[var(--text-primary)]"
+                                  >
+                                    {h}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      )}
                     </div>
                     <select
                       value={filterCol}

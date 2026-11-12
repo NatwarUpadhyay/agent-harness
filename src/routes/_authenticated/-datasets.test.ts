@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { StoredDataset } from "@/lib/data/datasets.functions";
-import { withFilteredRows } from "./datasets";
+import { updateFilterHistory, withFilteredRows } from "./datasets";
 
 const dataset: StoredDataset = {
   id: "dataset-1",
@@ -89,5 +89,23 @@ describe("dataset preview filtering", () => {
     const kept = withFilteredRows(dataset, "open", false, "status", "notequal").preview;
     expect(kept.map((r) => r.ticket)).toEqual(["T-2", "T-3"]);
     expect(withFilteredRows(dataset, "Open", true, "status", "notequal").preview).toHaveLength(3);
+  });
+});
+
+describe("filter history", () => {
+  it("adds a new filter to the front of the history", () => {
+    expect(updateFilterHistory(["open"], "error")).toEqual(["error", "open"]);
+  });
+
+  it("moves a repeated filter back to the front without duplicating it", () => {
+    expect(updateFilterHistory(["open", "error", "closed"], "error")).toEqual(["error", "open", "closed"]);
+  });
+
+  it("ignores empty filters", () => {
+    expect(updateFilterHistory(["open"], "   ")).toEqual(["open"]);
+  });
+
+  it("keeps only the five most recent filters", () => {
+    expect(updateFilterHistory(["a", "b", "c", "d", "e"], "f")).toEqual(["f", "a", "b", "c", "d"]);
   });
 });
