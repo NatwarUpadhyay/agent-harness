@@ -37,12 +37,6 @@ It is built for teams who want a shared visual language for AI systems before wr
 
 > **MVP launch ready** — auth, cloud persistence, the harness canvas, the production execution engine, scheduling, remediation guardrails, cost governance, fleet-wide burn recommendations, a server-persisted activity feed, real-time notifications, billing meters & plan enforcement, metered usage billing, team invitations, invoice lifecycle tools, workspace-scoped resource sharing, and a public pricing page with Stripe checkout scaffolding are all live and wired end to end. Team budgets, activity events, plan entitlements, usage events, team memberships, billing webhooks, workflows, runs, prompts, agents, and tools are now persisted in the cloud with workspace (`owner_id`) scoping, so every teammate sees the same resources, caps, enforcement settings, notifications, colleagues, agent fleet, tool registry, and usage limits across sessions and devices. The regression suite runs green (176 tests) with a passing preview build and no issues found by the latest basic security checks (deep code analysis has not been refreshed). The latest published build is at **[harness-flow-control.lovable.app](https://harness-flow-control.lovable.app)**.
 >
-> **Phase 59 — Persisted evaluation history** — Evaluations is now a real workflow instead of a static table. A new RLS-backed `public.eval_runs` table stores every run (score, pass rate, per-rubric breakdown, latency, cost, duration) with workspace scoping: members see the shared history, only the workspace owner can delete runs. "New run" opens an agent picker, scores the selected agent against the active dataset server-side across all seven rubrics, and persists the result so head-to-head comparison works on real history.
->
-> **Phase 60 — Quality hardening** — Five project-monitoring findings resolved. Evaluation runs now carry the agent's name through the table, detail drawer, and side-by-side comparison. Sharing a prompt whose name contains `_` or `%` matches by exact (case-insensitive) name, so it can never update the wrong library entry. Test/Disconnect on Integrations is enforced owner-only server-side — teammates get a clear error instead of a fake success. And a corrective migration merges version history before any duplicate prompt cleanup, so shared prompt history can never be silently dropped again.
->
-> **Phase 61 — Workspace-shared dataset library** — Datasets moved out of browser-only storage into a new RLS-backed `public.datasets` table scoped to the workspace: every member sees the same uploads, previews, and curated seed corpora (support tickets, golden eval set, red-team prompts), while only the workspace owner can delete entries. Files are still parsed locally in the browser — only metadata and a ~50-row preview are persisted — via new `listDatasets` / `saveDataset` / `deleteDataset` server functions, and the curated seeds are inserted once per workspace by the idempotent `seedDatasets` seed.
->
 > **Phase 108 — Recent filter history** — the dataset preview now remembers your last five row filters per dataset. Type a filter and press Enter (or click away) to save it, then re-apply any recent filter from the new "Recent" dropdown next to the filter box. The history survives closing the preview or reloading the page, and "Clear history" empties it. Verified in a signed-in preview, including persistence after a full reload; all 176 regression tests pass.
 
 > **Phase 107 — "Doesn't equal" filter** — hide rows whose value exactly matches the filter text; remembered per dataset and respected by copies and exports.
@@ -117,6 +111,12 @@ It is built for teams who want a shared visual language for AI systems before wr
 > **Phase 63 — Dataset curation: rename + column profile** — Workspace owners can rename any dataset inline from the library (new `renameDataset` server function plus an owner-only `UPDATE` policy on `public.datasets`; teammates get a clear "Only the workspace owner can rename datasets" error). The preview modal also gained a Column profile panel that reports fill rate, distinct-value count, and a sample value per column, computed from the stored preview rows.
 >
 > **Phase 62 — Honest dataset deletes + preview export** — Deleting a dataset now tells the truth: `deleteDataset` asks for the deleted rows back, so a blocked delete (a teammate who isn't the workspace owner) raises "Only the workspace owner can delete datasets" instead of silently succeeding, and the page only shows the success toast after the server confirms. Dataset previews can also be exported — an "Export CSV" button in the preview modal downloads the stored preview rows with proper CSV escaping.
+>
+> **Phase 61 — Workspace-shared dataset library** — Datasets moved out of browser-only storage into a new RLS-backed `public.datasets` table scoped to the workspace: every member sees the same uploads, previews, and curated seed corpora (support tickets, golden eval set, red-team prompts), while only the workspace owner can delete entries. Files are still parsed locally in the browser — only metadata and a ~50-row preview are persisted — via new `listDatasets` / `saveDataset` / `deleteDataset` server functions, and the curated seeds are inserted once per workspace by the idempotent `seedDatasets` seed.
+>
+> **Phase 60 — Quality hardening** — Five project-monitoring findings resolved. Evaluation runs now carry the agent's name through the table, detail drawer, and side-by-side comparison. Sharing a prompt whose name contains `_` or `%` matches by exact (case-insensitive) name, so it can never update the wrong library entry. Test/Disconnect on Integrations is enforced owner-only server-side — teammates get a clear error instead of a fake success. And a corrective migration merges version history before any duplicate prompt cleanup, so shared prompt history can never be silently dropped again.
+>
+> **Phase 59 — Persisted evaluation history** — Evaluations is now a real workflow instead of a static table. A new RLS-backed `public.eval_runs` table stores every run (score, pass rate, per-rubric breakdown, latency, cost, duration) with workspace scoping: members see the shared history, only the workspace owner can delete runs. "New run" opens an agent picker, scores the selected agent against the active dataset server-side across all seven rubrics, and persists the result so head-to-head comparison works on real history.
 > **Phase 57 — Workspace-scoped agents & tools + prompt sharing deduplication** — the `agents` and `tools` tables now carry an `owner_id` workspace key with RLS policies that let every workspace member view the shared agent fleet and tool registry while restricting create, edit, and delete to the workspace owner. Demo seeding and the Agents/Tools pages now stamp `owner_id` on every row. Sharing a prompt to the workspace library a second time appends a new version to the existing entry instead of creating a duplicate, backed by a unique `(owner_id, name)` constraint.
 >
 > **Phase 58 — Live integrations with server-side key vaulting** — the Integrations hub is no longer demo data: every vendor card now connects for real. A new `public.integrations` table stores workspace vendor credentials server-side (raw keys never leave the server; the UI only ever shows the last 4 characters). Workspace members can view connection status while only the workspace owner can connect, update, or disconnect vendors, enforced by RLS. Each card offers Connect (secure key-entry modal), Test (re-verifies the stored key and refreshes status), and Disconnect.
@@ -139,7 +139,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 | Enterprise SSO/SCIM provisioning endpoint | Ready |
 | Observability (usage, audit log, SLOs, topology audit, alerts/incidents) | Ready |
 | Responsive UI + command palette + onboarding | Ready |
-| Tests (22 files / 160 tests) and TypeScript check | Green |
+| Tests (23 files / 176 tests) and TypeScript check | Green |
 | Security scan | No open findings |
 
 
@@ -202,6 +202,57 @@ It is built for teams who want a shared visual language for AI systems before wr
 | 55 | Server-enforced org RBAC — workspace roles, capability matrix, owner/admin/operator/analyst/viewer | Shipped |
 | 56 | Workspace-scoped resource sharing — owner_id on workflows, runs, and prompts; workspace library | Shipped |
 | 57 | Workspace-scoped agents & tools + prompt sharing deduplication | Shipped |
+| 58 | Live integrations with server-side key vaulting | Shipped |
+| 59 | Persisted evaluation history (`eval_runs`) | Shipped |
+| 60 | Quality hardening — five monitoring findings resolved | Shipped |
+| 61 | Workspace-shared dataset library (`datasets` table) | Shipped |
+| 62 | Honest dataset deletes + preview CSV export | Shipped |
+| 63 | Dataset rename + column profile panel | Shipped |
+| 64 | Dataset library sorting | Shipped |
+| 65 | Copy dataset schema | Shipped |
+| 66 | Search inside datasets + row filter | Shipped |
+| 67 | Export preview as JSON | Shipped |
+| 68 | Filter-aware exports | Shipped |
+| 69 | Copy rows to clipboard | Shipped |
+| 70 | Sortable preview columns | Shipped |
+| 71 | Exports follow sort order | Shipped |
+| 72 | Reset view | Shipped |
+| 73 | Row numbers | Shipped |
+| 74 | Copy a single row | Shipped |
+| 75 | Copy as Markdown | Shipped |
+| 76 | Copy as CSV | Shipped |
+| 77 | Wrap text toggle | Shipped |
+| 78 | Sticky preview header | Shipped |
+| 79 | Esc to close preview | Shipped |
+| 80 | Filter matches highlighted | Shipped |
+| 81 | Empty preview state | Shipped |
+| 82 | Copy a column | Shipped |
+| 83 | Click to copy a cell | Shipped |
+| 84 | Live row count | Shipped |
+| 85 | Row selection + copy selected | Shipped |
+| 86 | Copy selected as CSV | Shipped |
+| 87 | Copy selected as Markdown | Shipped |
+| 88 | Export selected as CSV | Shipped |
+| 89 | Export selected as JSON | Shipped |
+| 90 | Invert selection | Shipped |
+| 91 | Export selected as Markdown | Shipped |
+| 92 | Selection at a glance | Shipped |
+| 93 | Shift-click range selection | Shipped |
+| 94 | Keyboard selection shortcuts | Shipped |
+| 95 | Column show/hide | Shipped |
+| 96 | Remembered column visibility | Shipped |
+| 97 | Column reordering | Shipped |
+| 98 | Reset column layout | Shipped |
+| 99 | Remembered filter & sort | Shipped |
+| 100 | Remembered wrap text | Shipped |
+| 101 | Column-scoped row filter | Shipped |
+| 102 | Case-sensitive filter matching | Shipped |
+| 103 | Column-scoped exports | Shipped |
+| 104 | Filter match modes (contains / starts / exact) | Shipped |
+| 105 | Ends-with filtering | Shipped |
+| 106 | "Doesn't contain" filtering | Shipped |
+| 107 | "Doesn't equal" filter | Shipped |
+| 108 | Recent filter history | Shipped |
 
 ---
 
@@ -214,6 +265,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 - **Workspace sharing** — Workflows, runs, and prompts are scoped to an `owner_id` workspace. Teammates can view shared resources while the owner retains edit and delete control.
 - **Experiments** — Define two variants with custom success-rate + latency knobs, run animated trial batches, and auto-detect a winner. Trials feed the harness usage analytics.
 - **Datasets** — Drag-drop upload for CSV, JSON, JSONL, and Markdown with automatic parsing, column detection, and a first-50-rows preview drawer.
+- **Dataset preview workbench** — A full data-grid inside the preview: row filter with match modes (contains / starts with / ends with / exact / doesn't contain / doesn't equal), single-column scoping, case sensitivity, recent-filter history, amber match highlighting, sortable columns, row numbers, sticky headers, wrap text, column show/hide/reorder, row selection (checkboxes, shift-click ranges, Ctrl/⌘+A), and copy/export of the visible or selected rows as JSON, CSV, or Markdown. Every view preference is remembered per dataset.
 - **Evaluations** — Dataset picker, weighted rubric panel, per-run drawer, and two-run comparison with per-metric deltas.
 - **Usage & cost** — Per-employee, per-model token tracking, daily spend charts, team filters, and CSV export.
 - **Audit log** — Tamper-evident SHA-256 chained event log with filtering, inspection, and export.
@@ -269,7 +321,7 @@ python3 context/loops/loop_detection.py
 
 ## Testing
 
-Vitest + Testing Library regression suite covering the main interactive surfaces: harness canvas, dashboard, evaluations, agents, layout controls, usage math, remediation, attribution, anomaly detection, cost remediation, billing entitlements, invoice estimates, and auth flows. Runs green (22 files / 160 tests) alongside a clean TypeScript check.
+Vitest + Testing Library regression suite covering the main interactive surfaces: harness canvas, dashboard, evaluations, agents, layout controls, usage math, remediation, attribution, anomaly detection, cost remediation, billing entitlements, invoice estimates, dataset filtering, and auth flows. Runs green (23 files / 176 tests) alongside a clean TypeScript check.
 
 The current suite is a focused smoke/regression layer rather than exhaustive coverage for every page, so it is a good starting point for validating future UI changes.
 
@@ -382,15 +434,27 @@ The fastest way to understand Harness is to use the preview:
 
 - **Bugfix release — Team invitations & roles.** Fixed an issue where inviting an `operator` or `analyst` failed because `team_invitations.role` only accepted `admin`/`member`/`viewer`. The check now allows all governance roles, the signup trigger maps them to the coarser `team_members` shape, and the invitee-insert policy compares the mapped role. Also fixed the infinite render loop on `/pricing` and ensured existing users can accept invitations themselves.
 
+- **Phase 58 — Live integrations with server-side key vaulting.** Every vendor card in the Integrations hub connects for real: credentials are stored server-side in `public.integrations` (the UI only ever shows the last 4 characters), with Connect, Test, and Disconnect enforced owner-only by RLS.
+
+- **Phases 59–61 — Evaluations & datasets go cloud-native.** Evaluation runs persist to `public.eval_runs` with workspace scoping and real head-to-head comparison; datasets moved from browser storage into `public.datasets` with curated seed corpora, honest owner-only deletes, and inline rename plus a column-profile panel.
+
+- **Phases 62–84 — Dataset preview workbench, part 1.** The preview drawer grew into a real data grid: filter-aware CSV/JSON exports, copy rows/columns/cells to the clipboard, sortable column headers, row numbers, sticky headers, wrap text, Esc to close, amber match highlighting, an empty-filter state, and a live "Showing X of Y" count.
+
+- **Phases 85–94 — Row selection.** Checkboxes with a select-all header, shift-click range selection, Ctrl/⌘+A shortcuts, invert selection, a live "N selected" tally, and copy/export of the selection as JSON, CSV, or Markdown — all in the current filter and sort order.
+
+- **Phases 95–100 — Remembered view preferences.** Column show/hide, column reordering with reset, filter text, sort order, and wrap text are all persisted per dataset, so the preview reopens exactly as you left it — even after a full page reload.
+
+- **Phases 101–108 — Filter power tools.** Single-column filter scoping, a case-sensitivity toggle, six match modes (contains / starts with / ends with / exact / doesn't contain / doesn't equal) shared by the table and every copy and export, and a recent-filter history dropdown that remembers your last five searches per dataset.
+
 ## Next up
 
-**Post-MVP polish — live integrations and mobile approvals.** Connect the vendor integrations hub to real provider APIs with key vaulting, and add a lightweight mobile view for incident triage and budget approvals on the go.
+**Post-MVP polish — mobile approvals and deeper eval coverage.** Add a lightweight mobile view for incident triage and budget approvals on the go, and schedule regression evals against production traces with drift alerts.
 
 Then, post-launch:
 
-1. **Real integrations** — replace the vendor capability matrix with live provider connections and key vaulting.
-2. **Deeper eval coverage** — scheduled regression evals against production traces, with drift alerts.
-3. **Mobile apps** — native-feel PWA/phone experience for approvals and incident triage on the go.
+1. **Deeper eval coverage** — scheduled regression evals against production traces, with drift alerts.
+2. **Mobile apps** — native-feel PWA/phone experience for approvals and incident triage on the go.
+3. **Dataset preview power tools** — multi-term and regex filtering, saved filter presets, and larger persisted previews.
 
 
 
