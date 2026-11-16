@@ -90,6 +90,12 @@ describe("dataset preview filtering", () => {
     expect(kept.map((r) => r.ticket)).toEqual(["T-2", "T-3"]);
     expect(withFilteredRows(dataset, "Open", true, "status", "notequal").preview).toHaveLength(3);
   });
+
+  it("hides rows whose value begins with the filter text in doesn't-start-with mode", () => {
+    expect(withFilteredRows(dataset, "T-2", false, "ticket", "notstarts").preview.map((r) => r.ticket)).toEqual(["T-1", "T-3"]);
+    expect(withFilteredRows(dataset, "t-", true, "ticket", "notstarts").preview).toHaveLength(3);
+    expect(withFilteredRows(dataset, "T-", false, "ticket", "notstarts").preview).toEqual([]);
+  });
 });
 
 describe("filter history", () => {

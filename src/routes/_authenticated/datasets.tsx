@@ -41,7 +41,7 @@ function relTime(ts: number): string {
   return new Date(ts).toISOString().slice(0, 10);
 }
 
-export type FilterMode = "contains" | "starts" | "ends" | "exact" | "excludes" | "notequal";
+export type FilterMode = "contains" | "starts" | "ends" | "exact" | "excludes" | "notequal" | "notstarts";
 
 // How the row-count line describes each mode: "Showing 3 of 50 rows <phrase> “acme”".
 export const FILTER_MODE_PHRASE: Record<FilterMode, string> = {
@@ -51,6 +51,7 @@ export const FILTER_MODE_PHRASE: Record<FilterMode, string> = {
   exact: "equal to",
   excludes: "not containing",
   notequal: "not equal to",
+  notstarts: "not starting with",
 };
 
 // How the empty state describes each mode: "No preview rows <verb> “acme”".
@@ -61,6 +62,7 @@ export const FILTER_MODE_VERB: Record<FilterMode, string> = {
   exact: "equal",
   excludes: "are free of",
   notequal: "differ from",
+  notstarts: "start with something other than",
 };
 
 function valueMatches(haystack: string, q: string, matchCase: boolean, mode: FilterMode) {
@@ -97,7 +99,9 @@ export function withFilteredRows(
         ? scopeCols.every((c) => !valueMatches(row[c] ?? "", q, matchCase, "contains"))
         : mode === "notequal"
           ? scopeCols.every((c) => !valueMatches(row[c] ?? "", q, matchCase, "exact"))
-          : scopeCols.some((c) => valueMatches(row[c] ?? "", q, matchCase, mode)),
+          : mode === "notstarts"
+            ? scopeCols.every((c) => !valueMatches(row[c] ?? "", q, matchCase, "starts"))
+            : scopeCols.some((c) => valueMatches(row[c] ?? "", q, matchCase, mode)),
     ),
   };
 }
@@ -108,7 +112,7 @@ function highlightMatch(text: string, query: string, matchCase = false, mode: Fi
   const mark = (part: string, key = 0) => (
     <mark key={key} className="rounded-sm bg-[color-mix(in_srgb,var(--amber)_18%,transparent)] px-0.5 text-[var(--amber)]">{part}</mark>
   );
-  if (mode === "excludes" || mode === "notequal") return text;
+  if (mode === "excludes" || mode === "notequal" || mode === "notstarts") return text;
   if (mode === "exact") return valueMatches(text, q, matchCase, mode) ? mark(text) : text;
   if (mode === "starts") {
     if (!valueMatches(text, q, matchCase, mode)) return text;
@@ -395,7 +399,7 @@ function DatasetsView() {
         const rawFilterMode = localStorage.getItem(`harness:preview:filter-mode:${preview.id}`);
         if (rawFilterMode) {
           const parsedFilterMode: unknown = JSON.parse(rawFilterMode);
-          if (parsedFilterMode === "contains" || parsedFilterMode === "starts" || parsedFilterMode === "ends" || parsedFilterMode === "exact" || parsedFilterMode === "excludes" || parsedFilterMode === "notequal") {
+          if (parsedFilterMode === "contains" || parsedFilterMode === "starts" || parsedFilterMode === "ends" || parsedFilterMode === "exact" || parsedFilterMode === "excludes" || parsedFilterMode === "notequal" || parsedFilterMode === "notstarts") {
             restoredFilterMode = parsedFilterMode;
           }
         }
@@ -931,6 +935,8 @@ function DatasetsView() {
                               ? "Match only cell values that end with the filter text"
                             : filterMode === "notequal"
                               ? "Keep only rows where no cell equals the filter text"
+                            : filterMode === "notstarts"
+                              ? "Keep only rows where no cell begins with the filter text"
                             : filterMode === "excludes"
                               ? "Keep only rows where no cell contains the filter text"
                             : "Match only cell values identical to the filter text"
@@ -943,6 +949,7 @@ function DatasetsView() {
                       <option value="exact">Exact match</option>
                       <option value="excludes">Doesn&apos;t contain</option>
                       <option value="notequal">Doesn&apos;t equal</option>
+                      <option value="notstarts">Doesn&apos;t start with</option>
                     </select>
                     <button
                       type="button"
