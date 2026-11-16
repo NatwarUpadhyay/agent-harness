@@ -40,6 +40,12 @@ describe("dataset preview filtering", () => {
     expect(withFilteredRows(dataset, "error", true, "status").preview.map((row) => row.ticket)).toEqual(["T-2"]);
   });
 
+  it("hides rows whose values end with the filter text in doesn't-end-with mode", () => {
+    expect(withFilteredRows(dataset, "error", false, "all", "notends").preview.map((row) => row.ticket)).toEqual(["T-1", "T-3"]);
+    expect(withFilteredRows(dataset, "T-", false, "all", "notends").preview.map((row) => row.ticket)).toEqual(["T-1", "T-2", "T-3"]);
+    expect(withFilteredRows(dataset, "1", false, "ticket", "notends").preview.map((row) => row.ticket)).toEqual(["T-2", "T-3"]);
+  });
+
   it("keeps matching anywhere in the value by default", () => {
     expect(withFilteredRows(dataset, "open", false, "all", "contains").preview.map((row) => row.ticket)).toEqual(["T-1"]);
     expect(withFilteredRows(dataset, "pen", false, "all", "contains").preview.map((row) => row.ticket)).toEqual(["T-1"]);
