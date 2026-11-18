@@ -20,7 +20,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 
 ### Why use it
 
-- **Sketch fast** — drag nodes from a sidebar and connect ports without any setup..
+- **Sketch fast** — drag nodes from a sidebar and connect ports without any setup.
 - **See it run** — simulation highlights each step and reveals how decisions propagate.
 - **Start from templates** — choose from starter workflows to learn the tool quickly.
 - **Iterate with prompts** — version, preview, and render `{{variable}}` templates in real time.
