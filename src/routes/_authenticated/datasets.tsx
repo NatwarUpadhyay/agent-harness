@@ -41,7 +41,7 @@ function relTime(ts: number): string {
   return new Date(ts).toISOString().slice(0, 10);
 }
 
-export type FilterMode = "contains" | "starts" | "ends" | "exact" | "excludes" | "notequal" | "notstarts" | "notends";
+export type FilterMode = "contains" | "starts" | "ends" | "exact" | "excludes" | "notequal" | "notstarts" | "notends" | "regex";
 
 // How the row-count line describes each mode: "Showing 3 of 50 rows <phrase> “acme”".
 export const FILTER_MODE_PHRASE: Record<FilterMode, string> = {
@@ -53,6 +53,7 @@ export const FILTER_MODE_PHRASE: Record<FilterMode, string> = {
   notequal: "not equal to",
   notstarts: "not starting with",
   notends: "not ending with",
+  regex: "matching the pattern",
 };
 
 // How the empty state describes each mode: "No preview rows <verb> “acme”".
@@ -65,9 +66,18 @@ export const FILTER_MODE_VERB: Record<FilterMode, string> = {
   notequal: "differ from",
   notstarts: "start with something other than",
   notends: "end with something other than",
+  regex: "match the pattern",
 };
 
 function valueMatches(haystack: string, q: string, matchCase: boolean, mode: FilterMode) {
+  if (mode === "regex") {
+    try {
+      return new RegExp(q, matchCase ? "" : "i").test(haystack);
+    } catch {
+      // Invalid pattern — treat as no match rather than crashing the filter.
+      return false;
+    }
+  }
   const hay = matchCase ? haystack : haystack.toLowerCase();
   const needle = matchCase ? q : q.toLowerCase();
   if (mode === "starts") return hay.startsWith(needle);
@@ -117,6 +127,14 @@ function highlightMatch(text: string, query: string, matchCase = false, mode: Fi
     <mark key={key} className="rounded-sm bg-[color-mix(in_srgb,var(--amber)_18%,transparent)] px-0.5 text-[var(--amber)]">{part}</mark>
   );
   if (mode === "excludes" || mode === "notequal" || mode === "notstarts" || mode === "notends") return text;
+  if (mode === "regex") {
+    try {
+      const parts = text.split(new RegExp(`(${q})`, matchCase ? "g" : "gi"));
+      return parts.map((p, i) => (i % 2 === 1 && p !== "" ? mark(p, i) : p));
+    } catch {
+      return text;
+    }
+  }
   if (mode === "exact") return valueMatches(text, q, matchCase, mode) ? mark(text) : text;
   if (mode === "starts") {
     if (!valueMatches(text, q, matchCase, mode)) return text;
@@ -403,7 +421,7 @@ function DatasetsView() {
         const rawFilterMode = localStorage.getItem(`harness:preview:filter-mode:${preview.id}`);
         if (rawFilterMode) {
           const parsedFilterMode: unknown = JSON.parse(rawFilterMode);
-          if (parsedFilterMode === "contains" || parsedFilterMode === "starts" || parsedFilterMode === "ends" || parsedFilterMode === "exact" || parsedFilterMode === "excludes" || parsedFilterMode === "notequal" || parsedFilterMode === "notstarts" || parsedFilterMode === "notends") {
+          if (parsedFilterMode === "contains" || parsedFilterMode === "starts" || parsedFilterMode === "ends" || parsedFilterMode === "exact" || parsedFilterMode === "excludes" || parsedFilterMode === "notequal" || parsedFilterMode === "notstarts" || parsedFilterMode === "notends" || parsedFilterMode === "regex") {
             restoredFilterMode = parsedFilterMode;
           }
         }
@@ -943,6 +961,8 @@ function DatasetsView() {
                               ? "Keep only rows where no cell begins with the filter text"
                             : filterMode === "notends"
                               ? "Keep only rows where no cell ends with the filter text"
+                            : filterMode === "regex"
+                              ? "Match cell values against a regular expression pattern"
                             : filterMode === "excludes"
                               ? "Keep only rows where no cell contains the filter text"
                             : "Match only cell values identical to the filter text"
@@ -957,7 +977,8 @@ function DatasetsView() {
                       <option value="notequal">Doesn&apos;t equal</option>
                       <option value="notstarts">Doesn&apos;t start with</option>
                       <option value="notends">Doesn&apos;t end with</option>
-                    </select>
+                      <option value="regex">Matches pattern</option>
+                     </select>
                     <button
                       type="button"
                       onClick={() => { const next = !matchCase; setMatchCase(next); persistMatchCase(preview.id, next); }}

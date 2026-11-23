@@ -35,8 +35,10 @@ It is built for teams who want a shared visual language for AI systems before wr
 
 ## Current status
 
-> **MVP launch ready** — auth, cloud persistence, the harness canvas, the production execution engine, scheduling, remediation guardrails, cost governance, fleet-wide burn recommendations, a server-persisted activity feed, real-time notifications, billing meters & plan enforcement, metered usage billing, team invitations, invoice lifecycle tools, workspace-scoped resource sharing, and a public pricing page with Stripe checkout scaffolding are all live and wired end to end. Team budgets, activity events, plan entitlements, usage events, team memberships, billing webhooks, workflows, runs, prompts, agents, and tools are now persisted in the cloud with workspace (`owner_id`) scoping, so every teammate sees the same resources, caps, enforcement settings, notifications, colleagues, agent fleet, tool registry, and usage limits across sessions and devices. The regression suite runs green (178 tests) with a passing preview build and no issues found by the latest basic security checks (deep code analysis has not been refreshed). The latest published build is at **[harness-flow-control.lovable.app](https://harness-flow-control.lovable.app)**.
+> **MVP launch ready** — auth, cloud persistence, the harness canvas, the production execution engine, scheduling, remediation guardrails, cost governance, fleet-wide burn recommendations, a server-persisted activity feed, real-time notifications, billing meters & plan enforcement, metered usage billing, team invitations, invoice lifecycle tools, workspace-scoped resource sharing, and a public pricing page with Stripe checkout scaffolding are all live and wired end to end. Team budgets, activity events, plan entitlements, usage events, team memberships, billing webhooks, workflows, runs, prompts, agents, and tools are now persisted in the cloud with workspace (`owner_id`) scoping, so every teammate sees the same resources, caps, enforcement settings, notifications, colleagues, agent fleet, tool registry, and usage limits across sessions and devices. The regression suite runs green (179 tests) with a passing preview build and no issues found by the latest basic security checks (deep code analysis has not been refreshed). The latest published build is at **[harness-flow-control.lovable.app](https://harness-flow-control.lovable.app)**.
 >
+> **Phase 111 — "Matches pattern" filter** — filter rows with a regular expression, with matches highlighted in the table; invalid patterns match nothing instead of breaking the preview, case-sensitivity and column scope apply, copies and exports follow the same rows, and the mode is remembered per dataset. All 179 regression tests pass.
+
 > **Phase 110 — "Doesn't end with" filter** — hide rows whose value ends with the filter text, finishing the negative match-mode family (contains, starts with, ends with, exact, doesn't contain, doesn't equal, doesn't start with, doesn't end with); remembered per dataset, case-sensitivity aware, and respected by copies and exports. All 178 regression tests pass.
 
 > **Phase 109 — "Doesn't start with" filter** — hide rows whose value begins with the filter text, completing the negative match-mode family; remembered per dataset, case-sensitivity aware, and respected by copies and exports. All 177 regression tests pass.
@@ -143,7 +145,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 | Enterprise SSO/SCIM provisioning endpoint | Ready |
 | Observability (usage, audit log, SLOs, topology audit, alerts/incidents) | Ready |
 | Responsive UI + command palette + onboarding | Ready |
-| Tests (23 files / 178 tests) and TypeScript check | Green |
+| Tests (23 files / 179 tests) and TypeScript check | Green |
 | Security scan | No open findings |
 
 
@@ -325,7 +327,7 @@ python3 context/loops/loop_detection.py
 
 ## Testing
 
-Vitest + Testing Library regression suite covering the main interactive surfaces: harness canvas, dashboard, evaluations, agents, layout controls, usage math, remediation, attribution, anomaly detection, cost remediation, billing entitlements, invoice estimates, dataset filtering, and auth flows. Runs green (23 files / 178 tests) alongside a clean TypeScript check.
+Vitest + Testing Library regression suite covering the main interactive surfaces: harness canvas, dashboard, evaluations, agents, layout controls, usage math, remediation, attribution, anomaly detection, cost remediation, billing entitlements, invoice estimates, dataset filtering, and auth flows. Runs green (23 files / 179 tests) alongside a clean TypeScript check.
 
 The current suite is a focused smoke/regression layer rather than exhaustive coverage for every page, so it is a good starting point for validating future UI changes.
 

@@ -102,6 +102,14 @@ describe("dataset preview filtering", () => {
     expect(withFilteredRows(dataset, "t-", true, "ticket", "notstarts").preview).toHaveLength(3);
     expect(withFilteredRows(dataset, "T-", false, "ticket", "notstarts").preview).toEqual([]);
   });
+
+  it("matches rows against a regular expression in matches-pattern mode", () => {
+    expect(withFilteredRows(dataset, "^T-[13]$", false, "ticket", "regex").preview.map((r) => r.ticket)).toEqual(["T-1", "T-3"]);
+    expect(withFilteredRows(dataset, "@EXAMPLE\\.com$", true, "requester", "regex").preview).toEqual([]);
+    expect(withFilteredRows(dataset, "@example\\.com$", false, "requester", "regex").preview).toHaveLength(3);
+    // Invalid patterns match nothing instead of throwing.
+    expect(withFilteredRows(dataset, "[", false, "all", "regex").preview).toEqual([]);
+  });
 });
 
 describe("filter history", () => {
