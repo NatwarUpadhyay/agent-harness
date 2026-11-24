@@ -23,7 +23,7 @@ It is built for teams who want a shared visual language for AI systems before wr
 - **Sketch fast** — drag nodes from a sidebar and connect ports without any setup.
 - **See it run** — simulation highlights each step and reveals how decisions propagate.
 - **Start from templates** — choose from starter workflows to learn the tool quickly.
-- **Iterate with prompts** — version, preview, and render `{{variable}}` templates in real time.
+- **Iterate with prompts** — version, preview, and render `{{variable}}` templates in real time..
 - **Run experiments** — A/B variants with animated trial batches and auto-detected winners.
 - **Ground flows in data** — upload CSV/JSON/JSONL datasets and inspect them before wiring them in.
 - **Track spend** — per-employee, per-model token usage and cost analytics with CSV export.
