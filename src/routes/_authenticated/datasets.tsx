@@ -41,7 +41,7 @@ function relTime(ts: number): string {
   return new Date(ts).toISOString().slice(0, 10);
 }
 
-export type FilterMode = "contains" | "starts" | "ends" | "exact" | "excludes" | "notequal" | "notstarts" | "notends" | "regex";
+export type FilterMode = "contains" | "starts" | "ends" | "exact" | "excludes" | "notequal" | "notstarts" | "notends" | "regex" | "notregex";
 
 // How the row-count line describes each mode: "Showing 3 of 50 rows <phrase> “acme”".
 export const FILTER_MODE_PHRASE: Record<FilterMode, string> = {
@@ -54,6 +54,7 @@ export const FILTER_MODE_PHRASE: Record<FilterMode, string> = {
   notstarts: "not starting with",
   notends: "not ending with",
   regex: "matching the pattern",
+  notregex: "not matching the pattern",
 };
 
 // How the empty state describes each mode: "No preview rows <verb> “acme”".
@@ -67,6 +68,7 @@ export const FILTER_MODE_VERB: Record<FilterMode, string> = {
   notstarts: "start with something other than",
   notends: "end with something other than",
   regex: "match the pattern",
+  notregex: "avoid the pattern",
 };
 
 function valueMatches(haystack: string, q: string, matchCase: boolean, mode: FilterMode) {
@@ -115,7 +117,9 @@ export function withFilteredRows(
             ? scopeCols.every((c) => !valueMatches(row[c] ?? "", q, matchCase, "starts"))
             : mode === "notends"
               ? scopeCols.every((c) => !valueMatches(row[c] ?? "", q, matchCase, "ends"))
-              : scopeCols.some((c) => valueMatches(row[c] ?? "", q, matchCase, mode)),
+              : mode === "notregex"
+                ? scopeCols.every((c) => !valueMatches(row[c] ?? "", q, matchCase, "regex"))
+                : scopeCols.some((c) => valueMatches(row[c] ?? "", q, matchCase, mode)),
     ),
   };
 }
@@ -126,7 +130,7 @@ function highlightMatch(text: string, query: string, matchCase = false, mode: Fi
   const mark = (part: string, key = 0) => (
     <mark key={key} className="rounded-sm bg-[color-mix(in_srgb,var(--amber)_18%,transparent)] px-0.5 text-[var(--amber)]">{part}</mark>
   );
-  if (mode === "excludes" || mode === "notequal" || mode === "notstarts" || mode === "notends") return text;
+  if (mode === "excludes" || mode === "notequal" || mode === "notstarts" || mode === "notends" || mode === "notregex") return text;
   if (mode === "regex") {
     try {
       const parts = text.split(new RegExp(`(${q})`, matchCase ? "g" : "gi"));
@@ -421,7 +425,7 @@ function DatasetsView() {
         const rawFilterMode = localStorage.getItem(`harness:preview:filter-mode:${preview.id}`);
         if (rawFilterMode) {
           const parsedFilterMode: unknown = JSON.parse(rawFilterMode);
-          if (parsedFilterMode === "contains" || parsedFilterMode === "starts" || parsedFilterMode === "ends" || parsedFilterMode === "exact" || parsedFilterMode === "excludes" || parsedFilterMode === "notequal" || parsedFilterMode === "notstarts" || parsedFilterMode === "notends" || parsedFilterMode === "regex") {
+          if (parsedFilterMode === "contains" || parsedFilterMode === "starts" || parsedFilterMode === "ends" || parsedFilterMode === "exact" || parsedFilterMode === "excludes" || parsedFilterMode === "notequal" || parsedFilterMode === "notstarts" || parsedFilterMode === "notends" || parsedFilterMode === "regex" || parsedFilterMode === "notregex") {
             restoredFilterMode = parsedFilterMode;
           }
         }
@@ -978,6 +982,7 @@ function DatasetsView() {
                       <option value="notstarts">Doesn&apos;t start with</option>
                       <option value="notends">Doesn&apos;t end with</option>
                       <option value="regex">Matches pattern</option>
+                      <option value="notregex">Doesn&apos;t match pattern</option>
                      </select>
                     <button
                       type="button"

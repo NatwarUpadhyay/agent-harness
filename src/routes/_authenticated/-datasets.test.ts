@@ -110,6 +110,12 @@ describe("dataset preview filtering", () => {
     // Invalid patterns match nothing instead of throwing.
     expect(withFilteredRows(dataset, "[", false, "all", "regex").preview).toEqual([]);
   });
+
+  it("hides rows matching a regular expression in doesn't-match-pattern mode", () => {
+    expect(withFilteredRows(dataset, "^T-[13]$", false, "ticket", "notregex").preview.map((r) => r.ticket)).toEqual(["T-2"]);
+    expect(withFilteredRows(dataset, "^ERROR", true, "status", "notregex").preview).toHaveLength(3);
+    expect(withFilteredRows(dataset, "^error", false, "status", "notregex").preview.map((r) => r.ticket)).toEqual(["T-1", "T-3"]);
+  });
 });
 
 describe("filter history", () => {
